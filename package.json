@@ -21,6 +21,7 @@
   },
   "scripts": {
   },
+  "main": "./lib/rhizome",
   "dependencies": {
     "restler": "~3.4.0"
   },
