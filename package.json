@@ -1,0 +1,32 @@
+{
+  "name": "rhizome-api-js",
+  "description": "Rhizome API for Node.js",
+  "version": "0.0.1",
+  "author": "Coders for Corbyn",
+  "contributors": [
+    "Chris Bates-Keegan <chris@theisolationist.com>"
+  ],
+  "homepage": "https://github.com/coders-for-corbyn/rhizome-api-js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coders-for-corbyn/rhizome-api-js"
+  },
+  "bugs": {
+    "url": "https://github.com/coders-for-corbyn/rhizome-api-js/issues"
+  },
+  "engines": {
+    "node": "~4.5.x",
+    "npm": "~2.15.x"
+  },
+  "scripts": {
+  },
+  "dependencies": {
+    "restler": "~3.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.3.0",
+    "eslint-config-google": "^0.6.0",
+    "eslint-config-xo": "^0.15.3"
+  }
+}
