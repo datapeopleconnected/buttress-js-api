@@ -20,16 +20,19 @@
     "npm": "~2.15.x"
   },
   "scripts": {
+    "test": "mocha --require should --reporter nyan"
   },
   "main": "./lib/rhizome",
   "dependencies": {
     "restler": "~3.4.0"
   },
   "devDependencies": {
-    "eslint": "^3.3.0",
-    "eslint-config-google": "^0.6.0",
-    "eslint-config-xo": "^0.15.3",
-    "gulp": "^3.9.1",
-    "gulp-bump": "^2.4.0"
+    "eslint": "~3.3.0",
+    "eslint-config-google": "~0.6.0",
+    "eslint-config-xo": "~0.15.3",
+    "gulp": "~3.9.1",
+    "gulp-bump": "~2.4.0",
+    "mocha": "~3.1.0",
+    "should": "~11.1.0"
   }
 }
