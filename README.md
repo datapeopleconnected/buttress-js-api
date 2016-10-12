@@ -7,7 +7,7 @@ Node.js API for [Rhizome](https://github.com/coders-for-corbyn/rhizome).
 
 ## Usage
 First of all you need to initialise Rhizome with a valid App Token. App Tokens are created in Rhizome by the system administrator.
-```
+```javascript
 const Rhizome = require('rhizome-api-js');
 Rhizome.init({
   rhizomeUrl: 'http://rhizome.url' [DEFAULT: http://rhizome.codersforcorbyn.com],
@@ -18,7 +18,7 @@ Once you have initialised Rhizome you can use it as follows:
 
 ## User Auth
 This creates a Rhizome user based on OAuth2 user flow authentication leading to a token and tokenSecret. In addition to the basic information Rhizome stores these properties:
-```
+```javascript
 var user = {
   app: 'twitter',
   id: profile.id,
@@ -39,7 +39,7 @@ User data is shared across all Rhizome applications based on trusted OAuth appli
 
 ## User Metadata
 User metadata is silo'ed on a per application basis. Specify the default value for when there is no metadata in the database.
-```
+```javascript
 Rhizome.User.loadMetadata(userRhizomeId, 'KEY_NAME', [])
   .then(data => Logging.log(data))
   .catch(err => Logging.log(err));
@@ -51,7 +51,7 @@ Rhizome.User.saveMetadata(userRhizomeId, 'KEY_NAME', {foo:true, bar:false})
 ```
 
 ## User
-```
+```javascript
 Rhizome.User.load(rhizomeUserId)
   .then(u => {
     var twauth = u.auth.find(a => a.app === 'twitter');
@@ -62,7 +62,7 @@ Rhizome.User.load(rhizomeUserId)
 ```
 ## App Metadata
 Applications have metadata (specify the default value for when there is no metadata in the database):
-```
+```javascript
 Rhizome.App.loadMetadata('KEY_NAME', [])
   .then(data => Logging.log(data))
   .catch(err => Logging.log(err));
