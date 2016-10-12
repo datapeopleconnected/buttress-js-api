@@ -1,0 +1,21 @@
+extends /layout
+
+block header
+  img(src=headerImgSrc, width="600", height="130")
+block content
+  table.content_table
+    tbody
+      tr
+        td.content_copy(width="50%")
+          h1 Hi #{person.forename}!
+          h2 #{subject}
+          p You've signed up for the Coders for Labour blocklist. What this means is that YOU ARE AWESOME...
+        td.content_copy(width="50%")
+          img(src=headerImgSrc, width="300")
+block footer
+  img(src=headerImgSrc, width="600", height="130")
+block legals
+  p
+    | This email was intended for #{person.name}. You are receiving it because you've signed up to the Blocklist service from the Violet website.
+  p
+    | This Violet blocklist service was created and is operated by the volunteers at Coders for Labour.

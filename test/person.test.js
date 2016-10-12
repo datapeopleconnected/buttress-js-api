@@ -38,7 +38,7 @@ describe('@model', function() {
   before(function() {
   });
 
-  describe('Person', function() {
+  describe('Person Basics', function() {
     var _person = null;
     it('should return no people', function(done) {
       Rhizome.Person
