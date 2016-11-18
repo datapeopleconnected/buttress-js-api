@@ -24,7 +24,8 @@
   },
   "main": "./lib/rhizome",
   "dependencies": {
-    "restler": "~3.4.0"
+    "restler": "~3.4.0",
+    "sugar": "^2.0.2"
   },
   "devDependencies": {
     "eslint": "~3.3.0",

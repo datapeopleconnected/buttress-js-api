@@ -11,19 +11,20 @@
 
 const path = require('path');
 const Rhizome = require('../lib/rhizome');
+const Config = require('./config');
+
+Config.init();
 
 /**
  * In all tests that make use of promises, you need to use .catch(err => done(err) pattern.
  * Otherwise the promise consumes the assertion failure and you get a timeout instead of useful info.
  */
 
-after(function(done) {
-  Rhizome.Campaign
-    .removeAll()
-    .then(function() {
-      done();
-    });
-});
+// after(function(done) {
+//   Promise.all([
+//     Rhizome.Campaign.removeAll()
+//   ]).then(() => done());
+// });
 
 describe('@model', function() {
   before(function() {
@@ -106,6 +107,10 @@ describe('@model', function() {
   });
 
   after(function(done) {
+    if (!_campaign) {
+      return done(new Error("No Campaign!"));
+    }
+
     Rhizome.Campaign
       .remove(_campaign.id)
       .then(function() {
@@ -122,8 +127,8 @@ describe('@model', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
-        .loadMetadata(_campaign.id, 'TEST_DATA', false)
+      Rhizome.Campaign.Metadata
+        .load(_campaign.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
           done();
@@ -136,8 +141,8 @@ describe('@model', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
-        .saveMetadata(_campaign.id, 'TEST_DATA', {foo: 'bar'})
+      Rhizome.Campaign.Metadata
+        .save(_campaign.id, 'TEST_DATA', {foo: 'bar'})
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
           done();
@@ -150,8 +155,8 @@ describe('@model', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
-        .loadMetadata(_campaign.id, 'TEST_DATA', false)
+      Rhizome.Campaign.Metadata
+        .load(_campaign.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
           done();
@@ -164,8 +169,8 @@ describe('@model', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
-        .removeMetadata(_campaign.id, 'TEST_DATA')
+      Rhizome.Campaign.Metadata
+        .remove(_campaign.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(true);
           done();
@@ -178,8 +183,8 @@ describe('@model', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
-        .loadMetadata(_campaign.id, 'TEST_DATA', false)
+      Rhizome.Campaign.Metadata
+        .load(_campaign.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
           done();
@@ -192,8 +197,8 @@ describe('@model', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
-        .removeMetadata(_campaign.id, 'TEST_DATA')
+      Rhizome.Campaign.Metadata
+        .remove(_campaign.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(false);
           done();
