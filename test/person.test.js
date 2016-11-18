@@ -19,26 +19,18 @@ Config.init();
  * Otherwise the promise consumes the assertion failure and you get a timeout instead of useful info.
  */
 
-before(function() {
-  Rhizome.init({
-    appToken: Config.SUPER_APP_KEY,
-    rhizomeUrl: Config.API_URL
-  });
-});
-
-after(function(done) {
-  Rhizome.Person
-    .removeAll()
-    .then(function() {
-      done();
-    });
-});
+// after(function(done) {
+//   Promise.all([
+//     Rhizome.User.removeAll(),
+//     Rhizome.Person.removeAll()
+//   ]).then(() => done());
+// });
 
 describe('@model', function() {
   before(function() {
   });
 
-  describe('Person', function() {
+  describe('Person Basics', function() {
     var _person = null;
     it('should return no people', function(done) {
       Rhizome.Person
@@ -130,8 +122,8 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person
-        .loadMetadata(_person.id, 'TEST_DATA', false)
+      Rhizome.Person.Metadata
+        .load(_person.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
           done();
@@ -144,8 +136,8 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person
-        .saveMetadata(_person.id, 'TEST_DATA', {foo: 'bar'})
+      Rhizome.Person.Metadata
+        .save(_person.id, 'TEST_DATA', {foo: 'bar'})
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
           done();
@@ -158,9 +150,10 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person
-        .loadMetadata(_person.id, 'TEST_DATA', false)
+      Rhizome.Person.Metadata
+        .load(_person.id, 'TEST_DATA', false)
         .then(function(metadata) {
+          metadata.should.not.equal(false);
           metadata.foo.should.equal('bar');
           done();
         })
@@ -172,10 +165,10 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person
-        .removeMetadata(_person.id, 'TEST_DATA')
-        .then(function(metadata) {
-          metadata.should.equal(true);
+      Rhizome.Person.Metadata
+        .remove(_person.id, 'TEST_DATA')
+        .then(function(result) {
+          result.should.equal(true);
           done();
         })
         .catch(function(err) {
@@ -186,8 +179,8 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person
-        .loadMetadata(_person.id, 'TEST_DATA', false)
+      Rhizome.Person.Metadata
+        .load(_person.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
           done();
@@ -200,8 +193,8 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person
-        .removeMetadata(_person.id, 'TEST_DATA')
+      Rhizome.Person.Metadata
+        .remove(_person.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(false);
           done();

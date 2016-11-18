@@ -9,17 +9,37 @@
  *
  */
 
-var _init = () => {
-  if (!process.env.RHIZOME_TEST_API_URL) {
-    throw new Error("Missing required environment variable: RHIZOME_TEST_API_URL");
-  }
-  if (!process.env.RHIZOME_TEST_SUPER_APP_KEY) {
-    throw new Error("Missing required environment variable: RHIZOME_TEST_SUPER_APP_KEY");
-  }
-};
+const Rhizome = require('../lib/rhizome');
 
-module.exports = {
-  init: _init,
-  API_URL: process.env.RHIZOME_TEST_API_URL,
-  SUPER_APP_KEY: process.env.RHIZOME_TEST_SUPER_APP_KEY
-};
+class Config {
+  constructor() {
+    this._initialised = false;
+  }
+
+  init() {
+    if (this._initialised === true) {
+      return;
+    }
+    this._initialised = true;
+
+    Rhizome.init({
+      rhizomeUrl: process.env.RHIZOME_TEST_API_URL,
+      appToken: process.env.RHIZOME_TEST_SUPER_APP_KEY
+    });
+
+    before(function(done) {
+      Promise.all([
+        Rhizome.Campaign.removeAll(),
+        Rhizome.User.removeAll(),
+        Rhizome.Person.removeAll(),
+        Rhizome.Token.removeAllUserTokens()
+      ]).then(() => done());
+    });
+
+    after(function(done) {
+      done();
+    });
+  }
+}
+
+module.exports = new Config();
