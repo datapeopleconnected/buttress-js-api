@@ -125,7 +125,8 @@ describe('@model', function() {
         permissions: [{
           route: "*",
           permission: "*"
-        }]
+        }],
+        domains: ['test.rhizome.com']
       };
       Rhizome.Auth
         .findOrCreateUser(userAppAuth, auth)

@@ -32,7 +32,8 @@ class Config {
         Rhizome.Campaign.removeAll(),
         Rhizome.User.removeAll(),
         Rhizome.Person.removeAll(),
-        Rhizome.Token.removeAllUserTokens()
+        Rhizome.Token.removeAllUserTokens(),
+        Rhizome.Organisation.removeAll()
       ]).then(() => done());
     });
 
