@@ -26,12 +26,103 @@ Config.init();
 //   ]).then(() => done());
 // });
 
-describe('@model', function() {
-  before(function() {
+let __createCompanies = () => {
+  let companies = [
+    {
+      name: 'Company 1',
+      location: {
+        name: 'HQ',
+        address: '123 Acacia Avenue, Brixton, SW9 4DW',
+        phoneNumber: '0205 123123'
+      },
+      contact: {
+        name: 'Bananaman'
+      }
+    },
+    {
+      name: 'Company 2',
+      location: {
+        name: 'HQ',
+        address: '123 Acacia Avenue, Brixton, SW9 4DW',
+        phoneNumber: '0205 123123'
+      },
+      contact: {
+        name: 'Bananaman'
+      }
+    },
+    {
+      name: 'Company 3',
+      location: {
+        name: 'HQ',
+        address: '123 Acacia Avenue, Brixton, SW9 4DW',
+        phoneNumber: '0205 123123'
+      },
+      contact: {
+        name: 'Bananaman'
+      }
+    },
+    {
+      name: 'Company 4',
+      location: {
+        name: 'HQ',
+        address: '123 Acacia Avenue, Brixton, SW9 4DW',
+        phoneNumber: '0205 123123'
+      },
+      contact: {
+        name: 'Bananaman'
+      }
+    },
+    {
+      name: 'Company 5',
+      location: {
+        name: 'HQ',
+        address: '123 Acacia Avenue, Brixton, SW9 4DW',
+        phoneNumber: '0205 123123'
+      },
+      contact: {
+        name: 'Bananaman'
+      }
+    }
+  ];
+  return Rhizome.Company.saveAll({companies: companies})
+    .catch(err => {
+      throw err;
+    });
+};
+
+let __createUser = () => {
+  let userAppAuth = {
+    app: 'google',
+    id: '12345678987654321',
+    name: 'Chris Bates-Keegan',
+    token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
+    email: 'test@test.com',
+    profileUrl: 'http://test.com/thisisatest',
+    profileImgUrl: 'http://test.com/thisisatest.png'
+  };
+  return Rhizome.Auth.findOrCreateUser(userAppAuth)
+    .catch(err => {
+      throw err;
+    });
+};
+
+describe('@campaign-basics', function() {
+  this.timeout(2000);
+  let _companies = [];
+
+  before(function(done) {
+    __createCompanies().then(companies => {
+      _companies = companies;
+    }).then(done);
   });
 
-  describe('Campaign Basics', function() {
-    var _campaign = null;
+  after(function(done) {
+    let ids = _companies.map(c => c.id);
+    Rhizome.Company.bulkRemove(ids).then(() => done()).catch(done);
+  });
+
+  describe('Basics', function() {
+    let _campaign = null;
     it('should return no campaigns', function(done) {
       Rhizome.Campaign
         .getAll()
@@ -47,8 +138,11 @@ describe('@model', function() {
       Rhizome.Campaign
         .create({
           name: "test",
+          type: Rhizome.Campaign.Type.EMAIL,
           description: "Test campaign for testing.",
-          legals: "Copyright Coders for Labour"
+          legals: "Copyright Coders for Labour",
+          filters: [{type: 'location', value: 'Leeds'}],
+          companies: [_companies[0].id]
         })
         .then(function(campaign) {
           _campaign = campaign;
@@ -71,6 +165,7 @@ describe('@model', function() {
           done(err);
         });
     });
+
     it('should remove a campaign', function(done) {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
@@ -88,22 +183,154 @@ describe('@model', function() {
   });
 });
 
-describe('@model', function() {
-  var _campaign = null;
+describe('@campaign-contactlists', function() {
+  let _campaign = null;
+  let _companies = [];
+  let _user = null;
+  let _contactListId = '';
+
   before(function(done) {
-    Rhizome.Campaign
+    __createUser().then(user => {
+      _user = user;
+    })
+    .then(__createCompanies)
+    .then(function(companies) {
+      _companies = companies;
+      Rhizome.Campaign
       .create({
         name: "test",
+        type: Rhizome.Campaign.Type.PHONE,
         description: "Test campaign for testing.",
-        legals: "Copyright Coders for Labour"
+        legals: "Copyright Coders for Labour",
+        filters: [{type: 'location', value: 'Leeds'}],
+        companies: _companies.map(c => c.id)
       })
       .then(function(campaign) {
         _campaign = campaign;
         done();
-      })
-      .catch(function(err) {
-        done(err);
       });
+    }).catch(done);
+  });
+
+  after(function(done) {
+    if (!_campaign) {
+      return done(new Error("No Campaign!"));
+    }
+
+    let tasks = [
+      Rhizome.Campaign.remove(_campaign.id),
+      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
+      Rhizome.User.remove(_user.id),
+      Rhizome.Person.remove(_user.person.id)
+    ];
+
+    Promise.all(tasks).then(() => done()).catch(done);
+  });
+
+  describe('Contactlists', function() {
+    it('should get 5 companies', function(done) {
+      if (!_campaign) {
+        return done(new Error("No Campaign!"));
+      }
+      Rhizome.Campaign
+        .load(_campaign.id)
+        .then(function(campaign) {
+          campaign.companies.length.should.equal(5);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should create a contact list', function(done) {
+      if (!_campaign) {
+        return done(new Error("No Campaign!"));
+      }
+      Rhizome.Campaign
+        .addContactList(
+          _campaign.id, {
+            name: 'test list',
+            companies: _campaign.companies,
+            user: _user.id
+          }
+        )
+        .then(function(campaign) {
+          campaign.contactLists.length.should.equal(1);
+          _contactListId = campaign.contactLists[0];
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should get all contact lists', function(done) {
+      Rhizome.Contactlist
+        .getAll()
+        .then(function(contactLists) {
+          contactLists.length.should.equal(1);
+          // contactList.name.should.equal('test list');
+          // contactList.companyIds.length.should.equal(5);
+          // contactList.userId.should.equal(_user.id);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should get a contact list', function(done) {
+      Rhizome.Contactlist
+        .load(_contactListId)
+        .then(function(contactList) {
+          contactList.name.should.equal('test list');
+          contactList.companyIds.length.should.equal(5);
+          contactList.userId.should.equal(_user.id);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should remove a contact list', function(done) {
+      if (!_campaign) {
+        return done(new Error("No Campaign!"));
+      }
+      Rhizome.Campaign
+        .removeContactList(_campaign.id, _contactListId)
+        .then(function(success) {
+          success.should.equal(true);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+  });
+});
+
+describe('@campaign-metadata', function() {
+  let _campaign = null;
+  let _companies = [];
+  before(function(done) {
+    __createCompanies().then(function(companies) {
+      _companies = companies;
+      Rhizome.Campaign
+        .create({
+          name: "test",
+          type: Rhizome.Campaign.Type.PHONE,
+          description: "Test campaign for testing.",
+          legals: "Copyright Coders for Labour",
+          filters: [{type: 'location', value: 'Leeds'}],
+          companies: _companies.map(c => c.id)
+        })
+        .then(function(campaign) {
+          _campaign = campaign;
+          done();
+        });
+    }).catch(done);
   });
 
   after(function(done) {
@@ -115,14 +342,13 @@ describe('@model', function() {
       .remove(_campaign.id)
       .then(function() {
         _campaign = null;
-        done();
+        let ids = _companies.map(c => c.id);
+        Rhizome.Company.bulkRemove(ids).then(() => done()).catch(done);
       })
-      .catch(function(err) {
-        done(err);
-      });
+      .catch(done);
   });
 
-  describe('Campaign Metadata', function() {
+  describe('Metadata', function() {
     it('should get default metadata', function(done) {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
@@ -210,22 +436,26 @@ describe('@model', function() {
   });
 });
 
-describe('@model', function() {
-  var _campaign = null;
+describe('@campaign-assets', function() {
+  let _campaign = null;
+  let _companies = null;
   before(function(done) {
-    Rhizome.Campaign
-      .create({
-        name: "test",
-        description: "Test campaign for testing.",
-        legals: "Copyright Coders for Labour"
-      })
-      .then(function(campaign) {
-        _campaign = campaign;
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
+    __createCompanies().then(function(companies) {
+      _companies = companies;
+      Rhizome.Campaign
+        .create({
+          name: "test",
+          type: Rhizome.Campaign.Type.PHONE,
+          description: "Test campaign for testing.",
+          legals: "Copyright Coders for Labour",
+          filters: [{type: 'location', value: 'Leeds'}],
+          companies: _companies.map(c => c.id)
+        })
+        .then(function(campaign) {
+          _campaign = campaign;
+          done();
+        });
+    }).catch(done);
   });
 
   after(function(done) {
@@ -233,15 +463,15 @@ describe('@model', function() {
       .remove(_campaign.id)
       .then(function() {
         _campaign = null;
-        done();
+        let ids = _companies.map(c => c.id);
+        Rhizome.Company.bulkRemove(ids).then(() => done()).catch(done);
       })
-      .catch(function(err) {
-        done(err);
-      });
+      .catch(done);
   });
 
-  describe('Campaign Assets', function() {
+  describe('Assets', function() {
     it('should add a template', function(done) {
+      this.timeout(5000);
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
