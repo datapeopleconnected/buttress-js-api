@@ -26,12 +26,12 @@ Config.init();
 //   ]).then(() => done());
 // });
 
-describe('@model', function() {
+describe('@person-basics', function() {
   before(function() {
   });
 
   describe('Person Basics', function() {
-    var _person = null;
+    let _person = null;
     it('should return no people', function(done) {
       Rhizome.Person
         .getAll()
@@ -88,8 +88,8 @@ describe('@model', function() {
   });
 });
 
-describe('@model', function() {
-  var _person = null;
+describe('@person-metadata', function() {
+  let _person = null;
   before(function(done) {
     Rhizome.Person
       .save({

@@ -26,12 +26,12 @@ Config.init();
 //   ]).then(() => done());
 // });
 
-describe('@model', function() {
+describe('@org-basics', function() {
   before(function() {
   });
 
   describe('Organisation Basics', function() {
-    var _org = null;
+    let _org = null;
     it('should return no organisations', function(done) {
       Rhizome.Organisation
         .getAll()
@@ -83,7 +83,7 @@ describe('@model', function() {
         .then(function(org) {
           org.name.should.equal('My Fancy Test Org');
           org.type.should.equal(Rhizome.Organisation.Type.COMPANY);
-          org.website.should.equal('http://www.test.org');         
+          org.website.should.equal('http://www.test.org');
           done();
         })
         .catch(function(err) {
@@ -101,7 +101,7 @@ describe('@model', function() {
         .then(function(org) {
           org.name.should.equal('My Fancy Test Org');
           org.type.should.equal(Rhizome.Organisation.Type.CHARITY);
-          org.website.should.equal('http://www.test.org');         
+          org.website.should.equal('http://www.test.org');
           done();
         })
         .catch(function(err) {
