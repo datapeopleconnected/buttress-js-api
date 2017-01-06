@@ -27,8 +27,13 @@ Config.init();
 //   ]).then(() => done());
 // });
 
-describe('@model', function() {
+describe('@user-basics', function() {
   before(function() {
+  });
+
+  after(function(done) {
+    Rhizome.User.removeAll()
+      .then(() => done()).catch(done);
   });
 
   describe('User Basics', function() {
@@ -37,8 +42,8 @@ describe('@model', function() {
     it('should return no users', function(done) {
       Rhizome.User
         .getAll()
-        .then(function(people) {
-          people.length.should.equal(0);
+        .then(function(users) {
+          users.length.should.equal(0);
           done();
         })
         .catch(function(err) {
