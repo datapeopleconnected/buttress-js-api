@@ -28,12 +28,15 @@ class Config {
     });
 
     before(function(done) {
+      this.timeout(5000);
       Promise.all([
         Rhizome.Campaign.removeAll(),
         Rhizome.User.removeAll(),
         Rhizome.Person.removeAll(),
         Rhizome.Token.removeAllUserTokens(),
-        Rhizome.Organisation.removeAll()
+        Rhizome.Organisation.removeAll(),
+        Rhizome.Company.removeAll(),
+        Rhizome.Contactlist.removeAll()
       ]).then(() => done());
     });
 
