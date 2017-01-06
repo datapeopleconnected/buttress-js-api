@@ -247,17 +247,16 @@ describe('@campaign-contactlists', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
-        .addContactList(
-          _campaign.id, {
-            name: 'test list',
-            companies: _campaign.companies,
-            user: _user.id
-          }
-        )
-        .then(function(campaign) {
-          campaign.contactLists.length.should.equal(1);
-          _contactListId = campaign.contactLists[0];
+      Rhizome.Contactlist
+        .create({
+          campaign: _campaign.id,
+          name: 'test list',
+          companies: _campaign.companies,
+          user: _user.id
+        })
+        .then(function(contactList) {
+          contactList.name.should.equal('test list');
+          _contactListId = contactList.id;
           done();
         })
         .catch(function(err) {
@@ -285,6 +284,7 @@ describe('@campaign-contactlists', function() {
         .load(_contactListId)
         .then(function(contactList) {
           contactList.name.should.equal('test list');
+          contactList.campaignId.should.equal(_campaign.id);
           contactList.companyIds.length.should.equal(5);
           contactList.userId.should.equal(_user.id);
           done();
