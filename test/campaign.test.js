@@ -249,10 +249,10 @@ describe('@campaign-contactlists', function() {
       }
       Rhizome.Contactlist
         .create({
-          campaign: _campaign.id,
+          campaignId: _campaign.id,
           name: 'test list',
-          companies: _campaign.companies,
-          user: _user.id
+          companyIds: _campaign.companies,
+          userId: _user.id
         })
         .then(function(contactList) {
           contactList.name.should.equal('test list');
