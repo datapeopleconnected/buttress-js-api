@@ -28,7 +28,7 @@ class Config {
     });
 
     before(function(done) {
-      this.timeout(5000);
+      this.timeout(6000);
       Promise.all([
         Rhizome.Campaign.removeAll(),
         Rhizome.User.removeAll(),
@@ -36,7 +36,10 @@ class Config {
         Rhizome.Token.removeAllUserTokens(),
         Rhizome.Organisation.removeAll(),
         Rhizome.Company.removeAll(),
-        Rhizome.Contactlist.removeAll()
+        Rhizome.Contactlist.removeAll(),
+        Rhizome.Call.removeAll(),
+        Rhizome.Task.removeAll(),
+        Rhizome.Notification.removeAll()
       ]).then(() => done());
     });
 
