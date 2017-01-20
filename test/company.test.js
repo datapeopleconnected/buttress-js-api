@@ -210,6 +210,21 @@ describe('@company-metadata', function() {
           done(err);
         });
     });
+    it('should get all metadata', function(done) {
+      if (!_company) {
+        return done(new Error("No Company!"));
+      }
+      Rhizome.Company.Metadata
+        .loadAll(_company.id)
+        .then(function(metadata) {
+          metadata.should.not.equal(false);
+          metadata.TEST_DATA.foo.should.equal('bar');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
     it('should delete metadata', function(done) {
       if (!_company) {
         return done(new Error("No Company!"));
@@ -224,33 +239,33 @@ describe('@company-metadata', function() {
           done(err);
         });
     });
-    // it('should get default metadata (post-deletion)', function(done) {
-    //   if (!_company) {
-    //     return done(new Error("No Company!"));
-    //   }
-    //   Rhizome.Company.Metadata
-    //     .load(_company.id, 'TEST_DATA', false)
-    //     .then(function(metadata) {
-    //       metadata.should.equal(false);
-    //       done();
-    //     })
-    //     .catch(function(err) {
-    //       done(err);
-    //     });
-    // });
-    // it('should fail to delete metadata', function(done) {
-    //   if (!_company) {
-    //     return done(new Error("No Company!"));
-    //   }
-    //   Rhizome.Company.Metadata
-    //     .remove(_company.id, 'TEST_DATA')
-    //     .then(function(metadata) {
-    //       metadata.should.equal(false);
-    //       done();
-    //     })
-    //     .catch(function(err) {
-    //       done(err);
-    //     });
-    // });
+    it('should get default metadata (post-deletion)', function(done) {
+      if (!_company) {
+        return done(new Error("No Company!"));
+      }
+      Rhizome.Company.Metadata
+        .load(_company.id, 'TEST_DATA', false)
+        .then(function(metadata) {
+          metadata.should.equal(false);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should fail to delete metadata', function(done) {
+      if (!_company) {
+        return done(new Error("No Company!"));
+      }
+      Rhizome.Company.Metadata
+        .remove(_company.id, 'TEST_DATA')
+        .then(function(metadata) {
+          metadata.should.equal(false);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
   });
 });
