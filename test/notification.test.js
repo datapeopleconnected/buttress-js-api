@@ -11,7 +11,7 @@
 
 const Rhizome = require('../lib/rhizome');
 const Config = require('./config');
-const Sugar = require('sugar');
+require('sugar');
 
 Config.init();
 
@@ -169,7 +169,45 @@ describe('@notification-basics', function() {
           done(err);
         });
     });
-
+    it('should update a notification', function(done) {
+      Rhizome.Notification
+        .update(_notification.id, {
+          path: 'read',
+          value: true
+        })
+        .then(function(res) {
+          res.should.equal(true);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should fail to update a notification', function(done) {
+      Rhizome.Notification
+        .update(_notification.id, {
+          path: 'blarg',
+          value: true
+        })
+        .then(function(data) {
+          data.should.equal(false);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('notification.read should be true', function(done) {
+      Rhizome.Notification
+        .load(_notification.id)
+        .then(function(notification) {
+          notification.read.should.equal(true);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
     it('should remove a notification', function(done) {
       if (!_notification) {
         return done(new Error("No Notification!"));
