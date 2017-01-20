@@ -28,7 +28,6 @@ class Config {
     });
 
     before(function(done) {
-      this.timeout(6000);
       Promise.all([
         Rhizome.Campaign.removeAll(),
         Rhizome.User.removeAll(),
@@ -39,7 +38,8 @@ class Config {
         Rhizome.Contactlist.removeAll(),
         Rhizome.Call.removeAll(),
         Rhizome.Task.removeAll(),
-        Rhizome.Notification.removeAll()
+        Rhizome.Notification.removeAll(),
+        Rhizome.Appointment.removeAll()
       ]).then(() => done());
     });
 
