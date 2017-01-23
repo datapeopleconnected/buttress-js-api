@@ -85,6 +85,9 @@ let __createCompanies = () => {
     }
   ];
   return Rhizome.Company.saveAll({companies: companies})
+    .then(companyIds => {
+      return Rhizome.Company.bulkLoad(companyIds);
+    })
     .catch(err => {
       throw err;
     });

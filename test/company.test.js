@@ -25,8 +25,8 @@ describe('@company-basics', function() {
   });
 
   after(function(done) {
-    let ids = _companies.map(c => c.id);
-    Rhizome.Company.bulkRemove(ids)
+    // let ids = _companies.map(c => c.id);
+    Rhizome.Company.bulkRemove(_companies)
     .then(() => done()).catch(done);
   });
 
@@ -55,6 +55,9 @@ describe('@company-basics', function() {
           contact: {
             name: "Robert McBobson"
           }
+        })
+        .then(function(companyId) {
+          return Rhizome.Company.load(companyId);
         })
         .then(function(company) {
           _company = company;
@@ -117,9 +120,9 @@ describe('@company-basics', function() {
       };
 
       Rhizome.Company
-        .saveAll({companies: __gen(100)})
+        .saveAll({companies: __gen(300)})
         .then(function(companies) {
-          companies.length.should.equal(100);
+          companies.length.should.equal(300);
           _companies = companies;
           done();
         })
@@ -144,6 +147,9 @@ describe('@company-metadata', function() {
         contact: {
           name: "Robert McBobson"
         }
+      })
+      .then(function(companyId) {
+        return Rhizome.Company.load(companyId);
       })
       .then(function(company) {
         _company = company;
