@@ -179,7 +179,10 @@ describe('@notification-basics', function() {
           value: true
         })
         .then(function(res) {
-          res.should.equal(true);
+          res.length.should.equal(1);
+          res[0].type.should.equal('scalar');
+          res[0].path.should.equal('read');
+          res[0].value.should.equal(true);
           done();
         })
         .catch(function(err) {

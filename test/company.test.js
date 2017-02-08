@@ -133,6 +133,168 @@ describe('@company-basics', function() {
   });
 });
 
+describe('@company-notes', function() {
+  let _companyId = '';
+
+  before(function(done) {
+    Rhizome.Company
+      .save({
+        name: 'Blackburn Widget Company',
+        location: {
+          name: "Headquarters",
+          address: "124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS",
+          phoneNumber: "01254 123123"
+        },
+        contact: {
+          name: "Robert McBobson"
+        }
+      })
+      .then(function(companyId) {
+        _companyId = companyId;
+        done();
+      })
+      .catch(done);
+  });
+
+  after(function(done) {
+    let companies = [
+      Rhizome.Company.remove(_companyId)
+    ];
+
+    Promise.all(companies).then(() => done()).catch(done);
+  });
+
+  describe('Notes', function() {
+    it('should add a note', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+      Rhizome.Company.update(_companyId, {
+        path: 'notes',
+        value: {
+          text: 'This is an important note'
+        }
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-add');
+          updates[0].path.should.equal('notes');
+          updates[0].value.text.should.equal('This is an important note');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should add a second note', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+      Rhizome.Company.update(_companyId, {
+        path: 'notes',
+        value: {
+          text: 'This is another important note'
+        }
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-add');
+          updates[0].path.should.equal('notes');
+          updates[0].value.text.should.equal('This is another important note');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the company with 2 notes', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .load(_companyId)
+        .then(function(company) {
+          company.notes.should.have.length(2);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should remove a note', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+      Rhizome.Company.update(_companyId, {
+        path: 'notes.0',
+        value: 'remove'
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-rm');
+          updates[0].path.should.equal('notes.0');
+          updates[0].value.index.should.equal('0');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the company with 1 notes', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .load(_companyId)
+        .then(function(company) {
+          company.notes.should.have.length(1);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should update the text of a note', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .update(_companyId, {
+          path: 'notes.0.text',
+          value: 'This is some updated text'
+        })
+        .then(function(cr) {
+          cr[0].type.should.equal('scalar');
+          cr[0].path.should.equal('notes.0.text');
+          cr[0].value.should.equal('This is some updated text');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the company with an updated note', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .load(_companyId)
+        .then(function(company) {
+          company.notes.should.have.length(1);
+          company.notes[0].text.should.equal('This is some updated text');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+  });
+});
+
 describe('@company-metadata', function() {
   let _company = null;
   before(function(done) {

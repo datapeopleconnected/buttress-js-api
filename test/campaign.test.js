@@ -186,6 +186,177 @@ describe('@campaign-basics', function() {
   });
 });
 
+describe('@campaign-notes', function() {
+  let _campaign = null;
+  let _companies = [];
+  let _user = null;
+
+  before(function(done) {
+    __createUser().then(user => {
+      _user = user;
+    })
+      .then(__createCompanies)
+      .then(function(companies) {
+        _companies = companies;
+        Rhizome.Campaign
+          .create({
+            name: "test",
+            type: Rhizome.Campaign.Type.EMAIL,
+            description: "Test campaign for testing.",
+            legals: "Copyright Coders for Labour",
+            filters: [{type: 'location', value: 'Leeds'}],
+            companies: [_companies[0].id]
+          })
+          .then(function(campaign) {
+            _campaign = campaign;
+            done();
+          });
+      }).catch(done);
+  });
+
+  after(function(done) {
+    let campaigns = [
+      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
+      Rhizome.User.remove(_user.id),
+      Rhizome.Person.remove(_user.person.id),
+      Rhizome.Campaign.remove(_campaign.id)
+    ];
+
+    Promise.all(campaigns).then(() => done()).catch(done);
+  });
+
+  describe('Notes', function() {
+    it('should add a note', function(done) {
+      if (!_campaign) {
+        return done(new Error("No Campaign!"));
+      }
+      Rhizome.Campaign.update(_campaign.id, {
+        path: 'notes',
+        value: {
+          text: 'This is an important note'
+        }
+      })
+      .then(function(updates) {
+        updates.length.should.equal(1);
+        updates[0].type.should.equal('vector-add');
+        updates[0].path.should.equal('notes');
+        updates[0].value.text.should.equal('This is an important note');
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
+    });
+    it('should add a second note', function(done) {
+      if (!_campaign) {
+        return done(new Error("No Campaign!"));
+      }
+      Rhizome.Campaign.update(_campaign.id, {
+        path: 'notes',
+        value: {
+          text: 'This is another important note'
+        }
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-add');
+          updates[0].path.should.equal('notes');
+          updates[0].value.text.should.equal('This is another important note');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the campaign with 2 notes', function(done) {
+      if (!_campaign) {
+        return done(new Error("No Campaign!"));
+      }
+
+      Rhizome.Campaign
+        .load(_campaign.id)
+        .then(function(campaign) {
+          campaign.notes.should.have.length(2);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should remove a note', function(done) {
+      if (!_campaign) {
+        return done(new Error("No Campaign!"));
+      }
+      Rhizome.Campaign.update(_campaign.id, {
+        path: 'notes.0',
+        value: 'remove'
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-rm');
+          updates[0].path.should.equal('notes.0');
+          updates[0].value.index.should.equal('0');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the campaign with 1 notes', function(done) {
+      if (!_campaign) {
+        return done(new Error("No Campaign!"));
+      }
+
+      Rhizome.Campaign
+        .load(_campaign.id)
+        .then(function(campaign) {
+          campaign.notes.should.have.length(1);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should update the text of a note', function(done) {
+      if (!_campaign) {
+        return done(new Error("No Campaign!"));
+      }
+
+      Rhizome.Campaign
+        .update(_campaign.id, {
+          path: 'notes.0.text',
+          value: 'This is some updated text'
+        })
+        .then(function(cr) {
+          cr[0].type.should.equal('scalar');
+          cr[0].path.should.equal('notes.0.text');
+          cr[0].value.should.equal('This is some updated text');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the campaign with an updated note', function(done) {
+      if (!_campaign) {
+        return done(new Error("No Campaign!"));
+      }
+
+      Rhizome.Campaign
+        .load(_campaign.id)
+        .then(function(campaign) {
+          campaign.notes.should.have.length(1);
+          campaign.notes[0].text.should.equal('This is some updated text');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+  });
+});
+
+
 describe('@campaign-contactlists', function() {
   let _campaign = null;
   let _companies = [];

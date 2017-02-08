@@ -186,7 +186,9 @@ describe('@appointment-basics', function() {
         })
         .then(function(res) {
           res.length.should.equal(1);
-          res[0].should.equal(true);
+          res[0].type.should.equal('scalar');
+          res[0].path.should.equal('outcome');
+          res[0].value.should.equal('success');
           done();
         })
         .catch(function(err) {
@@ -204,8 +206,12 @@ describe('@appointment-basics', function() {
         }])
         .then(function(res) {
           res.length.should.equal(2);
-          res[0].should.equal(true);
-          res[1].should.equal(true);
+          res[0].type.should.equal('scalar');
+          res[0].path.should.equal('contact.name');
+          res[0].value.should.equal('Mr Testy McTestFace');
+          res[1].type.should.equal('scalar');
+          res[1].path.should.equal('contact.email');
+          res[1].value.should.equal('email@email.com');
           done();
         })
         .catch(function(err) {
@@ -265,6 +271,179 @@ describe('@appointment-basics', function() {
   });
 });
 
+describe('@appointment-notes', function() {
+  let _appointment = null;
+  let _companies = [];
+  let _user = null;
+
+  before(function(done) {
+    __createUser().then(user => {
+      _user = user;
+    })
+      .then(__createCompanies)
+      .then(function(companies) {
+        _companies = companies;
+        Rhizome.Appointment
+          .create({
+            name: 'Important Appointment',
+            date: Sugar.Date.create('2017-02-11 10:00:00'),
+            ownerId: _user.id,
+            assignedToId: _user.id,
+            companyId: _companies[0].id,
+            contact: {
+              name: 'Test McContact',
+              email: 'test@test.com'
+            }
+          })
+          .then(function(appointment) {
+            _appointment = appointment;
+            done();
+          });
+      }).catch(done);
+  });
+
+  after(function(done) {
+    let appointments = [
+      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
+      Rhizome.User.remove(_user.id),
+      Rhizome.Person.remove(_user.person.id),
+      Rhizome.Appointment.remove(_appointment.id)
+    ];
+
+    Promise.all(appointments).then(() => done()).catch(done);
+  });
+
+  describe('Notes', function() {
+    it('should add a note', function(done) {
+      if (!_appointment) {
+        return done(new Error("No Appointment!"));
+      }
+      Rhizome.Appointment.update(_appointment.id, {
+        path: 'notes',
+        value: {
+          text: 'This is an important note'
+        }
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-add');
+          updates[0].path.should.equal('notes');
+          updates[0].value.text.should.equal('This is an important note');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should add a second note', function(done) {
+      if (!_appointment) {
+        return done(new Error("No Appointment!"));
+      }
+      Rhizome.Appointment.update(_appointment.id, {
+        path: 'notes',
+        value: {
+          text: 'This is another important note'
+        }
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-add');
+          updates[0].path.should.equal('notes');
+          updates[0].value.text.should.equal('This is another important note');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the appointment with 2 notes', function(done) {
+      if (!_appointment) {
+        return done(new Error("No Appointment!"));
+      }
+
+      Rhizome.Appointment
+        .load(_appointment.id)
+        .then(function(appointment) {
+          appointment.notes.should.have.length(2);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should remove a note', function(done) {
+      if (!_appointment) {
+        return done(new Error("No Appointment!"));
+      }
+      Rhizome.Appointment.update(_appointment.id, {
+        path: 'notes.0',
+        value: 'remove'
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-rm');
+          updates[0].path.should.equal('notes.0');
+          updates[0].value.index.should.equal('0');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the appointment with 1 notes', function(done) {
+      if (!_appointment) {
+        return done(new Error("No Appointment!"));
+      }
+
+      Rhizome.Appointment
+        .load(_appointment.id)
+        .then(function(appointment) {
+          appointment.notes.should.have.length(1);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should update the text of a note', function(done) {
+      if (!_appointment) {
+        return done(new Error("No Appointment!"));
+      }
+
+      Rhizome.Appointment
+        .update(_appointment.id, {
+          path: 'notes.0.text',
+          value: 'This is some updated text'
+        })
+        .then(function(cr) {
+          cr[0].type.should.equal('scalar');
+          cr[0].path.should.equal('notes.0.text');
+          cr[0].value.should.equal('This is some updated text');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the appointment with an updated note', function(done) {
+      if (!_appointment) {
+        return done(new Error("No Appointment!"));
+      }
+
+      Rhizome.Appointment
+        .load(_appointment.id)
+        .then(function(appointment) {
+          appointment.notes.should.have.length(1);
+          appointment.notes[0].text.should.equal('This is some updated text');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+  });
+});
+
 describe('@appointment-metadata', function() {
   let _appointment = null;
   let _companies = [];
@@ -312,7 +491,6 @@ describe('@appointment-metadata', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      console.log(_appointment.id);
       Rhizome.Appointment.Metadata
         .load(_appointment.id, 'TEST_DATA', false)
         .then(function(metadata) {
