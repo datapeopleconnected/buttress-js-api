@@ -53,7 +53,8 @@ describe('@company-basics', function() {
             phoneNumber: "01254 123123"
           },
           contact: {
-            name: "Robert McBobson"
+            name: 'Robert McBobson',
+            role: 'Managing Director'
           }
         })
         .then(function(companyId) {
@@ -111,7 +112,8 @@ describe('@company-basics', function() {
               phoneNumber: "01254 123123"
             },
             contact: {
-              name: "Robert McBobson"
+              name: "Robert McBobson",
+              role: 'Managing Director'
             }
           });
         }
@@ -133,6 +135,297 @@ describe('@company-basics', function() {
   });
 });
 
+describe('@company-contacts', function() {
+  let _companyId = '';
+
+  before(function(done) {
+    Rhizome.Company
+      .save({
+        name: 'Blackburn Widget Company',
+        location: {
+          name: "Headquarters",
+          address: "124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS",
+          phoneNumber: "01254 123123"
+        },
+        contact: {
+          name: "Robert McBobson",
+          role: 'Managing Director'
+        }
+      })
+      .then(function(companyId) {
+        _companyId = companyId;
+        done();
+      })
+      .catch(done);
+  });
+
+  after(function(done) {
+    let companies = [
+      Rhizome.Company.remove(_companyId)
+    ];
+
+    Promise.all(companies).then(() => done()).catch(done);
+  });
+
+  describe('Contacts', function() {
+    it('should add a contact', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+      Rhizome.Company.update(_companyId, {
+        path: 'contacts',
+        value: {
+          name: 'Han Solo',
+          role: 'Sales Director'
+        }
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-add');
+          updates[0].path.should.equal('contacts');
+          updates[0].value.name.should.equal('Han Solo');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the company with 2 contacts', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .load(_companyId)
+        .then(function(company) {
+          company.contacts.should.have.length(2);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should update the email address of a contact', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .update(_companyId, {
+          path: 'contacts.1.email',
+          value: 'han.solo@starwars.com'
+        })
+        .then(function(cr) {
+          cr[0].type.should.equal('scalar');
+          cr[0].path.should.equal('contacts.1.email');
+          cr[0].value.should.equal('han.solo@starwars.com');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the company with an updated contact', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .load(_companyId)
+        .then(function(company) {
+          company.contacts.should.have.length(2);
+          company.contacts[1].email.should.equal('han.solo@starwars.com');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should remove a contact', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+      Rhizome.Company.update(_companyId, {
+        path: 'contacts.1',
+        value: 'remove'
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-rm');
+          updates[0].path.should.equal('contacts');
+          updates[0].value.index.should.equal('1');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the company with 1 contact', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .load(_companyId)
+        .then(function(company) {
+          company.contacts.should.have.length(1);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+  });
+});
+
+describe('@company-locations', function() {
+  let _companyId = '';
+
+  before(function(done) {
+    Rhizome.Company
+      .save({
+        name: 'Blackburn Widget Company',
+        location: {
+          name: "Headquarters",
+          address: "124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS",
+          phoneNumber: "01254 123123"
+        },
+        contact: {
+          name: "Robert McBobson",
+          role: 'Managing Director'
+        }
+      })
+      .then(function(companyId) {
+        _companyId = companyId;
+        done();
+      })
+      .catch(done);
+  });
+
+  after(function(done) {
+    let companies = [
+      Rhizome.Company.remove(_companyId)
+    ];
+
+    Promise.all(companies).then(() => done()).catch(done);
+  });
+
+  describe('Locations', function() {
+    it('should add a location', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+      Rhizome.Company.update(_companyId, {
+        path: 'locations',
+        value: {
+          name: 'Distribution Depot',
+          address: '25 East Street, Feniscowles, Blackburn, Lancashire, BB1 5ET',
+          phoneNumber: '01254 654321'
+        }
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-add');
+          updates[0].path.should.equal('locations');
+          updates[0].value.name.should.equal('Distribution Depot');
+          updates[0].value.address.should.equal('25 East Street, Feniscowles, Blackburn, Lancashire, BB1 5ET');
+          updates[0].value.phoneNumber.should.equal('01254 654321');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the company with 2 locations', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .load(_companyId)
+        .then(function(company) {
+          company.locations.should.have.length(2);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should update the phoneNumber of a location', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .update(_companyId, {
+          path: 'locations.1.phoneNumber',
+          value: '01772 123456'
+        })
+        .then(function(cr) {
+          cr[0].type.should.equal('scalar');
+          cr[0].path.should.equal('locations.1.phoneNumber');
+          cr[0].value.should.equal('01772 123456');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the company with an updated contact', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .load(_companyId)
+        .then(function(company) {
+          company.locations.should.have.length(2);
+          company.locations[1].phoneNumber.should.equal('01772 123456');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should remove a location', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+      Rhizome.Company.update(_companyId, {
+        path: 'locations.1',
+        value: 'remove'
+      })
+        .then(function(updates) {
+          updates.length.should.equal(1);
+          updates[0].type.should.equal('vector-rm');
+          updates[0].path.should.equal('locations');
+          updates[0].value.index.should.equal('1');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the company with 1 location', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .load(_companyId)
+        .then(function(company) {
+          company.locations.should.have.length(1);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+  });
+});
+
 describe('@company-notes', function() {
   let _companyId = '';
 
@@ -146,7 +439,8 @@ describe('@company-notes', function() {
           phoneNumber: "01254 123123"
         },
         contact: {
-          name: "Robert McBobson"
+          name: "Robert McBobson",
+          role: 'Managing Director'
         }
       })
       .then(function(companyId) {
@@ -233,7 +527,7 @@ describe('@company-notes', function() {
         .then(function(updates) {
           updates.length.should.equal(1);
           updates[0].type.should.equal('vector-rm');
-          updates[0].path.should.equal('notes.0');
+          updates[0].path.should.equal('notes');
           updates[0].value.index.should.equal('0');
           done();
         })
@@ -307,7 +601,8 @@ describe('@company-metadata', function() {
           phoneNumber: "01254 123123"
         },
         contact: {
-          name: "Robert McBobson"
+          name: "Robert McBobson",
+          role: 'Managing Director'
         }
       })
       .then(function(companyId) {
