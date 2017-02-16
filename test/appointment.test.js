@@ -20,98 +20,15 @@ Config.init();
  * Otherwise the promise consumes the assertion failure and you get a timeout instead of useful info.
  */
 
-let __createCompanies = () => {
-  let companies = [
-    {
-      name: 'Company 1',
-      location: {
-        name: 'HQ',
-        address: '123 Acacia Avenue, Brixton, SW9 4DW',
-        phoneNumber: '0205 123123'
-      },
-      contact: {
-        name: 'Bananaman'
-      }
-    },
-    {
-      name: 'Company 2',
-      location: {
-        name: 'HQ',
-        address: '123 Acacia Avenue, Brixton, SW9 4DW',
-        phoneNumber: '0205 123123'
-      },
-      contact: {
-        name: 'Bananaman'
-      }
-    },
-    {
-      name: 'Company 3',
-      location: {
-        name: 'HQ',
-        address: '123 Acacia Avenue, Brixton, SW9 4DW',
-        phoneNumber: '0205 123123'
-      },
-      contact: {
-        name: 'Bananaman'
-      }
-    },
-    {
-      name: 'Company 4',
-      location: {
-        name: 'HQ',
-        address: '123 Acacia Avenue, Brixton, SW9 4DW',
-        phoneNumber: '0205 123123'
-      },
-      contact: {
-        name: 'Bananaman'
-      }
-    },
-    {
-      name: 'Company 5',
-      location: {
-        name: 'HQ',
-        address: '123 Acacia Avenue, Brixton, SW9 4DW',
-        phoneNumber: '0205 123123'
-      },
-      contact: {
-        name: 'Bananaman'
-      }
-    }
-  ];
-  return Rhizome.Company.saveAll({companies: companies})
-    .then(companyIds => {
-      return Rhizome.Company.bulkLoad(companyIds);
-    })
-    .catch(err => {
-      throw err;
-    });
-};
-
-let __createUser = () => {
-  let userAppAuth = {
-    app: 'google',
-    id: '12345678987654321',
-    name: 'Chris Bates-Keegan',
-    token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-    email: 'test@test.com',
-    profileUrl: 'http://test.com/thisisatest',
-    profileImgUrl: 'http://test.com/thisisatest.png'
-  };
-  return Rhizome.Auth.findOrCreateUser(userAppAuth)
-    .catch(err => {
-      throw err;
-    });
-};
-
 describe('@appointment-basics', function() {
   let _companies = [];
   let _user = null;
 
   before(function(done) {
-    __createUser().then(user => {
+    Config.createUser().then(user => {
       _user = user;
     })
-    .then(__createCompanies)
+    .then(Config.createCompanies)
     .then(function(companies) {
       _companies = companies;
     }).then(done);
@@ -277,10 +194,10 @@ describe('@appointment-notes', function() {
   let _user = null;
 
   before(function(done) {
-    __createUser().then(user => {
+    Config.createUser().then(user => {
       _user = user;
     })
-      .then(__createCompanies)
+      .then(Config.createCompanies)
       .then(function(companies) {
         _companies = companies;
         Rhizome.Appointment
@@ -376,13 +293,13 @@ describe('@appointment-notes', function() {
         return done(new Error("No Appointment!"));
       }
       Rhizome.Appointment.update(_appointment.id, {
-        path: 'notes.0',
-        value: 'remove'
+        path: 'notes.0.__remove__',
+        value: ''
       })
         .then(function(updates) {
           updates.length.should.equal(1);
           updates[0].type.should.equal('vector-rm');
-          updates[0].path.should.equal('notes.0');
+          updates[0].path.should.equal('notes');
           updates[0].value.index.should.equal('0');
           done();
         })
@@ -450,11 +367,11 @@ describe('@appointment-metadata', function() {
   let _user = null;
 
   before(function(done) {
-    __createUser()
+    Config.createUser()
     .then(user => {
       _user = user;
     })
-    .then(__createCompanies)
+    .then(Config.createCompanies)
     .then(function(companies) {
       _companies = companies;
       return Rhizome.Appointment

@@ -47,6 +47,116 @@ class Config {
       done();
     });
   }
+
+  createCompanies() {
+    const companies = [
+      {
+        name: 'Company 1',
+        location: {
+          name: 'HQ',
+          address: '123 Acacia Avenue, Brixton',
+          city: 'London',
+          postCode: 'SW9 4DW',
+          phoneNumber: '0205 123123'
+        },
+        contact: {
+          name: 'Bananaman',
+          role: 'Superhero',
+          email: 'bananas@man.com',
+          mobile: '07777 777777'
+
+        }
+      },
+      {
+        name: 'Company 2',
+        location: {
+          name: 'HQ',
+          address: '123 Acacia Avenue, Brixton',
+          city: 'London',
+          postCode: 'SW9 4DW',
+          phoneNumber: '0205 123123'
+        },
+        contact: {
+          name: 'Bananaman',
+          role: 'Superhero',
+          email: 'bananas@man.com',
+          mobile: '07777 777777'
+        }
+      },
+      {
+        name: 'Company 3',
+        location: {
+          name: 'HQ',
+          address: '123 Acacia Avenue, Brixton',
+          city: 'London',
+          postCode: 'SW9 4DW',
+          phoneNumber: '0205 123123'
+        },
+        contact: {
+          name: 'Bananaman',
+          role: 'Superhero',
+          email: 'bananas@man.com',
+          mobile: '07777 777777'
+        }
+      },
+      {
+        name: 'Company 4',
+        location: {
+          name: 'HQ',
+          address: '123 Acacia Avenue, Brixton',
+          city: 'London',
+          postCode: 'SW9 4DW',
+          phoneNumber: '0205 123123'
+        },
+        contact: {
+          name: 'Bananaman',
+          role: 'Superhero',
+          email: 'bananas@man.com',
+          mobile: '07777 777777'
+        }
+      },
+      {
+        name: 'Company 5',
+        location: {
+          name: 'HQ',
+          address: '123 Acacia Avenue, Brixton',
+          city: 'London',
+          postCode: 'SW9 4DW',
+          phoneNumber: '0205 123123'
+        },
+        contact: {
+          name: 'Bananaman',
+          role: 'Superhero',
+          email: 'bananas@man.com',
+          mobile: '07777 777777'
+        }
+      }
+    ];
+    return Rhizome.Company.saveAll({companies: companies})
+      .then(companyIds => {
+        return Rhizome.Company.bulkLoad(companyIds);
+      })
+      .catch(err => {
+        throw err;
+      });
+  }
+
+  createUser() {
+    let userAppAuth = {
+      app: 'google',
+      id: '12345678987654321',
+      name: 'Chris Bates-Keegan',
+      token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
+      email: 'test@test.com',
+      profileUrl: 'http://test.com/thisisatest',
+      profileImgUrl: 'http://test.com/thisisatest.png'
+    };
+    return Rhizome.Auth.findOrCreateUser(userAppAuth)
+      .catch(err => {
+        throw err;
+      });
+  }
+
 }
 
 module.exports = new Config();

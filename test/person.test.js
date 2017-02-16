@@ -19,13 +19,6 @@ Config.init();
  * Otherwise the promise consumes the assertion failure and you get a timeout instead of useful info.
  */
 
-// after(function(done) {
-//   Promise.all([
-//     Rhizome.User.removeAll(),
-//     Rhizome.Person.removeAll()
-//   ]).then(() => done());
-// });
-
 describe('@person-basics', function() {
   before(function() {
   });

@@ -14,110 +14,16 @@ const Config = require('./config');
 
 Config.init();
 
-/**
- * In all tests that make use of promises, you need to use .catch(err => done(err) pattern.
- * Otherwise the promise consumes the assertion failure and you get a timeout instead of useful info.
- */
-
-// after(function(done) {
-//   Promise.all([
-//     Rhizome.Call.removeAll()
-//   ]).then(() => done());
-// });
-
-let __createCompanies = () => {
-  let companies = [
-    {
-      name: 'Company 1',
-      location: {
-        name: 'HQ',
-        address: '123 Acacia Avenue, Brixton, SW9 4DW',
-        phoneNumber: '0205 123123'
-      },
-      contact: {
-        name: 'Bananaman'
-      }
-    },
-    {
-      name: 'Company 2',
-      location: {
-        name: 'HQ',
-        address: '123 Acacia Avenue, Brixton, SW9 4DW',
-        phoneNumber: '0205 123123'
-      },
-      contact: {
-        name: 'Bananaman'
-      }
-    },
-    {
-      name: 'Company 3',
-      location: {
-        name: 'HQ',
-        address: '123 Acacia Avenue, Brixton, SW9 4DW',
-        phoneNumber: '0205 123123'
-      },
-      contact: {
-        name: 'Bananaman'
-      }
-    },
-    {
-      name: 'Company 4',
-      location: {
-        name: 'HQ',
-        address: '123 Acacia Avenue, Brixton, SW9 4DW',
-        phoneNumber: '0205 123123'
-      },
-      contact: {
-        name: 'Bananaman'
-      }
-    },
-    {
-      name: 'Company 5',
-      location: {
-        name: 'HQ',
-        address: '123 Acacia Avenue, Brixton, SW9 4DW',
-        phoneNumber: '0205 123123'
-      },
-      contact: {
-        name: 'Bananaman'
-      }
-    }
-  ];
-  return Rhizome.Company.saveAll({companies: companies})
-    .then(companyIds => {
-      return Rhizome.Company.bulkLoad(companyIds);
-    })
-    .catch(err => {
-      throw err;
-    });
-};
-
-let __createUser = () => {
-  let userAppAuth = {
-    app: 'google',
-    id: '12345678987654321',
-    name: 'Chris Bates-Keegan',
-    token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-    email: 'test@test.com',
-    profileUrl: 'http://test.com/thisisatest',
-    profileImgUrl: 'http://test.com/thisisatest.png'
-  };
-  return Rhizome.Auth.findOrCreateUser(userAppAuth)
-    .catch(err => {
-      throw err;
-    });
-};
-
 describe('@call-basics', function() {
   this.timeout(2000);
   let _companies = [];
   let _user = null;
 
   before(function(done) {
-    __createUser().then(user => {
+    Config.createUser().then(user => {
       _user = user;
     })
-    .then(__createCompanies)
+    .then(Config.createCompanies)
     .then(function(companies) {
       _companies = companies;
     }).then(done);
@@ -197,10 +103,10 @@ describe('@call-metadata', function() {
   let _user = null;
 
   before(function(done) {
-    __createUser().then(user => {
+    Config.createUser().then(user => {
       _user = user;
     })
-      .then(__createCompanies)
+      .then(Config.createCompanies)
       .then(function(companies) {
         _companies = companies;
         Rhizome.Call

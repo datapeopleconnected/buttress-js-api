@@ -49,7 +49,9 @@ describe('@company-basics', function() {
           name: 'Blackburn Widget Company',
           location: {
             name: "Headquarters",
-            address: "124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS",
+            address: "124 Bonsall Street, Mill Hill",
+            city: "Blackburn",
+            postCode: "BB2 5DS",
             phoneNumber: "01254 123123"
           },
           contact: {
@@ -64,11 +66,18 @@ describe('@company-basics', function() {
           _company = company;
           company.name.should.equal('Blackburn Widget Company');
           company.locations.length.should.equal(1);
-          company.primaryLocation.address.postcode.should.equal('BB2 5DS');
-          company.primaryLocation.phoneNumber.should.equal('01254 123123');
-          company.primaryContact.name.full.should.equal('Robert McBobson');
-          company.primaryContact.name.forename.should.equal('Robert');
-          company.primaryContact.name.surname.should.equal('McBobson');
+          company.primaryLocation.should.equal(0);
+          company.primaryContact.should.equal(0);
+
+          const location = company.locations[company.primaryLocation];
+          location.address.should.equal('124 Bonsall Street, Mill Hill');
+          location.city.should.equal('Blackburn');
+          location.postCode.should.equal('BB2 5DS');
+          location.phoneNumber.should.equal('01254 123123');
+
+          const contact = company.contacts[company.primaryContact];
+          contact.name.should.equal('Robert McBobson');
+          contact.role.should.equal('Managing Director');
           done();
         })
         .catch(function(err) {
@@ -108,7 +117,9 @@ describe('@company-basics', function() {
             name: `Blackburn Widget Company ${x + 1}`,
             location: {
               name: "Headquarters",
-              address: "124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS",
+              address: "124 Bonsall Street, Mill Hill",
+              city: "Blackburn",
+              postCode: "BB2 5DS",
               phoneNumber: "01254 123123"
             },
             contact: {
@@ -144,7 +155,9 @@ describe('@company-contacts', function() {
         name: 'Blackburn Widget Company',
         location: {
           name: "Headquarters",
-          address: "124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS",
+          address: "124 Bonsall Street, Mill Hill",
+          city: "Blackburn",
+          postCode: "BB2 5DS",
           phoneNumber: "01254 123123"
         },
         contact: {
@@ -246,8 +259,8 @@ describe('@company-contacts', function() {
         return done(new Error("No Company!"));
       }
       Rhizome.Company.update(_companyId, {
-        path: 'contacts.1',
-        value: 'remove'
+        path: 'contacts.1.__remove__',
+        value: ''
       })
         .then(function(updates) {
           updates.length.should.equal(1);
@@ -275,7 +288,6 @@ describe('@company-contacts', function() {
           done(err);
         });
     });
-
   });
 });
 
@@ -288,7 +300,9 @@ describe('@company-locations', function() {
         name: 'Blackburn Widget Company',
         location: {
           name: "Headquarters",
-          address: "124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS",
+          address: "124 Bonsall Street, Mill Hill",
+          city: "Blackburn",
+          postCode: "BB2 5DS",
           phoneNumber: "01254 123123"
         },
         contact: {
@@ -320,7 +334,9 @@ describe('@company-locations', function() {
         path: 'locations',
         value: {
           name: 'Distribution Depot',
-          address: '25 East Street, Feniscowles, Blackburn, Lancashire, BB1 5ET',
+          address: '25 East Street, Feniscowles',
+          city: "Blackburn",
+          postCode: "BB1 5ET",
           phoneNumber: '01254 654321'
         }
       })
@@ -329,7 +345,9 @@ describe('@company-locations', function() {
           updates[0].type.should.equal('vector-add');
           updates[0].path.should.equal('locations');
           updates[0].value.name.should.equal('Distribution Depot');
-          updates[0].value.address.should.equal('25 East Street, Feniscowles, Blackburn, Lancashire, BB1 5ET');
+          updates[0].value.address.should.equal('25 East Street, Feniscowles');
+          updates[0].value.city.should.equal('Blackburn');
+          updates[0].value.postCode.should.equal('BB1 5ET');
           updates[0].value.phoneNumber.should.equal('01254 654321');
           done();
         })
@@ -372,7 +390,7 @@ describe('@company-locations', function() {
           done(err);
         });
     });
-    it('should return the company with an updated contact', function(done) {
+    it('should return the company with an updated location', function(done) {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
@@ -388,13 +406,56 @@ describe('@company-locations', function() {
           done(err);
         });
     });
+    it('should update a location with an object', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .update(_companyId, {
+          path: 'locations.1',
+          value: {
+            name: 'Distribution Despot',
+            address: '24 East Street, Feniscowles',
+            city: "Whiteburn",
+            postCode: "BB1 5ET",
+            phoneNumber: '01254 654321'
+          }
+        })
+        .then(function(cr) {
+          cr[0].type.should.equal('scalar');
+          cr[0].path.should.equal('locations.1');
+          cr[0].value.name.should.equal('Distribution Despot');
+          cr[0].value.phoneNumber.should.equal('01254 654321');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should return the company with a further updated location', function(done) {
+      if (!_companyId) {
+        return done(new Error("No Company!"));
+      }
+
+      Rhizome.Company
+        .load(_companyId)
+        .then(function(company) {
+          company.locations.should.have.length(2);
+          company.locations[1].name.should.equal('Distribution Despot');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
     it('should remove a location', function(done) {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
       Rhizome.Company.update(_companyId, {
-        path: 'locations.1',
-        value: 'remove'
+        path: 'locations.1.__remove__',
+        value: ''
       })
         .then(function(updates) {
           updates.length.should.equal(1);
@@ -436,6 +497,8 @@ describe('@company-notes', function() {
         location: {
           name: "Headquarters",
           address: "124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS",
+          city: "Blackburn",
+          postCode: "BB2 5DS",
           phoneNumber: "01254 123123"
         },
         contact: {
@@ -521,8 +584,8 @@ describe('@company-notes', function() {
         return done(new Error("No Company!"));
       }
       Rhizome.Company.update(_companyId, {
-        path: 'notes.0',
-        value: 'remove'
+        path: 'notes.0.__remove__',
+        value: ''
       })
         .then(function(updates) {
           updates.length.should.equal(1);
@@ -597,7 +660,9 @@ describe('@company-metadata', function() {
         name: 'Blackburn Widget Company',
         location: {
           name: "Headquarters",
-          address: "124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS",
+          address: "124 Bonsall Street, Mill Hill",
+          city: "Blackburn",
+          postCode: "BB2 5DS",
           phoneNumber: "01254 123123"
         },
         contact: {
