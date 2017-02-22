@@ -11,6 +11,7 @@
 
 const Rhizome = require('../lib/rhizome');
 const Config = require('./config');
+const should = require('should');
 
 Config.init();
 
@@ -344,6 +345,8 @@ describe('@company-locations', function() {
           updates.length.should.equal(1);
           updates[0].type.should.equal('vector-add');
           updates[0].path.should.equal('locations');
+          should.not.exist(updates[0].value._id);
+          should.exist(updates[0].value.id);
           updates[0].value.name.should.equal('Distribution Depot');
           updates[0].value.address.should.equal('25 East Street, Feniscowles');
           updates[0].value.city.should.equal('Blackburn');
@@ -483,7 +486,6 @@ describe('@company-locations', function() {
           done(err);
         });
     });
-
   });
 });
 
