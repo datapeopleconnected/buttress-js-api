@@ -65,10 +65,7 @@ describe('@appointment-basics', function() {
           ownerId: _user.id,
           assignedToId: _user.id,
           companyId: _companies[0].id,
-          contact: {
-            name: 'Test McContact',
-            email: 'test@test.com'
-          }
+          contactId: _companies[0].contacts[0].id
         })
         .then(function(appointment) {
           _appointment = appointment;
@@ -76,8 +73,7 @@ describe('@appointment-basics', function() {
           _appointment.ownerId.should.equal(_user.id);
           _appointment.assignedToId.should.equal(_user.id);
           _appointment.companyId.should.equal(_companies[0].id);
-          _appointment.contact.name.should.equal('Test McContact');
-          _appointment.contact.email.should.equal('test@test.com');
+          _appointment.contactId.should.equal(_companies[0].contacts[0].id);
           done();
         })
         .catch(function(err) {
@@ -112,29 +108,6 @@ describe('@appointment-basics', function() {
           done(err);
         });
     });
-    it('should update appointment.contact.name', function(done) {
-      Rhizome.Appointment
-        .update(_appointment.id, [{
-          path: 'contact.name',
-          value: 'Mr Testy McTestFace'
-        }, {
-          path: 'contact.email',
-          value: 'email@email.com'
-        }])
-        .then(function(res) {
-          res.length.should.equal(2);
-          res[0].type.should.equal('scalar');
-          res[0].path.should.equal('contact.name');
-          res[0].value.should.equal('Mr Testy McTestFace');
-          res[1].type.should.equal('scalar');
-          res[1].path.should.equal('contact.email');
-          res[1].value.should.equal('email@email.com');
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
-    });
     it('should fail to update a appointment', function(done) {
       Rhizome.Appointment
         .update(_appointment.id, {
@@ -154,17 +127,6 @@ describe('@appointment-basics', function() {
         .load(_appointment.id)
         .then(function(appointment) {
           appointment.outcome.should.equal(Rhizome.Appointment.Outcome.SUCCESS);
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
-    });
-    it('appointment.contact.name should equal \'Mr Testy McTestFace\'', function(done) {
-      Rhizome.Appointment
-        .load(_appointment.id)
-        .then(function(appointment) {
-          appointment.contact.name.should.equal('Mr Testy McTestFace');
           done();
         })
         .catch(function(err) {
@@ -207,10 +169,7 @@ describe('@appointment-notes', function() {
             ownerId: _user.id,
             assignedToId: _user.id,
             companyId: _companies[0].id,
-            contact: {
-              name: 'Test McContact',
-              email: 'test@test.com'
-            }
+            contactId: _companies[0].contacts[0].id
           })
           .then(function(appointment) {
             _appointment = appointment;
@@ -381,10 +340,7 @@ describe('@appointment-metadata', function() {
           ownerId: _user.id,
           assignedToId: _user.id,
           companyId: _companies[0].id,
-          contact: {
-            name: 'Test McContact',
-            email: 'test@test.com'
-          }
+          contactId: _companies[0].contacts[0].id
         });
     })
     .then(appointment => {
