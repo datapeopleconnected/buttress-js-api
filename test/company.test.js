@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Rhizome API -
+ * Buttress API -
  *
  * @file company.test.js
  * @description
@@ -9,7 +9,7 @@
  *
  */
 
-const Rhizome = require('../lib/rhizome');
+const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 const should = require('should');
 
@@ -27,14 +27,14 @@ describe('@company-basics', function() {
 
   after(function(done) {
     // let ids = _companies.map(c => c.id);
-    Rhizome.Company.bulkRemove(_companies)
+    Buttress.Company.bulkRemove(_companies)
     .then(() => done()).catch(done);
   });
 
   describe('Company Basics', function() {
     let _company = null;
     it('should return no companies', function(done) {
-      Rhizome.Company
+      Buttress.Company
         .getAll()
         .then(function(companies) {
           companies.length.should.equal(0);
@@ -45,7 +45,7 @@ describe('@company-basics', function() {
         });
     });
     it('should add a company', function(done) {
-      Rhizome.Company
+      Buttress.Company
         .save({
           name: 'Blackburn Widget Company',
           location: {
@@ -61,7 +61,7 @@ describe('@company-basics', function() {
           }
         })
         .then(function(companyId) {
-          return Rhizome.Company.load(companyId);
+          return Buttress.Company.load(companyId);
         })
         .then(function(company) {
           _company = company;
@@ -86,7 +86,7 @@ describe('@company-basics', function() {
         });
     });
     it('should return 1 company', function(done) {
-      Rhizome.Company
+      Buttress.Company
         .getAll()
         .then(function(companies) {
           companies.should.have.length(1);
@@ -100,7 +100,7 @@ describe('@company-basics', function() {
       if (!_company) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company
+      Buttress.Company
         .remove(_company.id)
         .then(function(res) {
           res.should.equal(true);
@@ -133,7 +133,7 @@ describe('@company-basics', function() {
         return arr;
       };
 
-      Rhizome.Company
+      Buttress.Company
         .saveAll({companies: __gen(300)})
         .then(function(companies) {
           companies.length.should.equal(300);
@@ -151,7 +151,7 @@ describe('@company-contacts', function() {
   let _companyId = '';
 
   before(function(done) {
-    Rhizome.Company
+    Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
         location: {
@@ -175,7 +175,7 @@ describe('@company-contacts', function() {
 
   after(function(done) {
     let companies = [
-      Rhizome.Company.remove(_companyId)
+      Buttress.Company.remove(_companyId)
     ];
 
     Promise.all(companies).then(() => done()).catch(done);
@@ -186,7 +186,7 @@ describe('@company-contacts', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.update(_companyId, {
+      Buttress.Company.update(_companyId, {
         path: 'contacts',
         value: {
           name: 'Han Solo',
@@ -209,7 +209,7 @@ describe('@company-contacts', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .load(_companyId)
         .then(function(company) {
           company.contacts.should.have.length(2);
@@ -224,7 +224,7 @@ describe('@company-contacts', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .update(_companyId, {
           path: 'contacts.1.email',
           value: 'han.solo@starwars.com'
@@ -244,7 +244,7 @@ describe('@company-contacts', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .load(_companyId)
         .then(function(company) {
           company.contacts.should.have.length(2);
@@ -259,7 +259,7 @@ describe('@company-contacts', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.update(_companyId, {
+      Buttress.Company.update(_companyId, {
         path: 'contacts.1.__remove__',
         value: ''
       })
@@ -279,7 +279,7 @@ describe('@company-contacts', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .load(_companyId)
         .then(function(company) {
           company.contacts.should.have.length(1);
@@ -296,7 +296,7 @@ describe('@company-locations', function() {
   let _companyId = '';
 
   before(function(done) {
-    Rhizome.Company
+    Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
         location: {
@@ -320,7 +320,7 @@ describe('@company-locations', function() {
 
   after(function(done) {
     let companies = [
-      Rhizome.Company.remove(_companyId)
+      Buttress.Company.remove(_companyId)
     ];
 
     Promise.all(companies).then(() => done()).catch(done);
@@ -331,7 +331,7 @@ describe('@company-locations', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.update(_companyId, {
+      Buttress.Company.update(_companyId, {
         path: 'locations',
         value: {
           name: 'Distribution Depot',
@@ -363,7 +363,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .load(_companyId)
         .then(function(company) {
           company.locations.should.have.length(2);
@@ -378,7 +378,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .update(_companyId, {
           path: 'locations.1.phoneNumber',
           value: '01772 123456'
@@ -398,7 +398,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .load(_companyId)
         .then(function(company) {
           company.locations.should.have.length(2);
@@ -414,7 +414,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .update(_companyId, {
           path: 'locations.1',
           value: {
@@ -441,7 +441,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .load(_companyId)
         .then(function(company) {
           company.locations.should.have.length(2);
@@ -456,7 +456,7 @@ describe('@company-locations', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.update(_companyId, {
+      Buttress.Company.update(_companyId, {
         path: 'locations.1.__remove__',
         value: ''
       })
@@ -476,7 +476,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .load(_companyId)
         .then(function(company) {
           company.locations.should.have.length(1);
@@ -493,7 +493,7 @@ describe('@company-notes', function() {
   let _companyId = '';
 
   before(function(done) {
-    Rhizome.Company
+    Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
         location: {
@@ -517,7 +517,7 @@ describe('@company-notes', function() {
 
   after(function(done) {
     let companies = [
-      Rhizome.Company.remove(_companyId)
+      Buttress.Company.remove(_companyId)
     ];
 
     Promise.all(companies).then(() => done()).catch(done);
@@ -528,7 +528,7 @@ describe('@company-notes', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.update(_companyId, {
+      Buttress.Company.update(_companyId, {
         path: 'notes',
         value: {
           text: 'This is an important note'
@@ -549,7 +549,7 @@ describe('@company-notes', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.update(_companyId, {
+      Buttress.Company.update(_companyId, {
         path: 'notes',
         value: {
           text: 'This is another important note'
@@ -571,7 +571,7 @@ describe('@company-notes', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .load(_companyId)
         .then(function(company) {
           company.notes.should.have.length(2);
@@ -585,7 +585,7 @@ describe('@company-notes', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.update(_companyId, {
+      Buttress.Company.update(_companyId, {
         path: 'notes.0.__remove__',
         value: ''
       })
@@ -605,7 +605,7 @@ describe('@company-notes', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .load(_companyId)
         .then(function(company) {
           company.notes.should.have.length(1);
@@ -620,7 +620,7 @@ describe('@company-notes', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .update(_companyId, {
           path: 'notes.0.text',
           value: 'This is some updated text'
@@ -640,7 +640,7 @@ describe('@company-notes', function() {
         return done(new Error("No Company!"));
       }
 
-      Rhizome.Company
+      Buttress.Company
         .load(_companyId)
         .then(function(company) {
           company.notes.should.have.length(1);
@@ -657,7 +657,7 @@ describe('@company-notes', function() {
 describe('@company-metadata', function() {
   let _company = null;
   before(function(done) {
-    Rhizome.Company
+    Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
         location: {
@@ -673,7 +673,7 @@ describe('@company-metadata', function() {
         }
       })
       .then(function(companyId) {
-        return Rhizome.Company.load(companyId);
+        return Buttress.Company.load(companyId);
       })
       .then(function(company) {
         _company = company;
@@ -685,7 +685,7 @@ describe('@company-metadata', function() {
   });
 
   after(function(done) {
-    Rhizome.Company
+    Buttress.Company
       .remove(_company.id)
       .then(function() {
         _company = null;
@@ -701,7 +701,7 @@ describe('@company-metadata', function() {
       if (!_company) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.Metadata
+      Buttress.Company.Metadata
         .load(_company.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -715,7 +715,7 @@ describe('@company-metadata', function() {
       if (!_company) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.Metadata
+      Buttress.Company.Metadata
         .save(_company.id, 'TEST_DATA', {foo: 'bar'})
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
@@ -729,7 +729,7 @@ describe('@company-metadata', function() {
       if (!_company) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.Metadata
+      Buttress.Company.Metadata
         .load(_company.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.not.equal(false);
@@ -744,7 +744,7 @@ describe('@company-metadata', function() {
       if (!_company) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.Metadata
+      Buttress.Company.Metadata
         .loadAll(_company.id)
         .then(function(metadata) {
           metadata.should.not.equal(false);
@@ -759,7 +759,7 @@ describe('@company-metadata', function() {
       if (!_company) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.Metadata
+      Buttress.Company.Metadata
         .remove(_company.id, 'TEST_DATA')
         .then(function(result) {
           result.should.equal(true);
@@ -773,7 +773,7 @@ describe('@company-metadata', function() {
       if (!_company) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.Metadata
+      Buttress.Company.Metadata
         .load(_company.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -787,7 +787,7 @@ describe('@company-metadata', function() {
       if (!_company) {
         return done(new Error("No Company!"));
       }
-      Rhizome.Company.Metadata
+      Buttress.Company.Metadata
         .remove(_company.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(false);

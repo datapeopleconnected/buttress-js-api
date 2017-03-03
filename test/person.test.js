@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Rhizome API -
+ * Buttress API -
  *
  * @file person.test.js
  * @description
@@ -9,7 +9,7 @@
  *
  */
 
-const Rhizome = require('../lib/rhizome');
+const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 
 Config.init();
@@ -26,7 +26,7 @@ describe('@person-basics', function() {
   describe('Person Basics', function() {
     let _person = null;
     it('should return no people', function(done) {
-      Rhizome.Person
+      Buttress.Person
         .getAll()
         .then(function(people) {
           people.length.should.equal(0);
@@ -37,7 +37,7 @@ describe('@person-basics', function() {
         });
     });
     it('should add a person', function(done) {
-      Rhizome.Person
+      Buttress.Person
         .save({
           name: 'Mr Chris G Bates-Keegan',
           email: 'test@email.com'
@@ -54,7 +54,7 @@ describe('@person-basics', function() {
         });
     });
     it('should return 1 person', function(done) {
-      Rhizome.Person
+      Buttress.Person
         .getAll()
         .then(function(people) {
           people.should.have.length(1);
@@ -68,7 +68,7 @@ describe('@person-basics', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person
+      Buttress.Person
         .remove(_person.id)
         .then(function(res) {
           res.should.equal(true);
@@ -84,7 +84,7 @@ describe('@person-basics', function() {
 describe('@person-metadata', function() {
   let _person = null;
   before(function(done) {
-    Rhizome.Person
+    Buttress.Person
       .save({
         name: 'Mr Chris G Bates-Keegan',
         email: 'test@email.com'
@@ -99,7 +99,7 @@ describe('@person-metadata', function() {
   });
 
   after(function(done) {
-    Rhizome.Person
+    Buttress.Person
       .remove(_person.id)
       .then(function() {
         _person = null;
@@ -115,7 +115,7 @@ describe('@person-metadata', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .load(_person.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -129,7 +129,7 @@ describe('@person-metadata', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .save(_person.id, 'TEST_DATA', {foo: 'bar'})
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
@@ -143,7 +143,7 @@ describe('@person-metadata', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .load(_person.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.not.equal(false);
@@ -158,7 +158,7 @@ describe('@person-metadata', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .remove(_person.id, 'TEST_DATA')
         .then(function(result) {
           result.should.equal(true);
@@ -172,7 +172,7 @@ describe('@person-metadata', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .load(_person.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -186,7 +186,7 @@ describe('@person-metadata', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .remove(_person.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(false);

@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Rhizome API -
+ * Buttress API -
  *
  * @file user.test.js
  * @description
@@ -9,7 +9,7 @@
  *
  */
 
-const Rhizome = require('../lib/rhizome');
+const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 
 Config.init();
@@ -21,9 +21,9 @@ Config.init();
 
 // after(function(done) {
 //   Promise.all([
-//     Rhizome.User.removeAll(),
-//     Rhizome.Person.removeAll(),
-//     Rhizome.Token.removeAllUserTokens()
+//     Buttress.User.removeAll(),
+//     Buttress.Person.removeAll(),
+//     Buttress.Token.removeAllUserTokens()
 //   ]).then(() => done());
 // });
 
@@ -32,7 +32,7 @@ describe('@user-basics', function() {
   });
 
   after(function(done) {
-    Rhizome.User.removeAll()
+    Buttress.User.removeAll()
       .then(() => done()).catch(done);
   });
 
@@ -40,7 +40,7 @@ describe('@user-basics', function() {
     let _users = [null, null];
     let _userId = false;
     it('should return no users', function(done) {
-      Rhizome.User
+      Buttress.User
         .getAll()
         .then(function(users) {
           users.length.should.equal(0);
@@ -60,7 +60,7 @@ describe('@user-basics', function() {
         profileUrl: 'http://test.com/thisisatest',
         profileImgUrl: 'http://test.com/thisisatest.png'
       };
-      Rhizome.Auth
+      Buttress.Auth
         .findOrCreateUser(userAppAuth)
         .then(function(user) {
           user.should.not.equal(false);
@@ -78,7 +78,7 @@ describe('@user-basics', function() {
         });
     });
     it('should return 1 user', function(done) {
-      Rhizome.User
+      Buttress.User
         .getAll()
         .then(function(users) {
           users.should.have.length(1);
@@ -99,11 +99,11 @@ describe('@user-basics', function() {
         profileUrl: 'http://test.com/thisisatest',
         profileImgUrl: 'http://test.com/thisisatest.png'
       };
-      Rhizome.Auth
+      Buttress.Auth
         .findOrCreateUser(userAppAuth)
         .then(function(user) {
-          user.rhizomeId.should.equal(_userId);
-          user.rhizomeAuthToken.should.equal(false);
+          user.buttressId.should.equal(_userId);
+          user.buttressAuthToken.should.equal(false);
           user.person.name.should.equal('Chris Bates-Keegan');
           user.person.forename.should.equal('Chris');
           user.person.surname.should.equal('Bates-Keegan');
@@ -126,14 +126,14 @@ describe('@user-basics', function() {
         profileImgUrl: 'http://test.com/thisisatest.png'
       };
       let auth = {
-        authLevel: Rhizome.Token.AuthLevel.SUPER,
+        authLevel: Buttress.Token.AuthLevel.SUPER,
         permissions: [{
           route: "*",
           permission: "*"
         }],
-        domains: ['test.rhizome.com']
+        domains: ['test.buttress.com']
       };
-      Rhizome.Auth
+      Buttress.Auth
         .findOrCreateUser(userAppAuth, auth)
         .then(function(user) {
           user.should.not.equal(false);
@@ -143,7 +143,7 @@ describe('@user-basics', function() {
           user.person.surname.should.equal('Bates-Keegan');
           user.auth.length.should.equal(1);
           user.auth[0].appId.should.equal('98765432109876543210');
-          user.rhizomeAuthToken.should.not.equal(false);
+          user.buttressAuthToken.should.not.equal(false);
           _users[1] = user;
           done();
         })
@@ -155,8 +155,8 @@ describe('@user-basics', function() {
       if (!_users[0]) {
         return done(new Error("No User!"));
       }
-      Rhizome.User
-      .remove(_users[0].rhizomeId)
+      Buttress.User
+      .remove(_users[0].buttressId)
       .then(function(res) {
         res.should.equal(true);
         _users[0] = null;
@@ -171,8 +171,8 @@ describe('@user-basics', function() {
         return done(new Error("No User!"));
       }
 
-      Rhizome
-      .Person.getAll(_users[1].rhizomeAuthToken)
+      Buttress
+      .Person.getAll(_users[1].buttressAuthToken)
       .then(function(people) {
         people.should.have.length(1);
         _users[0] = null;
@@ -188,7 +188,7 @@ describe('@user-basics', function() {
 // describe('@model', function() {
 //   var _person = null;
 //   before(function(done) {
-//     Rhizome.Person
+//     Buttress.Person
 //       .save({
 //         name: 'Mr Chris G Bates-Keegan',
 //         email: 'test@email.com'
@@ -203,7 +203,7 @@ describe('@user-basics', function() {
 //   });
 
 //   after(function(done) {
-//     Rhizome.Person
+//     Buttress.Person
 //       .remove(_person.id)
 //       .then(function() {
 //         _person = null;
@@ -219,7 +219,7 @@ describe('@user-basics', function() {
 //       if (!_person) {
 //         return done(new Error("No Person!"));
 //       }
-//       Rhizome.Person
+//       Buttress.Person
 //         .loadMetadata(_person.id, 'TEST_DATA', false)
 //         .then(function(metadata) {
 //           metadata.should.equal(false);
@@ -233,7 +233,7 @@ describe('@user-basics', function() {
 //       if (!_person) {
 //         return done(new Error("No Person!"));
 //       }
-//       Rhizome.Person
+//       Buttress.Person
 //         .saveMetadata(_person.id, 'TEST_DATA', {foo: 'bar'})
 //         .then(function(metadata) {
 //           metadata.foo.should.equal('bar');
@@ -247,7 +247,7 @@ describe('@user-basics', function() {
 //       if (!_person) {
 //         return done(new Error("No Person!"));
 //       }
-//       Rhizome.Person
+//       Buttress.Person
 //         .loadMetadata(_person.id, 'TEST_DATA', false)
 //         .then(function(metadata) {
 //           metadata.should.not.equal(false);
@@ -262,7 +262,7 @@ describe('@user-basics', function() {
 //       if (!_person) {
 //         return done(new Error("No Person!"));
 //       }
-//       Rhizome.Person
+//       Buttress.Person
 //         .removeMetadata(_person.id, 'TEST_DATA')
 //         .then(function(result) {
 //           result.should.equal(true);
@@ -276,7 +276,7 @@ describe('@user-basics', function() {
 //       if (!_person) {
 //         return done(new Error("No Person!"));
 //       }
-//       Rhizome.Person
+//       Buttress.Person
 //         .loadMetadata(_person.id, 'TEST_DATA', false)
 //         .then(function(metadata) {
 //           metadata.should.equal(false);
@@ -290,7 +290,7 @@ describe('@user-basics', function() {
 //       if (!_person) {
 //         return done(new Error("No Person!"));
 //       }
-//       Rhizome.Person
+//       Buttress.Person
 //         .removeMetadata(_person.id, 'TEST_DATA')
 //         .then(function(metadata) {
 //           metadata.should.equal(false);

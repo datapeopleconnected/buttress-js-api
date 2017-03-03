@@ -1,19 +1,19 @@
 {
-  "name": "rhizome-api-js",
-  "description": "Rhizome API for Node.js",
-  "version": "1.0.0-3",
-  "author": "Coders for Labour",
+  "name": "buttress-js-api",
+  "description": "ButtressJS API for Node.js",
+  "version": "1.0.0",
+  "author": "Lighten",
   "contributors": [
-    "Chris Bates-Keegan <chris@theisolationist.com>"
+    "Chris Bates-Keegan <chris@wearelighten.co.uk>"
   ],
-  "homepage": "https://github.com/coders-for-corbyn/rhizome-api-js",
+  "homepage": "https://github.com/wearelighten/buttress-js-api",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/coders-for-corbyn/rhizome-api-js"
+    "url": "git+https://github.com/wearelighten/buttress-js-api"
   },
   "bugs": {
-    "url": "https://github.com/coders-for-corbyn/rhizome-api-js/issues"
+    "url": "https://github.com/wearelighten/buttress-js-api/issues"
   },
   "engines": {
     "node": "~4.5.x",
@@ -22,7 +22,7 @@
   "scripts": {
     "test": "mocha --require should --reporter nyan"
   },
-  "main": "./lib/rhizome",
+  "main": "./lib/buttressjs",
   "dependencies": {
     "restler": "~3.4.0",
     "sugar": "^2.0.2"

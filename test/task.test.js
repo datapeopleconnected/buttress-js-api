@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Rhizome API -
+ * Buttress API -
  *
  * @file person.test.js
  * @description
@@ -9,7 +9,7 @@
  *
  */
 
-const Rhizome = require('../lib/rhizome');
+const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 const Sugar = require('sugar');
 
@@ -32,9 +32,9 @@ describe('@task-basics', function() {
 
   after(function(done) {
     let tasks = [
-      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
-      Rhizome.User.remove(_user.id),
-      Rhizome.Person.remove(_user.person.id)
+      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.User.remove(_user.id),
+      Buttress.Person.remove(_user.person.id)
     ];
 
     Promise.all(tasks).then(() => done()).catch(done);
@@ -43,7 +43,7 @@ describe('@task-basics', function() {
   describe('Basics', function() {
     let _task = null;
     it('should return no tasks', function(done) {
-      Rhizome.Task
+      Buttress.Task
         .getAll()
         .then(function(tasks) {
           tasks.length.should.equal(0);
@@ -54,11 +54,11 @@ describe('@task-basics', function() {
         });
     });
     it('should add a Free task', function(done) {
-      Rhizome.Task
+      Buttress.Task
         .create({
           ownerId: _user.id,
           name: 'Important task!',
-          type: Rhizome.Task.Type.FREE,
+          type: Buttress.Task.Type.FREE,
           dueDate: Sugar.Date.addDays(Sugar.Date.create(), 1)
         })
         .then(function(task) {
@@ -71,7 +71,7 @@ describe('@task-basics', function() {
         });
     });
     it('should return 1 task', function(done) {
-      Rhizome.Task
+      Buttress.Task
         .getAll()
         .then(function(tasks) {
           tasks.should.have.length(1);
@@ -86,7 +86,7 @@ describe('@task-basics', function() {
       if (!_task) {
         return done(new Error("No Task!"));
       }
-      Rhizome.Task
+      Buttress.Task
         .remove(_task.id)
         .then(function(res) {
           res.should.equal(true);
@@ -111,11 +111,11 @@ describe('@task-notes', function() {
       .then(Config.createCompanies)
       .then(function(companies) {
         _companies = companies;
-        Rhizome.Task
+        Buttress.Task
           .create({
             ownerId: _user.id,
             name: 'Important task!',
-            type: Rhizome.Task.Type.FREE,
+            type: Buttress.Task.Type.FREE,
             dueDate: Sugar.Date.addDays(Sugar.Date.create(), 1)
           })
           .then(function(task) {
@@ -127,10 +127,10 @@ describe('@task-notes', function() {
 
   after(function(done) {
     let tasks = [
-      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
-      Rhizome.User.remove(_user.id),
-      Rhizome.Person.remove(_user.person.id),
-      Rhizome.Task.remove(_task.id)
+      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.User.remove(_user.id),
+      Buttress.Person.remove(_user.person.id),
+      Buttress.Task.remove(_task.id)
     ];
 
     Promise.all(tasks).then(() => done()).catch(done);
@@ -141,7 +141,7 @@ describe('@task-notes', function() {
       if (!_task) {
         return done(new Error("No Task!"));
       }
-      Rhizome.Task.update(_task.id, {
+      Buttress.Task.update(_task.id, {
         path: 'notes',
         value: {
           text: 'This is an important note'
@@ -162,7 +162,7 @@ describe('@task-notes', function() {
       if (!_task) {
         return done(new Error("No Task!"));
       }
-      Rhizome.Task.update(_task.id, {
+      Buttress.Task.update(_task.id, {
         path: 'notes',
         value: {
           text: 'This is another important note'
@@ -184,7 +184,7 @@ describe('@task-notes', function() {
         return done(new Error("No Task!"));
       }
 
-      Rhizome.Task
+      Buttress.Task
         .load(_task.id)
         .then(function(task) {
           task.notes.should.have.length(2);
@@ -198,7 +198,7 @@ describe('@task-notes', function() {
       if (!_task) {
         return done(new Error("No Task!"));
       }
-      Rhizome.Task.update(_task.id, {
+      Buttress.Task.update(_task.id, {
         path: 'notes.0.__remove__',
         value: ''
       })
@@ -218,7 +218,7 @@ describe('@task-notes', function() {
         return done(new Error("No Task!"));
       }
 
-      Rhizome.Task
+      Buttress.Task
         .load(_task.id)
         .then(function(task) {
           task.notes.should.have.length(1);
@@ -233,7 +233,7 @@ describe('@task-notes', function() {
         return done(new Error("No Task!"));
       }
 
-      Rhizome.Task
+      Buttress.Task
         .update(_task.id, {
           path: 'notes.0.text',
           value: 'This is some updated text'
@@ -253,7 +253,7 @@ describe('@task-notes', function() {
         return done(new Error("No Task!"));
       }
 
-      Rhizome.Task
+      Buttress.Task
         .load(_task.id)
         .then(function(task) {
           task.notes.should.have.length(1);
@@ -279,11 +279,11 @@ describe('@task-metadata', function() {
       .then(Config.createCompanies)
       .then(function(companies) {
         _companies = companies;
-        Rhizome.Task
+        Buttress.Task
           .create({
             ownerId: _user.id,
             name: 'Important task!',
-            type: Rhizome.Task.Type.FREE,
+            type: Buttress.Task.Type.FREE,
             dueDate: Sugar.Date.addDays(Sugar.Date.create(), 1)
           })
           .then(function(task) {
@@ -295,10 +295,10 @@ describe('@task-metadata', function() {
 
   after(function(done) {
     let tasks = [
-      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
-      Rhizome.User.remove(_user.id),
-      Rhizome.Person.remove(_user.person.id),
-      Rhizome.Task.remove(_task.id)
+      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.User.remove(_user.id),
+      Buttress.Person.remove(_user.person.id),
+      Buttress.Task.remove(_task.id)
     ];
 
     Promise.all(tasks).then(() => done()).catch(done);
@@ -309,7 +309,7 @@ describe('@task-metadata', function() {
       if (!_task) {
         return done(new Error("No Task!"));
       }
-      Rhizome.Task.Metadata
+      Buttress.Task.Metadata
         .load(_task.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -323,7 +323,7 @@ describe('@task-metadata', function() {
       if (!_task) {
         return done(new Error("No Task!"));
       }
-      Rhizome.Task.Metadata
+      Buttress.Task.Metadata
         .save(_task.id, 'TEST_DATA', {foo: 'bar'})
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
@@ -337,7 +337,7 @@ describe('@task-metadata', function() {
       if (!_task) {
         return done(new Error("No Task!"));
       }
-      Rhizome.Task.Metadata
+      Buttress.Task.Metadata
         .load(_task.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
@@ -351,7 +351,7 @@ describe('@task-metadata', function() {
       if (!_task) {
         return done(new Error("No Task!"));
       }
-      Rhizome.Task.Metadata
+      Buttress.Task.Metadata
         .remove(_task.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(true);
@@ -365,7 +365,7 @@ describe('@task-metadata', function() {
       if (!_task) {
         return done(new Error("No Task!"));
       }
-      Rhizome.Task.Metadata
+      Buttress.Task.Metadata
         .load(_task.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -379,7 +379,7 @@ describe('@task-metadata', function() {
       if (!_task) {
         return done(new Error("No Task!"));
       }
-      Rhizome.Task.Metadata
+      Buttress.Task.Metadata
         .remove(_task.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(false);

@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Rhizome API -
+ * Buttress API -
  *
  * @file org.test.js
  * @description
@@ -9,7 +9,7 @@
  *
  */
 
-const Rhizome = require('../lib/rhizome');
+const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 
 Config.init();
@@ -21,8 +21,8 @@ Config.init();
 
 // after(function(done) {
 //   Promise.all([
-//     Rhizome.User.removeAll(),
-//     Rhizome.Person.removeAll()
+//     Buttress.User.removeAll(),
+//     Buttress.Person.removeAll()
 //   ]).then(() => done());
 // });
 
@@ -33,7 +33,7 @@ describe('@org-basics', function() {
   describe('Organisation Basics', function() {
     let _org = null;
     it('should return no organisations', function(done) {
-      Rhizome.Organisation
+      Buttress.Organisation
         .getAll()
         .then(function(orgs) {
           orgs.length.should.equal(0);
@@ -44,16 +44,16 @@ describe('@org-basics', function() {
         });
     });
     it('should add an organisation', function(done) {
-      Rhizome.Organisation
+      Buttress.Organisation
         .save({
           name: 'Test Org',
-          type: Rhizome.Organisation.Type.COMPANY,
+          type: Buttress.Organisation.Type.COMPANY,
           website: 'http://www.test.org'
         })
         .then(function(org) {
           _org = org;
           org.name.should.equal('Test Org');
-          org.type.should.equal(Rhizome.Organisation.Type.COMPANY);
+          org.type.should.equal(Buttress.Organisation.Type.COMPANY);
           org.website.should.equal('http://www.test.org');
           done();
         })
@@ -62,7 +62,7 @@ describe('@org-basics', function() {
         });
     });
     it('should return 1 organisation', function(done) {
-      Rhizome.Organisation
+      Buttress.Organisation
         .getAll()
         .then(function(orgs) {
           orgs.should.have.length(1);
@@ -76,13 +76,13 @@ describe('@org-basics', function() {
       if (!_org) {
         return done(new Error("No Organisation!"));
       }
-      Rhizome.Organisation
+      Buttress.Organisation
         .update(_org.id, {
           name: 'My Fancy Test Org'
         })
         .then(function(org) {
           org.name.should.equal('My Fancy Test Org');
-          org.type.should.equal(Rhizome.Organisation.Type.COMPANY);
+          org.type.should.equal(Buttress.Organisation.Type.COMPANY);
           org.website.should.equal('http://www.test.org');
           done();
         })
@@ -94,13 +94,13 @@ describe('@org-basics', function() {
       if (!_org) {
         return done(new Error("No Organisation!"));
       }
-      Rhizome.Organisation
+      Buttress.Organisation
         .update(_org.id, {
-          type: Rhizome.Organisation.Type.CHARITY
+          type: Buttress.Organisation.Type.CHARITY
         })
         .then(function(org) {
           org.name.should.equal('My Fancy Test Org');
-          org.type.should.equal(Rhizome.Organisation.Type.CHARITY);
+          org.type.should.equal(Buttress.Organisation.Type.CHARITY);
           org.website.should.equal('http://www.test.org');
           done();
         })
@@ -112,13 +112,13 @@ describe('@org-basics', function() {
       if (!_org) {
         return done(new Error("No Organisation!"));
       }
-      Rhizome.Organisation
+      Buttress.Organisation
         .update(_org.id, {
           website: 'http://www.another-test.org'
         })
         .then(function(org) {
           org.name.should.equal('My Fancy Test Org');
-          org.type.should.equal(Rhizome.Organisation.Type.CHARITY);
+          org.type.should.equal(Buttress.Organisation.Type.CHARITY);
           org.website.should.equal('http://www.another-test.org');
           done();
         })
@@ -130,7 +130,7 @@ describe('@org-basics', function() {
       if (!_org) {
         return done(new Error("No Organisation!"));
       }
-      Rhizome.Organisation
+      Buttress.Organisation
         .remove(_org.id)
         .then(function(res) {
           res.should.equal(true);
@@ -147,7 +147,7 @@ describe('@org-basics', function() {
 describe('@model', function() {
   var _person = null;
   before(function(done) {
-    Rhizome.Person
+    Buttress.Person
       .save({
         name: 'Mr Chris G Bates-Keegan',
         email: 'test@email.com'
@@ -162,7 +162,7 @@ describe('@model', function() {
   });
 
   after(function(done) {
-    Rhizome.Person
+    Buttress.Person
       .remove(_person.id)
       .then(function() {
         _person = null;
@@ -178,7 +178,7 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .load(_person.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -192,7 +192,7 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .save(_person.id, 'TEST_DATA', {foo: 'bar'})
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
@@ -206,7 +206,7 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .load(_person.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.not.equal(false);
@@ -221,7 +221,7 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .remove(_person.id, 'TEST_DATA')
         .then(function(result) {
           result.should.equal(true);
@@ -235,7 +235,7 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .load(_person.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -249,7 +249,7 @@ describe('@model', function() {
       if (!_person) {
         return done(new Error("No Person!"));
       }
-      Rhizome.Person.Metadata
+      Buttress.Person.Metadata
         .remove(_person.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(false);

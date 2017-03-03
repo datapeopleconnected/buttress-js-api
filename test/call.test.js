@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Rhizome API -
+ * Buttress API -
  *
  * @file person.test.js
  * @description
@@ -9,7 +9,7 @@
  *
  */
 
-const Rhizome = require('../lib/rhizome');
+const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 
 Config.init();
@@ -31,9 +31,9 @@ describe('@call-basics', function() {
 
   after(function(done) {
     let tasks = [
-      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
-      Rhizome.User.remove(_user.id),
-      Rhizome.Person.remove(_user.person.id)
+      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.User.remove(_user.id),
+      Buttress.Person.remove(_user.person.id)
     ];
 
     Promise.all(tasks).then(() => done()).catch(done);
@@ -42,7 +42,7 @@ describe('@call-basics', function() {
   describe('Basics', function() {
     let _call = null;
     it('should return no calls', function(done) {
-      Rhizome.Call
+      Buttress.Call
         .getAll()
         .then(function(calls) {
           calls.length.should.equal(0);
@@ -53,7 +53,7 @@ describe('@call-basics', function() {
         });
     });
     it('should add a call', function(done) {
-      Rhizome.Call
+      Buttress.Call
         .create({
           companyId: _companies[0].id,
           ownerId: _user.id
@@ -69,7 +69,7 @@ describe('@call-basics', function() {
         });
     });
     it('should return 1 call', function(done) {
-      Rhizome.Call
+      Buttress.Call
         .getAll()
         .then(function(calls) {
           calls.should.have.length(1);
@@ -84,7 +84,7 @@ describe('@call-basics', function() {
       if (!_call) {
         return done(new Error("No Call!"));
       }
-      Rhizome.Call
+      Buttress.Call
         .remove(_call.id)
         .then(function(res) {
           res.should.equal(true);
@@ -109,7 +109,7 @@ describe('@call-metadata', function() {
       .then(Config.createCompanies)
       .then(function(companies) {
         _companies = companies;
-        Rhizome.Call
+        Buttress.Call
           .create({
             companyId: _companies[0].id,
             ownerId: _user.id
@@ -123,10 +123,10 @@ describe('@call-metadata', function() {
 
   after(function(done) {
     let tasks = [
-      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
-      Rhizome.User.remove(_user.id),
-      Rhizome.Person.remove(_user.person.id),
-      Rhizome.Call.remove(_call.id)
+      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.User.remove(_user.id),
+      Buttress.Person.remove(_user.person.id),
+      Buttress.Call.remove(_call.id)
     ];
 
     Promise.all(tasks).then(() => done()).catch(done);
@@ -137,7 +137,7 @@ describe('@call-metadata', function() {
       if (!_call) {
         return done(new Error("No Call!"));
       }
-      Rhizome.Call.Metadata
+      Buttress.Call.Metadata
         .load(_call.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -151,7 +151,7 @@ describe('@call-metadata', function() {
       if (!_call) {
         return done(new Error("No Call!"));
       }
-      Rhizome.Call.Metadata
+      Buttress.Call.Metadata
         .save(_call.id, 'TEST_DATA', {foo: 'bar'})
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
@@ -165,7 +165,7 @@ describe('@call-metadata', function() {
       if (!_call) {
         return done(new Error("No Call!"));
       }
-      Rhizome.Call.Metadata
+      Buttress.Call.Metadata
         .load(_call.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
@@ -179,7 +179,7 @@ describe('@call-metadata', function() {
       if (!_call) {
         return done(new Error("No Call!"));
       }
-      Rhizome.Call.Metadata
+      Buttress.Call.Metadata
         .remove(_call.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(true);
@@ -193,7 +193,7 @@ describe('@call-metadata', function() {
       if (!_call) {
         return done(new Error("No Call!"));
       }
-      Rhizome.Call.Metadata
+      Buttress.Call.Metadata
         .load(_call.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -207,7 +207,7 @@ describe('@call-metadata', function() {
       if (!_call) {
         return done(new Error("No Call!"));
       }
-      Rhizome.Call.Metadata
+      Buttress.Call.Metadata
         .remove(_call.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(false);

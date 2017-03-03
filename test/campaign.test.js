@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Rhizome API -
+ * Buttress API -
  *
  * @file person.test.js
  * @description
@@ -10,7 +10,7 @@
  */
 
 const path = require('path');
-const Rhizome = require('../lib/rhizome');
+const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 
 Config.init();
@@ -27,13 +27,13 @@ describe('@campaign-basics', function() {
 
   after(function(done) {
     let ids = _companies.map(c => c.id);
-    Rhizome.Company.bulkRemove(ids).then(() => done()).catch(done);
+    Buttress.Company.bulkRemove(ids).then(() => done()).catch(done);
   });
 
   describe('Basics', function() {
     let _campaign = null;
     it('should return no campaigns', function(done) {
-      Rhizome.Campaign
+      Buttress.Campaign
         .getAll()
         .then(function(campaigns) {
           campaigns.length.should.equal(0);
@@ -44,10 +44,10 @@ describe('@campaign-basics', function() {
         });
     });
     it('should add a campaign', function(done) {
-      Rhizome.Campaign
+      Buttress.Campaign
         .create({
           name: "test",
-          type: Rhizome.Campaign.Type.EMAIL,
+          type: Buttress.Campaign.Type.EMAIL,
           description: "Test campaign for testing.",
           legals: "Copyright Coders for Labour",
           filters: [{type: 'location', value: 'Leeds'}],
@@ -64,7 +64,7 @@ describe('@campaign-basics', function() {
         });
     });
     it('should return 1 campaign', function(done) {
-      Rhizome.Campaign
+      Buttress.Campaign
         .getAll()
         .then(function(campaigns) {
           campaigns.should.have.length(1);
@@ -79,7 +79,7 @@ describe('@campaign-basics', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
+      Buttress.Campaign
         .remove(_campaign.id)
         .then(function(res) {
           res.should.equal(true);
@@ -104,10 +104,10 @@ describe('@campaign-notes', function() {
       .then(Config.createCompanies)
       .then(function(companies) {
         _companies = companies;
-        Rhizome.Campaign
+        Buttress.Campaign
           .create({
             name: "test",
-            type: Rhizome.Campaign.Type.EMAIL,
+            type: Buttress.Campaign.Type.EMAIL,
             description: "Test campaign for testing.",
             legals: "Copyright Coders for Labour",
             filters: [{type: 'location', value: 'Leeds'}],
@@ -122,10 +122,10 @@ describe('@campaign-notes', function() {
 
   after(function(done) {
     let campaigns = [
-      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
-      Rhizome.User.remove(_user.id),
-      Rhizome.Person.remove(_user.person.id),
-      Rhizome.Campaign.remove(_campaign.id)
+      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.User.remove(_user.id),
+      Buttress.Person.remove(_user.person.id),
+      Buttress.Campaign.remove(_campaign.id)
     ];
 
     Promise.all(campaigns).then(() => done()).catch(done);
@@ -136,7 +136,7 @@ describe('@campaign-notes', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign.update(_campaign.id, {
+      Buttress.Campaign.update(_campaign.id, {
         path: 'notes',
         value: {
           text: 'This is an important note'
@@ -157,7 +157,7 @@ describe('@campaign-notes', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign.update(_campaign.id, {
+      Buttress.Campaign.update(_campaign.id, {
         path: 'notes',
         value: {
           text: 'This is another important note'
@@ -179,7 +179,7 @@ describe('@campaign-notes', function() {
         return done(new Error("No Campaign!"));
       }
 
-      Rhizome.Campaign
+      Buttress.Campaign
         .load(_campaign.id)
         .then(function(campaign) {
           campaign.notes.should.have.length(2);
@@ -193,7 +193,7 @@ describe('@campaign-notes', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign.update(_campaign.id, {
+      Buttress.Campaign.update(_campaign.id, {
         path: 'notes.0.__remove__',
         value: ''
       })
@@ -213,7 +213,7 @@ describe('@campaign-notes', function() {
         return done(new Error("No Campaign!"));
       }
 
-      Rhizome.Campaign
+      Buttress.Campaign
         .load(_campaign.id)
         .then(function(campaign) {
           campaign.notes.should.have.length(1);
@@ -228,7 +228,7 @@ describe('@campaign-notes', function() {
         return done(new Error("No Campaign!"));
       }
 
-      Rhizome.Campaign
+      Buttress.Campaign
         .update(_campaign.id, {
           path: 'notes.0.text',
           value: 'This is some updated text'
@@ -248,7 +248,7 @@ describe('@campaign-notes', function() {
         return done(new Error("No Campaign!"));
       }
 
-      Rhizome.Campaign
+      Buttress.Campaign
         .load(_campaign.id)
         .then(function(campaign) {
           campaign.notes.should.have.length(1);
@@ -275,10 +275,10 @@ describe('@campaign-contactlists', function() {
     .then(Config.createCompanies)
     .then(function(companies) {
       _companies = companies;
-      Rhizome.Campaign
+      Buttress.Campaign
       .create({
         name: "test",
-        type: Rhizome.Campaign.Type.PHONE,
+        type: Buttress.Campaign.Type.PHONE,
         description: "Test campaign for testing.",
         legals: "Copyright Coders for Labour",
         filters: [{type: 'location', value: 'Leeds'}],
@@ -297,10 +297,10 @@ describe('@campaign-contactlists', function() {
     }
 
     let tasks = [
-      Rhizome.Campaign.remove(_campaign.id),
-      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
-      Rhizome.User.remove(_user.id),
-      Rhizome.Person.remove(_user.person.id)
+      Buttress.Campaign.remove(_campaign.id),
+      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.User.remove(_user.id),
+      Buttress.Person.remove(_user.person.id)
     ];
 
     Promise.all(tasks).then(() => done()).catch(done);
@@ -311,7 +311,7 @@ describe('@campaign-contactlists', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
+      Buttress.Campaign
         .load(_campaign.id)
         .then(function(campaign) {
           campaign.companies.length.should.equal(5);
@@ -326,7 +326,7 @@ describe('@campaign-contactlists', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Contactlist
+      Buttress.Contactlist
         .create({
           campaignId: _campaign.id,
           name: 'test list',
@@ -344,7 +344,7 @@ describe('@campaign-contactlists', function() {
     });
 
     it('should get all contact lists', function(done) {
-      Rhizome.Contactlist
+      Buttress.Contactlist
         .getAll()
         .then(function(contactLists) {
           contactLists.length.should.equal(1);
@@ -359,7 +359,7 @@ describe('@campaign-contactlists', function() {
     });
 
     it('should get a contact list', function(done) {
-      Rhizome.Contactlist
+      Buttress.Contactlist
         .load(_contactListId)
         .then(function(contactList) {
           contactList.name.should.equal('test list');
@@ -377,7 +377,7 @@ describe('@campaign-contactlists', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
+      Buttress.Campaign
         .removeContactList(_campaign.id, _contactListId)
         .then(function(success) {
           success.should.equal(true);
@@ -396,10 +396,10 @@ describe('@campaign-metadata', function() {
   before(function(done) {
     Config.createCompanies().then(function(companies) {
       _companies = companies;
-      Rhizome.Campaign
+      Buttress.Campaign
         .create({
           name: "test",
-          type: Rhizome.Campaign.Type.PHONE,
+          type: Buttress.Campaign.Type.PHONE,
           description: "Test campaign for testing.",
           legals: "Copyright Coders for Labour",
           filters: [{type: 'location', value: 'Leeds'}],
@@ -417,12 +417,12 @@ describe('@campaign-metadata', function() {
       return done(new Error("No Campaign!"));
     }
 
-    Rhizome.Campaign
+    Buttress.Campaign
       .remove(_campaign.id)
       .then(function() {
         _campaign = null;
         let ids = _companies.map(c => c.id);
-        Rhizome.Company.bulkRemove(ids).then(() => done()).catch(done);
+        Buttress.Company.bulkRemove(ids).then(() => done()).catch(done);
       })
       .catch(done);
   });
@@ -432,7 +432,7 @@ describe('@campaign-metadata', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign.Metadata
+      Buttress.Campaign.Metadata
         .load(_campaign.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -446,7 +446,7 @@ describe('@campaign-metadata', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign.Metadata
+      Buttress.Campaign.Metadata
         .save(_campaign.id, 'TEST_DATA', {foo: 'bar'})
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
@@ -460,7 +460,7 @@ describe('@campaign-metadata', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign.Metadata
+      Buttress.Campaign.Metadata
         .load(_campaign.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
@@ -474,7 +474,7 @@ describe('@campaign-metadata', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign.Metadata
+      Buttress.Campaign.Metadata
         .remove(_campaign.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(true);
@@ -488,7 +488,7 @@ describe('@campaign-metadata', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign.Metadata
+      Buttress.Campaign.Metadata
         .load(_campaign.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -502,7 +502,7 @@ describe('@campaign-metadata', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign.Metadata
+      Buttress.Campaign.Metadata
         .remove(_campaign.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -521,10 +521,10 @@ describe('@campaign-assets', function() {
   before(function(done) {
     Config.createCompanies().then(function(companies) {
       _companies = companies;
-      Rhizome.Campaign
+      Buttress.Campaign
         .create({
           name: "test",
-          type: Rhizome.Campaign.Type.PHONE,
+          type: Buttress.Campaign.Type.PHONE,
           description: "Test campaign for testing.",
           legals: "Copyright Coders for Labour",
           filters: [{type: 'location', value: 'Leeds'}],
@@ -538,12 +538,12 @@ describe('@campaign-assets', function() {
   });
 
   after(function(done) {
-    Rhizome.Campaign
+    Buttress.Campaign
       .remove(_campaign.id)
       .then(function() {
         _campaign = null;
         let ids = _companies.map(c => c.id);
-        Rhizome.Company.bulkRemove(ids).then(() => done()).catch(done);
+        Buttress.Company.bulkRemove(ids).then(() => done()).catch(done);
       })
       .catch(done);
   });
@@ -554,7 +554,7 @@ describe('@campaign-assets', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
+      Buttress.Campaign
         .addEmailTemplate(_campaign.id, {
           label: 'welcome-email',
           templatePathName: path.join(__dirname, 'assets/welcome-email.pug')
@@ -571,7 +571,7 @@ describe('@campaign-assets', function() {
       if (!_campaign) {
         return done(new Error("No Campaign!"));
       }
-      Rhizome.Campaign
+      Buttress.Campaign
         .addImage(_campaign.id, {
           label: 'avatar',
           imagePathName: path.join(__dirname, 'assets/avatar.png'),

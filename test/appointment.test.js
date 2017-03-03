@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Rhizome API -
+ * Buttress API -
  *
  * @file notification.test.js
  * @description
@@ -9,7 +9,7 @@
  *
  */
 
-const Rhizome = require('../lib/rhizome');
+const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 const Sugar = require('sugar');
 
@@ -36,9 +36,9 @@ describe('@appointment-basics', function() {
 
   after(function(done) {
     let appointments = [
-      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
-      Rhizome.User.remove(_user.id),
-      Rhizome.Person.remove(_user.person.id)
+      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.User.remove(_user.id),
+      Buttress.Person.remove(_user.person.id)
     ];
 
     Promise.all(appointments).then(() => done()).catch(done);
@@ -47,7 +47,7 @@ describe('@appointment-basics', function() {
   describe('Basics', function() {
     let _appointment = null;
     it('should return no appointments', function(done) {
-      Rhizome.Appointment
+      Buttress.Appointment
         .getAll()
         .then(function(appointments) {
           appointments.length.should.equal(0);
@@ -58,7 +58,7 @@ describe('@appointment-basics', function() {
         });
     });
     it('should add an appointment', function(done) {
-      Rhizome.Appointment
+      Buttress.Appointment
         .create({
           name: 'Important Appointment',
           date: Sugar.Date.create('2017-02-11 10:00:00'),
@@ -81,7 +81,7 @@ describe('@appointment-basics', function() {
         });
     });
     it('should return 1 appointment', function(done) {
-      Rhizome.Appointment
+      Buttress.Appointment
         .getAll()
         .then(function(appointments) {
           appointments.should.have.length(1);
@@ -92,10 +92,10 @@ describe('@appointment-basics', function() {
         });
     });
     it('should update a appointment outcome', function(done) {
-      Rhizome.Appointment
+      Buttress.Appointment
         .update(_appointment.id, {
           path: 'outcome',
-          value: Rhizome.Appointment.Outcome.SUCCESS
+          value: Buttress.Appointment.Outcome.SUCCESS
         })
         .then(function(res) {
           res.length.should.equal(1);
@@ -109,7 +109,7 @@ describe('@appointment-basics', function() {
         });
     });
     it('should fail to update a appointment', function(done) {
-      Rhizome.Appointment
+      Buttress.Appointment
         .update(_appointment.id, {
           path: 'blarg',
           value: true
@@ -123,10 +123,10 @@ describe('@appointment-basics', function() {
         });
     });
     it('appointment.outcome should equal \'success\'', function(done) {
-      Rhizome.Appointment
+      Buttress.Appointment
         .load(_appointment.id)
         .then(function(appointment) {
-          appointment.outcome.should.equal(Rhizome.Appointment.Outcome.SUCCESS);
+          appointment.outcome.should.equal(Buttress.Appointment.Outcome.SUCCESS);
           done();
         })
         .catch(function(err) {
@@ -137,7 +137,7 @@ describe('@appointment-basics', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      Rhizome.Appointment
+      Buttress.Appointment
         .remove(_appointment.id)
         .then(function(res) {
           res.should.equal(true);
@@ -162,7 +162,7 @@ describe('@appointment-notes', function() {
       .then(Config.createCompanies)
       .then(function(companies) {
         _companies = companies;
-        Rhizome.Appointment
+        Buttress.Appointment
           .create({
             name: 'Important Appointment',
             date: Sugar.Date.create('2017-02-11 10:00:00'),
@@ -180,10 +180,10 @@ describe('@appointment-notes', function() {
 
   after(function(done) {
     let appointments = [
-      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
-      Rhizome.User.remove(_user.id),
-      Rhizome.Person.remove(_user.person.id),
-      Rhizome.Appointment.remove(_appointment.id)
+      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.User.remove(_user.id),
+      Buttress.Person.remove(_user.person.id),
+      Buttress.Appointment.remove(_appointment.id)
     ];
 
     Promise.all(appointments).then(() => done()).catch(done);
@@ -194,7 +194,7 @@ describe('@appointment-notes', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      Rhizome.Appointment.update(_appointment.id, {
+      Buttress.Appointment.update(_appointment.id, {
         path: 'notes',
         value: {
           text: 'This is an important note'
@@ -215,7 +215,7 @@ describe('@appointment-notes', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      Rhizome.Appointment.update(_appointment.id, {
+      Buttress.Appointment.update(_appointment.id, {
         path: 'notes',
         value: {
           text: 'This is another important note'
@@ -237,7 +237,7 @@ describe('@appointment-notes', function() {
         return done(new Error("No Appointment!"));
       }
 
-      Rhizome.Appointment
+      Buttress.Appointment
         .load(_appointment.id)
         .then(function(appointment) {
           appointment.notes.should.have.length(2);
@@ -251,7 +251,7 @@ describe('@appointment-notes', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      Rhizome.Appointment.update(_appointment.id, {
+      Buttress.Appointment.update(_appointment.id, {
         path: 'notes.0.__remove__',
         value: ''
       })
@@ -271,7 +271,7 @@ describe('@appointment-notes', function() {
         return done(new Error("No Appointment!"));
       }
 
-      Rhizome.Appointment
+      Buttress.Appointment
         .load(_appointment.id)
         .then(function(appointment) {
           appointment.notes.should.have.length(1);
@@ -286,7 +286,7 @@ describe('@appointment-notes', function() {
         return done(new Error("No Appointment!"));
       }
 
-      Rhizome.Appointment
+      Buttress.Appointment
         .update(_appointment.id, {
           path: 'notes.0.text',
           value: 'This is some updated text'
@@ -306,7 +306,7 @@ describe('@appointment-notes', function() {
         return done(new Error("No Appointment!"));
       }
 
-      Rhizome.Appointment
+      Buttress.Appointment
         .load(_appointment.id)
         .then(function(appointment) {
           appointment.notes.should.have.length(1);
@@ -333,7 +333,7 @@ describe('@appointment-metadata', function() {
     .then(Config.createCompanies)
     .then(function(companies) {
       _companies = companies;
-      return Rhizome.Appointment
+      return Buttress.Appointment
         .create({
           name: 'Important Appointment',
           date: Sugar.Date.create('2017-02-11 11:00:00'),
@@ -351,9 +351,9 @@ describe('@appointment-metadata', function() {
 
   after(function(done) {
     let cleanup = [
-      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
-      Rhizome.User.remove(_user.id),
-      Rhizome.Person.remove(_user.person.id)
+      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.User.remove(_user.id),
+      Buttress.Person.remove(_user.person.id)
     ];
 
     Promise.all(cleanup).then(() => done()).catch(done);
@@ -364,7 +364,7 @@ describe('@appointment-metadata', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      Rhizome.Appointment.Metadata
+      Buttress.Appointment.Metadata
         .load(_appointment.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -377,7 +377,7 @@ describe('@appointment-metadata', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      Rhizome.Appointment.Metadata
+      Buttress.Appointment.Metadata
         .save(_appointment.id, 'TEST_DATA', {foo: 'bar'})
         .then(function(metadata) {
           metadata.foo.should.equal('bar');
@@ -390,7 +390,7 @@ describe('@appointment-metadata', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      Rhizome.Appointment.Metadata
+      Buttress.Appointment.Metadata
         .load(_appointment.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.not.equal(false);
@@ -404,7 +404,7 @@ describe('@appointment-metadata', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      Rhizome.Appointment.Metadata
+      Buttress.Appointment.Metadata
         .loadAll(_appointment.id)
         .then(function(metadata) {
           metadata.should.not.equal(false);
@@ -418,7 +418,7 @@ describe('@appointment-metadata', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      Rhizome.Appointment.Metadata
+      Buttress.Appointment.Metadata
         .remove(_appointment.id, 'TEST_DATA')
         .then(function(result) {
           result.should.equal(true);
@@ -432,7 +432,7 @@ describe('@appointment-metadata', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      Rhizome.Appointment.Metadata
+      Buttress.Appointment.Metadata
         .load(_appointment.id, 'TEST_DATA', false)
         .then(function(metadata) {
           metadata.should.equal(false);
@@ -446,7 +446,7 @@ describe('@appointment-metadata', function() {
       if (!_appointment) {
         return done(new Error("No Appointment!"));
       }
-      Rhizome.Appointment.Metadata
+      Buttress.Appointment.Metadata
         .remove(_appointment.id, 'TEST_DATA')
         .then(function(metadata) {
           metadata.should.equal(false);

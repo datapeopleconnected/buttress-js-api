@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Rhizome API -
+ * Buttress API -
  *
  * @file config.js
  * @description
@@ -9,7 +9,7 @@
  *
  */
 
-const Rhizome = require('../lib/rhizome');
+const Buttress = require('../lib/buttressjs');
 
 class Config {
   constructor() {
@@ -22,24 +22,24 @@ class Config {
     }
     this._initialised = true;
 
-    Rhizome.init({
-      rhizomeUrl: process.env.RHIZOME_TEST_API_URL,
-      appToken: process.env.RHIZOME_TEST_SUPER_APP_KEY
+    Buttress.init({
+      buttressUrl: process.env.BUTTRESS_TEST_API_URL,
+      appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY
     });
 
     before(function(done) {
       Promise.all([
-        Rhizome.Campaign.removeAll(),
-        Rhizome.User.removeAll(),
-        Rhizome.Person.removeAll(),
-        Rhizome.Token.removeAllUserTokens(),
-        Rhizome.Organisation.removeAll(),
-        Rhizome.Company.removeAll(),
-        Rhizome.Contactlist.removeAll(),
-        Rhizome.Call.removeAll(),
-        Rhizome.Task.removeAll(),
-        Rhizome.Notification.removeAll(),
-        Rhizome.Appointment.removeAll()
+        Buttress.Campaign.removeAll(),
+        Buttress.User.removeAll(),
+        Buttress.Person.removeAll(),
+        Buttress.Token.removeAllUserTokens(),
+        Buttress.Organisation.removeAll(),
+        Buttress.Company.removeAll(),
+        Buttress.Contactlist.removeAll(),
+        Buttress.Call.removeAll(),
+        Buttress.Task.removeAll(),
+        Buttress.Notification.removeAll(),
+        Buttress.Appointment.removeAll()
       ]).then(() => done());
     });
 
@@ -132,9 +132,9 @@ class Config {
         }
       }
     ];
-    return Rhizome.Company.saveAll({companies: companies})
+    return Buttress.Company.saveAll({companies: companies})
       .then(companyIds => {
-        return Rhizome.Company.bulkLoad(companyIds);
+        return Buttress.Company.bulkLoad(companyIds);
       })
       .catch(err => {
         throw err;
@@ -151,7 +151,7 @@ class Config {
       profileUrl: 'http://test.com/thisisatest',
       profileImgUrl: 'http://test.com/thisisatest.png'
     };
-    return Rhizome.Auth.findOrCreateUser(userAppAuth)
+    return Buttress.Auth.findOrCreateUser(userAppAuth)
       .catch(err => {
         throw err;
       });

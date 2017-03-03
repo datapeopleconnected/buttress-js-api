@@ -1,7 +1,7 @@
 "use strict";
 
 /**
- * Rhizome API -
+ * Buttress API -
  *
  * @file notification.test.js
  * @description
@@ -9,7 +9,7 @@
  *
  */
 
-const Rhizome = require('../lib/rhizome');
+const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 require('sugar');
 
@@ -32,9 +32,9 @@ describe('@notification-basics', function() {
 
   after(function(done) {
     let notifications = [
-      Rhizome.Company.bulkRemove(_companies.map(c => c.id)),
-      Rhizome.User.remove(_user.id),
-      Rhizome.Person.remove(_user.person.id)
+      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.User.remove(_user.id),
+      Buttress.Person.remove(_user.person.id)
     ];
 
     Promise.all(notifications).then(() => done()).catch(done);
@@ -43,7 +43,7 @@ describe('@notification-basics', function() {
   describe('Basics', function() {
     let _notification = null;
     it('should return no notifications', function(done) {
-      Rhizome.Notification
+      Buttress.Notification
         .getAll()
         .then(function(notifications) {
           notifications.length.should.equal(0);
@@ -54,17 +54,17 @@ describe('@notification-basics', function() {
         });
     });
     it('should add a Free notification', function(done) {
-      Rhizome.Notification
+      Buttress.Notification
         .create({
           userId: _user.id,
           name: 'Important notification!',
-          type: Rhizome.Notification.Type.CHAT
+          type: Buttress.Notification.Type.CHAT
         })
         .then(function(notification) {
           _notification = notification;
           _notification.userId.should.equal(_user.id);
           _notification.name.should.equal('Important notification!');
-          _notification.type.should.equal(Rhizome.Notification.Type.CHAT);
+          _notification.type.should.equal(Buttress.Notification.Type.CHAT);
           _notification.type.should.equal('chat');
           _notification.read.should.equal(false);
           done();
@@ -74,7 +74,7 @@ describe('@notification-basics', function() {
         });
     });
     it('should return 1 notification', function(done) {
-      Rhizome.Notification
+      Buttress.Notification
         .getAll()
         .then(function(notifications) {
           notifications.should.have.length(1);
@@ -85,7 +85,7 @@ describe('@notification-basics', function() {
         });
     });
     it('should update a notification', function(done) {
-      Rhizome.Notification
+      Buttress.Notification
         .update(_notification.id, {
           path: 'read',
           value: true
@@ -102,7 +102,7 @@ describe('@notification-basics', function() {
         });
     });
     it('should fail to update a notification', function(done) {
-      Rhizome.Notification
+      Buttress.Notification
         .update(_notification.id, {
           path: 'blarg',
           value: true
@@ -116,7 +116,7 @@ describe('@notification-basics', function() {
         });
     });
     it('notification.read should be true', function(done) {
-      Rhizome.Notification
+      Buttress.Notification
         .load(_notification.id)
         .then(function(notification) {
           notification.read.should.equal(true);
@@ -130,7 +130,7 @@ describe('@notification-basics', function() {
       if (!_notification) {
         return done(new Error("No Notification!"));
       }
-      Rhizome.Notification
+      Buttress.Notification
         .remove(_notification.id)
         .then(function(res) {
           res.should.equal(true);
