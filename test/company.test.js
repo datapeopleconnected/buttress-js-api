@@ -66,6 +66,7 @@ describe('@company-basics', function() {
         .then(function(company) {
           _company = company;
           company.name.should.equal('Blackburn Widget Company');
+          company.companyType.should.equal('prospect');
           company.locations.length.should.equal(1);
           company.primaryLocation.should.equal(company.locations[0].id);
           company.primaryContact.should.equal(company.contacts[0].id);
