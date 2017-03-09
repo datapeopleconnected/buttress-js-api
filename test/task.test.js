@@ -57,6 +57,7 @@ describe('@task-basics', function() {
       Buttress.Task
         .create({
           ownerId: _user.id,
+          assignedToId: _user.id,
           name: 'Important task!',
           type: Buttress.Task.Type.FREE,
           dueDate: Sugar.Date.addDays(Sugar.Date.create(), 1)
@@ -114,6 +115,7 @@ describe('@task-notes', function() {
         Buttress.Task
           .create({
             ownerId: _user.id,
+            assignedToId: _user.id,
             name: 'Important task!',
             type: Buttress.Task.Type.FREE,
             dueDate: Sugar.Date.addDays(Sugar.Date.create(), 1)
@@ -282,6 +284,7 @@ describe('@task-metadata', function() {
         Buttress.Task
           .create({
             ownerId: _user.id,
+            assignedToId: _user.id,
             name: 'Important task!',
             type: Buttress.Task.Type.FREE,
             dueDate: Sugar.Date.addDays(Sugar.Date.create(), 1)
