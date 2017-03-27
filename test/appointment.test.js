@@ -74,6 +74,7 @@ describe('@appointment-basics', function() {
           _appointment.assignedToId.should.equal(_user.id);
           _appointment.companyId.should.equal(_companies[0].id);
           _appointment.contactId.should.equal(_companies[0].contacts[0].id);
+          _appointment.approval.status.should.equal('pending');
           done();
         })
         .catch(function(err) {
@@ -85,6 +86,27 @@ describe('@appointment-basics', function() {
         .getAll()
         .then(function(appointments) {
           appointments.should.have.length(1);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should approve the appointment', function(done) {
+      Buttress.Appointment
+        .update(_appointment.id, {
+          path: 'approval',
+          value: {
+            status: 'done',
+            approverId: _user.id
+          }
+        })
+        .then(function(res) {
+          res.length.should.equal(1);
+          res[0].type.should.equal('scalar');
+          res[0].path.should.equal('approval');
+          res[0].value.status.should.equal('done');
+          res[0].value.approverId.should.equal(_user.id);
           done();
         })
         .catch(function(err) {
