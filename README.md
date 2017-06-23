@@ -1,23 +1,23 @@
-# rhizome-api-js
-### version: 1.0.0-3
-Node.js API for [Rhizome](https://github.com/coders-for-corbyn/rhizome).
+# buttress-api-js
+### version: 1.0.0
+Node.js API for [Buttrress](https://github.com/wearelighten/buttress-js).
 
 ## Installation
-`npm install rhizome-js-api`
+`npm install buttress-js-api`
 
 ## Usage
-First of all you need to initialise Rhizome with a valid App Token. App Tokens are created in Rhizome by the system administrator.
+First of all you need to initialise Buttress with a valid App Token. App Tokens are created in Buttress by the system administrator.
 ```javascript
-const Rhizome = require('rhizome-api-js');
-Rhizome.init({
-  rhizomeUrl: 'http://rhizome.url' [DEFAULT: http://rhizome.codersforcorbyn.com],
-  appToken: 'Get this from the Rhizome Admin' [REQUIRED]
+const Buttress = require('buttress-js-api');
+Buttress.init({
+  buttressUrl: 'http://buttress.url',
+  appToken: 'Get this from the Buttress Admin' [REQUIRED]
 });
 ```
-Once you have initialised Rhizome you can use it as follows:
+Once you have initialised Buttress you can use it as follows:
 
 ## User Auth
-This creates a Rhizome user based on OAuth2 user flow authentication leading to a token and tokenSecret. In addition to the basic information Rhizome stores these properties:
+This creates a Buttress user based on OAuth2 user flow authentication leading to a token and tokenSecret. In addition to the basic information Buttress stores these properties:
 ```javascript
 var user = {
   app: 'twitter',
@@ -31,28 +31,28 @@ var user = {
   bannerImgUrl: profile._json.profile_banner_url
 };
   
-Rhizome.Auth.findOrCreateUser(user)
-  .then(rhizomeUser => cb(null, rhizomeUser))
+Buttress.Auth.findOrCreateUser(user)
+  .then(buttressUser => cb(null, buttressUser))
   .catch(Logging.Promise.logError());
 ```
-User data is shared across all Rhizome applications based on trusted OAuth application Ids.
+User data is shared across all Buttress applications based on trusted OAuth application Ids.
 
 ## User Metadata
 User metadata is silo'ed on a per application basis. Specify the default value for when there is no metadata in the database.
 ```javascript
-Rhizome.User.loadMetadata(userRhizomeId, 'KEY_NAME', [])
+buttress.User.loadMetadata(userButtressId, 'KEY_NAME', [])
   .then(data => Logging.log(data))
   .catch(err => Logging.log(err));
 ```
 ```
-Rhizome.User.saveMetadata(userRhizomeId, 'KEY_NAME', {foo:true, bar:false})
+Buttress.User.saveMetadata(userbuttressId, 'KEY_NAME', {foo:true, bar:false})
   .then(data => Logging.log(data))
   .catch(err => Logging.log(err));
 ```
 
 ## User
 ```javascript
-Rhizome.User.load(rhizomeUserId)
+Buttress.User.load(buttressUserId)
   .then(u => {
     var twauth = u.auth.find(a => a.app === 'twitter');
     if (!twauth) {
@@ -63,12 +63,12 @@ Rhizome.User.load(rhizomeUserId)
 ## App Metadata
 Applications have metadata (specify the default value for when there is no metadata in the database):
 ```javascript
-Rhizome.App.loadMetadata('KEY_NAME', [])
+Buttress.App.loadMetadata('KEY_NAME', [])
   .then(data => Logging.log(data))
   .catch(err => Logging.log(err));
 ```
 ```
-Rhizome.User.saveMetadata('KEY_NAME', {foo:true, bar:false})
+Buttress.User.saveMetadata('KEY_NAME', {foo:true, bar:false})
   .then(data => Logging.log(data))
   .catch(err => Logging.log(err));
 ```
