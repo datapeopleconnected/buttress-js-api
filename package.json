@@ -25,6 +25,7 @@
     "test-call": "mocha --require should --reporter nyan -g call",
     "test-campaign": "mocha --require should --reporter nyan -g campaign",
     "test-company": "mocha --require should --reporter nyan -g company",
+    "test-service": "mocha --require should --reporter nyan -g service",
     "test-contract": "mocha --require should --reporter nyan -g contract",
     "test-document": "mocha --require should --reporter nyan -g document",
     "test-notification": "mocha --require should --reporter nyan -g notification",
