@@ -40,7 +40,9 @@ class Config {
         Buttress.Task.removeAll(),
         Buttress.Notification.removeAll(),
         Buttress.Appointment.removeAll()
-      ]).then(() => done());
+      ])
+        .then(() => done())
+        .catch(err => console.log(err));
     });
 
     after(function(done) {
@@ -137,7 +139,7 @@ class Config {
         return Buttress.Company.bulkLoad(companyIds);
       })
       .catch(err => {
-        throw err;
+        console.log(err);
       });
   }
 
@@ -153,7 +155,7 @@ class Config {
     };
     return Buttress.Auth.findOrCreateUser(userAppAuth)
       .catch(err => {
-        throw err;
+        console.log(err);
       });
   }
 

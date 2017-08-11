@@ -20,7 +20,19 @@
     "npm": "~3.10.x"
   },
   "scripts": {
-    "test": "mocha --require should --reporter nyan"
+    "test": "mocha --require should --reporter nyan",
+    "test-appointment": "mocha --require should --reporter nyan -g appointment",
+    "test-call": "mocha --require should --reporter nyan -g call",
+    "test-campaign": "mocha --require should --reporter nyan -g campaign",
+    "test-company": "mocha --require should --reporter nyan -g company",
+    "test-contract": "mocha --require should --reporter nyan -g contract",
+    "test-document": "mocha --require should --reporter nyan -g document",
+    "test-notification": "mocha --require should --reporter nyan -g notification",
+    "test-org": "mocha --require should --reporter nyan -g org",
+    "test-person": "mocha --require should --reporter nyan -g person",
+    "test-post": "mocha --require should --reporter nyan -g post",
+    "test-task": "mocha --require should --reporter nyan -g task",
+    "test-user": "mocha --require should --reporter nyan -g user"
   },
   "main": "./lib/buttressjs",
   "dependencies": {
@@ -34,6 +46,7 @@
     "gulp": "~3.9.1",
     "gulp-bump": "~2.4.0",
     "mocha": "~3.1.0",
+    "mongodb": "^2.2.31",
     "should": "~11.1.0"
   }
 }
