@@ -12,6 +12,7 @@
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 const should = require('should');
+const ObjectId = require('mongodb').ObjectId;
 
 Config.init();
 
@@ -45,29 +46,44 @@ describe('@company-basics', function() {
         });
     });
     it('should add a company', function(done) {
+      const _companyId = (new ObjectId()).toHexString();
+      const _locationId = (new ObjectId()).toHexString();
+      const _contactId = (new ObjectId()).toHexString();
+
+      // console.log(_companyId);
+
       Buttress.Company
         .save({
+          id: _companyId,
           name: 'Blackburn Widget Company',
-          location: {
+          companyType: 'prospect',
+          locations: [{
+            id: _locationId,
             name: "Headquarters",
             address: "124 Bonsall Street, Mill Hill",
             city: "Blackburn",
             postCode: "BB2 5DS",
             phoneNumber: "01254 123123"
-          },
-          contact: {
+          }],
+          contacts: [{
+            id: _contactId,
             name: 'Robert McBobson',
             role: 'Managing Director'
-          }
+          }]
         })
         .then(function(companyId) {
+          // console.log(companyId === _companyId);
+          companyId.should.equal(_companyId);
           return Buttress.Company.load(companyId);
         })
         .then(function(company) {
           _company = company;
+          company.id.should.equal(_companyId);
           company.name.should.equal('Blackburn Widget Company');
           company.companyType.should.equal('prospect');
           company.locations.length.should.equal(1);
+          company.locations[0].id.should.equal(_locationId);
+          company.contacts[0].id.should.equal(_contactId);
           company.primaryLocation.should.equal(company.locations[0].id);
           company.primaryContact.should.equal(company.contacts[0].id);
 
