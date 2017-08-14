@@ -39,7 +39,9 @@ class Config {
         Buttress.Call.removeAll(),
         Buttress.Task.removeAll(),
         Buttress.Notification.removeAll(),
-        Buttress.Appointment.removeAll()
+        Buttress.Appointment.removeAll(),
+        Buttress.Service.removeAll(),
+        Buttress.Contract.removeAll()
       ])
         .then(() => done())
         .catch(err => console.log(err));

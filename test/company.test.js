@@ -71,10 +71,10 @@ describe('@company-basics', function() {
             role: 'Managing Director'
           }]
         })
-        .then(function(companyId) {
+        .then(function(company) {
           // console.log(companyId === _companyId);
-          companyId.should.equal(_companyId);
-          return Buttress.Company.load(companyId);
+          company.id.should.equal(_companyId);
+          return company;
         })
         .then(function(company) {
           _company = company;
@@ -183,8 +183,8 @@ describe('@company-contacts', function() {
           role: 'Managing Director'
         }
       })
-      .then(function(companyId) {
-        _companyId = companyId;
+      .then(function(company) {
+        _companyId = company.id;
         done();
       })
       .catch(done);
@@ -328,8 +328,8 @@ describe('@company-locations', function() {
           role: 'Managing Director'
         }
       })
-      .then(function(companyId) {
-        _companyId = companyId;
+      .then(function(company) {
+        _companyId = company.id;
         done();
       })
       .catch(done);
@@ -525,8 +525,8 @@ describe('@company-notes', function() {
           role: 'Managing Director'
         }
       })
-      .then(function(companyId) {
-        _companyId = companyId;
+      .then(function(company) {
+        _companyId = company.id;
         done();
       })
       .catch(done);
@@ -688,9 +688,6 @@ describe('@company-metadata', function() {
           name: "Robert McBobson",
           role: 'Managing Director'
         }
-      })
-      .then(function(companyId) {
-        return Buttress.Company.load(companyId);
       })
       .then(function(company) {
         _company = company;

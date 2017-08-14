@@ -18,6 +18,7 @@ Config.init();
 describe('@contract-basics', function() {
   this.timeout(2000);
   let _companies = [];
+  let _contracts = [];
   let _user = null;
 
   before(function(done) {
@@ -33,6 +34,7 @@ describe('@contract-basics', function() {
   after(function(done) {
     let tasks = [
       Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.Contract.bulkRemove(_contracts),
       Buttress.User.remove(_user.id),
       Buttress.Person.remove(_user.person.id)
     ];
@@ -93,6 +95,35 @@ describe('@contract-basics', function() {
         .remove(_contract.id)
         .then(function(res) {
           res.should.equal(true);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should add several contracts', function(done) {
+      const __gen = num => {
+        let arr = [];
+        for (let x = 0; x < num; x++) {
+          arr.push({
+            name: `Letter of Authority ${x + 1}`,
+            ownerId: _user.id,
+            contractType: 'authority',
+            parties: [{
+              partyType: 'client',
+              companyId: _companies[0].id
+            }]
+          });
+        }
+
+        return arr;
+      };
+
+      Buttress.Contract
+        .saveAll({contracts: __gen(300)})
+        .then(function(contracts) {
+          contracts.length.should.equal(300);
+          _contracts = contracts;
           done();
         })
         .catch(function(err) {

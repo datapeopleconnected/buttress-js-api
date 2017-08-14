@@ -17,6 +17,7 @@ Config.init();
 
 describe('@service-basics', function() {
   this.timeout(2000);
+  let _services = [];
   let _companies = [];
   let _user = null;
 
@@ -33,6 +34,7 @@ describe('@service-basics', function() {
   after(function(done) {
     let tasks = [
       Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+      Buttress.Service.bulkRemove(_services),
       Buttress.User.remove(_user.id),
       Buttress.Person.remove(_user.person.id)
     ];
@@ -115,6 +117,34 @@ describe('@service-basics', function() {
         .remove(_service.id)
         .then(function(res) {
           res.should.equal(true);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should add several services', function(done) {
+      const __gen = num => {
+        let arr = [];
+        for (let x = 0; x < num; x++) {
+          arr.push({
+            id: (new ObjectId()).toHexString(),
+            ownerUserId: _user.id,
+            companyId: _companies[0].id,
+            name: `Open Source ${x + 1}`,
+            description: 'Open source development consultancy',
+            serviceType: 'consultancy'
+          });
+        }
+
+        return arr;
+      };
+
+      Buttress.Service
+        .saveAll({services: __gen(300)})
+        .then(function(services) {
+          services.length.should.equal(300);
+          _services = services;
           done();
         })
         .catch(function(err) {
