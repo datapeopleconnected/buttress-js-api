@@ -12,6 +12,7 @@
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 const ObjectId = require('mongodb').ObjectId;
+const should = require('should');
 
 Config.init();
 
@@ -64,7 +65,8 @@ describe('@service-basics', function() {
           companyId: _companies[0].id,
           name: 'Open Source',
           description: 'Open source development consultancy',
-          serviceType: 'consultancy'
+          serviceType: 'consultancy',
+          appProp1: 'This is required!'
         })
         .then(function(service) {
           _service = service;
@@ -77,7 +79,65 @@ describe('@service-basics', function() {
           done();
         })
         .catch(function(err) {
-          done(err);
+          done(new Error(err.response));
+        });
+    });
+    it('should add a service with app properties', function(done) {
+      Buttress.Service
+        .save({
+          ownerUserId: _user.id,
+          companyId: _companies[0].id,
+          name: 'Open Source (Extended)',
+          description: 'Open source development consultancy',
+          serviceType: 'consultancy',
+          appProp1: 'interesting1',
+          appProp2: 666
+        })
+        .then(function(service) {
+          service.companyId.should.equal(_companies[0].id);
+          service.name.should.equal('Open Source (Extended)');
+          service.appProp1.should.equal('interesting1');
+          service.appProp2.should.equal(666);
+          done();
+        })
+        .catch(function(err) {
+          done(new Error(err.response));
+        });
+    });
+    it('should not add a service with invalid properties', function(done) {
+      Buttress.Service
+        .save({
+          ownerUserId: _user.id,
+          companyId: _companies[0].id,
+          name: 'Open Source (Extended)',
+          description: 'Open source development consultancy',
+          serviceType: 'consultancy',
+          appProp1: 123
+        })
+        .then(function(service) {
+          done(new Error('Should not succeed'));
+        })
+        .catch(function(err) {
+          err.statusCode.should.equal(400);
+          done();
+        });
+    });
+    it('should not add a service with missing required properties', function(done) {
+      Buttress.Service
+        .save({
+          ownerUserId: _user.id,
+          companyId: _companies[0].id,
+          name: 'Open Source (Extended)',
+          description: 'Open source development consultancy',
+          serviceType: 'consultancy',
+          appProp2: 123
+        })
+        .then(function(service) {
+          done(new Error('Should not succeed'));
+        })
+        .catch(function(err) {
+          err.statusCode.should.equal(400);
+          done();
         });
     });
     it('should get a specific service', function(done) {
@@ -97,11 +157,11 @@ describe('@service-basics', function() {
           done(err);
         });
     });
-    it('should return 1 service', function(done) {
+    it('should return 2 services', function(done) {
       Buttress.Service
         .getAll()
         .then(function(services) {
-          services.should.have.length(1);
+          services.should.have.length(2);
           done();
         })
         .catch(function(err) {
@@ -133,7 +193,8 @@ describe('@service-basics', function() {
             companyId: _companies[0].id,
             name: `Open Source ${x + 1}`,
             description: 'Open source development consultancy',
-            serviceType: 'consultancy'
+            serviceType: 'consultancy',
+            appProp1: 'Required app property'
           });
         }
 
@@ -172,7 +233,8 @@ describe('@service-notes', function() {
             companyId: _companies[0].id,
             name: 'Open Source',
             description: 'Open source development consultancy',
-            serviceType: 'consultancy'
+            serviceType: 'consultancy',
+            appProp1: 'Required app property'
           })
           .then(function(service) {
             _service = service;
@@ -341,7 +403,8 @@ describe('@service-metadata', function() {
             companyId: _companies[0].id,
             name: 'Open Source',
             description: 'Open source development consultancy',
-            serviceType: 'consultancy'
+            serviceType: 'consultancy',
+            appProp1: 'Required app property'
           })
           .then(function(service) {
             _service = service;

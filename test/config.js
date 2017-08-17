@@ -10,6 +10,7 @@
  */
 
 const Buttress = require('../lib/buttressjs');
+const TestSchema = require('./schema.json');
 
 class Config {
   constructor() {
@@ -24,16 +25,17 @@ class Config {
 
     Buttress.init({
       buttressUrl: process.env.BUTTRESS_TEST_API_URL,
-      appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY
+      appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY,
+      schema: TestSchema
     });
 
     before(function(done) {
       Promise.all([
+        Buttress.initSchema(),
         Buttress.Campaign.removeAll(),
         Buttress.User.removeAll(),
         Buttress.Person.removeAll(),
         Buttress.Token.removeAllUserTokens(),
-        Buttress.Organisation.removeAll(),
         Buttress.Company.removeAll(),
         Buttress.Contactlist.removeAll(),
         Buttress.Call.removeAll(),
@@ -44,7 +46,13 @@ class Config {
         Buttress.Contract.removeAll()
       ])
         .then(() => done())
-        .catch(err => console.log(err));
+        .catch(err => {
+          if (err.statusCode) {
+            console.log(`${err.statusCode}: ${err.statusMessage}`);
+            return;
+          }
+          console.log(err);
+        });
     });
 
     after(function(done) {

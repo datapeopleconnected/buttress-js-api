@@ -32,11 +32,11 @@ describe('@org-basics', function() {
 
   describe('Organisation Basics', function() {
     let _org = null;
-    it('should return no organisations', function(done) {
+    it('should return 1 organisations', function(done) {
       Buttress.Organisation
         .getAll()
         .then(function(orgs) {
-          orgs.length.should.equal(0);
+          orgs.length.should.equal(1);
           done();
         })
         .catch(function(err) {
@@ -61,11 +61,11 @@ describe('@org-basics', function() {
           done(err);
         });
     });
-    it('should return 1 organisation', function(done) {
+    it('should return 2 organisation', function(done) {
       Buttress.Organisation
         .getAll()
         .then(function(orgs) {
-          orgs.should.have.length(1);
+          orgs.should.have.length(2);
           done();
         })
         .catch(function(err) {

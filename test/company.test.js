@@ -151,9 +151,9 @@ describe('@company-basics', function() {
       };
 
       Buttress.Company
-        .saveAll({companies: __gen(300)})
+        .saveAll({companies: __gen(1000)})
         .then(function(companies) {
-          companies.length.should.equal(300);
+          companies.length.should.equal(1000);
           _companies = companies;
           done();
         })
