@@ -4,38 +4,33 @@
     "properties": {
       "appProp1": {
         "__type": "string",
-        "__default": "",
         "__required": true,
         "__enableUpdate": true
       },
       "appProp2": {
         "__type": "number",
-        "__default": 0,
+        "__default": 123,
         "__required": false,
         "__enableUpdate": true
       },
-      "extension3": {
+      "appProp3": {
         "__type": "date",
         "__default": null,
         "__required": false,
         "__enableUpdate": true
       },
-      "extension4": {
+      "appProp4": {
         "__type": "array",
         "__default": [1, 2, 3, 4],
         "__required": false,
         "__enableUpdate": true
       },
-      "extension5": {
-        "prop": {
-          "propChild": {
-            "propGrandChild": {
-              "__type": "string",
-              "__default": "hello",
-              "__required": false
-            }
-          }
-        }
+      "appProp5": {
+        "__type": "string",
+        "__default": "pending",
+        "__enum": ["pending", "in-progress", "completed"],
+        "__required": false,
+        "__enableUpdate": true
       }
     }
   }
