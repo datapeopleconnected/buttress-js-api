@@ -93,24 +93,24 @@ describe('@task-basics', function() {
           done(err);
         });
     });
-    it('should mark task reminder as done', function(done) {
-      Buttress.Task
-        .update(_task.id, {
-          path: 'reminder.status',
-          value: 'done'
-        })
-        .then(function(res) {
-          res.length.should.equal(1);
-          res[0].type.should.equal('scalar');
-          res[0].path.should.equal('reminder.status');
-          res[0].value.should.equal('done');
-          done();
-        })
+    // it('should mark task reminder as done', function(done) {
+    //   Buttress.Task
+    //     .update(_task.id, {
+    //       path: 'reminder.status',
+    //       value: 'done'
+    //     })
+    //     .then(function(res) {
+    //       res.length.should.equal(1);
+    //       res[0].type.should.equal('scalar');
+    //       res[0].path.should.equal('reminder.status');
+    //       res[0].value.should.equal('done');
+    //       done();
+    //     })
 
-        .catch(function(err) {
-          done(err);
-        });
-    });
+    //     .catch(function(err) {
+    //       done(err);
+    //     });
+    // });
 
     it('should remove a task', function(done) {
       if (!_task) {

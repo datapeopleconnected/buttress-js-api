@@ -66,7 +66,12 @@ describe('@service-basics', function() {
           name: 'Open Source',
           description: 'Open source development consultancy',
           serviceType: 'consultancy',
-          appProp1: 'This is required!'
+          appProp1: 'This is required!',
+          appProp2: 1234,
+          appProp3: new Date('2017-08-15'),
+          appProp4: ['hello', 'to', 'me'],
+          appProp5: 'pending',
+          appProp6: {test: 'hello', date: new Date()}
         })
         .then(function(service) {
           _service = service;
@@ -76,32 +81,17 @@ describe('@service-basics', function() {
           _service.description.should.equal('Open source development consultancy');
           _service.serviceType.should.equal('consultancy');
           _service.ownerUserId.should.equal(_user.id);
+          _service.appProp1.should.equal('This is required!');
+          _service.appProp2.should.equal(1234);
+          _service.appProp3.should.equal('2017-08-15T00:00:00.000Z');
+          _service.appProp4.length.should.equal(3);
+          _service.appProp4[0].should.equal('hello');
+          _service.appProp5.should.equal('pending');
+          _service.appProp6.test.should.equal('hello');
           done();
         })
         .catch(function(err) {
-          done(new Error(err.response));
-        });
-    });
-    it('should add a service with app properties', function(done) {
-      Buttress.Service
-        .save({
-          ownerUserId: _user.id,
-          companyId: _companies[0].id,
-          name: 'Open Source (Extended)',
-          description: 'Open source development consultancy',
-          serviceType: 'consultancy',
-          appProp1: 'interesting1',
-          appProp2: 666
-        })
-        .then(function(service) {
-          service.companyId.should.equal(_companies[0].id);
-          service.name.should.equal('Open Source (Extended)');
-          service.appProp1.should.equal('interesting1');
-          service.appProp2.should.equal(666);
-          done();
-        })
-        .catch(function(err) {
-          done(new Error(err.response));
+          done(new Error(err.message));
         });
     });
     it('should not add a service with invalid properties', function(done) {
@@ -157,18 +147,53 @@ describe('@service-basics', function() {
           done(err);
         });
     });
-    it('should return 2 services', function(done) {
+    it('should update an app schema property', function(done) {
+      if (!_service) {
+        return done(new Error("No Service!"));
+      }
+      Buttress.Service.update(_service.id, {
+        path: 'appProp6.date',
+        value: new Date('2017-07-31')
+      })
+      .then(function(updates) {
+        updates.length.should.equal(1);
+        updates[0].type.should.equal('scalar');
+        updates[0].path.should.equal('appProp6.date');
+        updates[0].value.should.equal('2017-07-31T00:00:00.000Z');
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
+    });
+    it('should not update an app schema property', function(done) {
+      if (!_service) {
+        return done(new Error("No Service!"));
+      }
+      Buttress.Service.update(_service.id, {
+        path: 'appProp6.test',
+        value: 'don\'t change this'
+      })
+      .then(function(updates) {
+        done(new Error('Should not succeed'));
+      })
+      .catch(function(err) {
+        err.statusCode.should.equal(400);
+        done();
+      });
+    });
+
+    it('should return 1 service', function(done) {
       Buttress.Service
         .getAll()
         .then(function(services) {
-          services.should.have.length(2);
+          services.should.have.length(1);
           done();
         })
         .catch(function(err) {
           done(err);
         });
     });
-
     it('should remove a service', function(done) {
       if (!_service) {
         return done(new Error("No Service!"));

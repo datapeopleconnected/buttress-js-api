@@ -5,32 +5,44 @@
       "appProp1": {
         "__type": "string",
         "__required": true,
-        "__enableUpdate": true
+        "__allowUpdate": true
       },
       "appProp2": {
         "__type": "number",
         "__default": 123,
         "__required": false,
-        "__enableUpdate": true
+        "__allowUpdate": false
       },
       "appProp3": {
         "__type": "date",
         "__default": null,
         "__required": false,
-        "__enableUpdate": true
+        "__allowUpdate": true
       },
       "appProp4": {
         "__type": "array",
         "__default": [1, 2, 3, 4],
         "__required": false,
-        "__enableUpdate": true
+        "__allowUpdate": true
       },
       "appProp5": {
         "__type": "string",
         "__default": "pending",
         "__enum": ["pending", "in-progress", "completed"],
         "__required": false,
-        "__enableUpdate": true
+        "__allowUpdate": true
+      },
+      "appProp6": {
+        "test": {
+          "__type": "string",
+          "__required": false,
+          "__allowUpdate": false
+        },
+        "date": {
+          "__type": "date",
+          "__required": false,
+          "__allowUpdate": true
+        }
       }
     }
   }

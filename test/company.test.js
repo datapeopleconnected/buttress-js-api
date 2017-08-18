@@ -82,18 +82,18 @@ describe('@company-basics', function() {
           company.name.should.equal('Blackburn Widget Company');
           company.companyType.should.equal('prospect');
           company.locations.length.should.equal(1);
-          company.locations[0].id.should.equal(_locationId);
-          company.contacts[0].id.should.equal(_contactId);
-          company.primaryLocation.should.equal(company.locations[0].id);
-          company.primaryContact.should.equal(company.contacts[0].id);
+          company.locations[0]._id.should.equal(_locationId);
+          company.contacts[0]._id.should.equal(_contactId);
+          company.primaryLocation.should.equal(company.locations[0]._id);
+          company.primaryContact.should.equal(company.contacts[0]._id);
 
-          const location = company.locations.find(l => l.id === company.primaryLocation);
+          const location = company.locations.find(l => l._id === company.primaryLocation);
           location.address.should.equal('124 Bonsall Street, Mill Hill');
           location.city.should.equal('Blackburn');
           location.postCode.should.equal('BB2 5DS');
           location.phoneNumber.should.equal('01254 123123');
 
-          const contact = company.contacts.find(c => c.id === company.primaryContact);
+          const contact = company.contacts.find(c => c._id === company.primaryContact);
           contact.name.should.equal('Robert McBobson');
           contact.role.should.equal('Managing Director');
           done();
