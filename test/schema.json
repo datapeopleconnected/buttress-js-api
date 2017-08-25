@@ -33,6 +33,30 @@
         "__allowUpdate": true
       },
       "appProp6": {
+        "nested": {
+          "value": {
+            "__type": "string",
+            "__required": false,
+            "__allowUpdate": false
+          },
+          "status": {
+            "__type": "string",
+            "__required": false,
+            "__default": "pending",
+            "__enum": ["pending", "done"],
+            "__allowUpdate": true
+          },
+          "approverId": {
+            "__type": "id",
+            "__required": false,
+            "__allowUpdate": true
+          },
+          "timestamp": {
+            "__type": "date",
+            "__default": "now",
+            "__allowUpdate": true
+          } 
+        },
         "companyId": {
           "__type": "id",
           "__required": false,

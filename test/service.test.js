@@ -71,7 +71,7 @@ describe('@service-basics', function() {
           appProp3: new Date('2017-08-15'),
           appProp4: ['hello', 'to', 'me'],
           appProp5: 'pending',
-          appProp6: {test: 'hello', companyId: _companies[1].id, date: new Date()}
+          appProp6: {nested: {value: 'foobar', approverId: _user.id}, test: 'hello', companyId: _companies[1].id, date: new Date()}
         })
         .then(function(service) {
           _service = service;
@@ -87,6 +87,10 @@ describe('@service-basics', function() {
           _service.appProp4.length.should.equal(3);
           _service.appProp4[0].should.equal('hello');
           _service.appProp5.should.equal('pending');
+          _service.appProp6.nested.value.should.equal('foobar');
+          _service.appProp6.nested.status.should.equal('pending');
+          _service.appProp6.nested.approverId.should.equal(_user.id);
+          _service.appProp6.nested.value.should.equal('foobar');
           _service.appProp6.test.should.equal('hello');
           _service.appProp6.bool.should.equal(false);
           _service.appProp6.companyId.should.equal(_companies[1].id);
