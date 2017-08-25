@@ -67,11 +67,11 @@ describe('@service-basics', function() {
           description: 'Open source development consultancy',
           serviceType: 'consultancy',
           appProp1: 'This is required!',
-          appProp2: 1234,
+          appProp2: "1234",
           appProp3: new Date('2017-08-15'),
           appProp4: ['hello', 'to', 'me'],
           appProp5: 'pending',
-          appProp6: {test: 'hello', date: new Date()}
+          appProp6: {test: 'hello', companyId: _companies[1].id, date: new Date()}
         })
         .then(function(service) {
           _service = service;
@@ -88,6 +88,8 @@ describe('@service-basics', function() {
           _service.appProp4[0].should.equal('hello');
           _service.appProp5.should.equal('pending');
           _service.appProp6.test.should.equal('hello');
+          _service.appProp6.bool.should.equal(false);
+          _service.appProp6.companyId.should.equal(_companies[1].id);
           done();
         })
         .catch(function(err) {
@@ -102,7 +104,7 @@ describe('@service-basics', function() {
           name: 'Open Source (Extended)',
           description: 'Open source development consultancy',
           serviceType: 'consultancy',
-          appProp1: 123
+          appProp2: "This isn't a number"
         })
         .then(function(service) {
           done(new Error('Should not succeed'));

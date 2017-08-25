@@ -33,10 +33,21 @@
         "__allowUpdate": true
       },
       "appProp6": {
+        "companyId": {
+          "__type": "id",
+          "__required": false,
+          "__allowUpdate": true
+        },
         "test": {
           "__type": "string",
           "__required": false,
           "__allowUpdate": false
+        },
+        "bool": {
+          "__type": "boolean",
+          "__required": false,
+          "__default": false,
+          "__allowUpdate": true
         },
         "date": {
           "__type": "date",
