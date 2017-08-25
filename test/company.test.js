@@ -127,6 +127,30 @@ describe('@company-basics', function() {
           done(err);
         });
     });
+    it('should add a company with no locations', function(done) {
+      const _companyId = (new ObjectId()).toHexString();
+      const _contactId = (new ObjectId()).toHexString();
+
+      // console.log(_companyId);
+
+      Buttress.Company
+        .save({
+          id: _companyId,
+          name: 'Blackburn Widget Company',
+          companyType: 'prospect',
+          contacts: [{
+            id: _contactId,
+            name: 'Robert McBobson',
+            role: 'Managing Director'
+          }]
+        })
+        .then(function(company) {
+          // console.log(companyId === _companyId);
+          company.id.should.equal(_companyId);
+          company.locations.length.should.equal(0);
+          done();
+        });
+    });
     it('should add several companies', function(done) {
       const __gen = num => {
         let arr = [];
