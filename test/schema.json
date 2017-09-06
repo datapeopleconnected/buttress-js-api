@@ -55,7 +55,31 @@
             "__type": "date",
             "__default": "now",
             "__allowUpdate": true
-          } 
+          },
+          "approvals": {
+            "__type": "array",
+            "__default": [],
+            "__required": false,
+            "__allowUpdate": true,
+            "__schema": {
+              "approverId": {
+                "__type": "id",
+                "__required": true,
+                "__allowUpdate": true
+              },
+              "timestamp": {
+                "__type": "date",
+                "__default": "now",
+                "__allowUpdate": true
+              },
+              "status": {
+                "__type": "string",
+                "__default": "pending",
+                "__enum": ["pending", "approved", "rejected"],
+                "__allowUpdate": true
+              }
+            }    
+          }
         },
         "companyId": {
           "__type": "id",
@@ -78,6 +102,47 @@
           "__required": false,
           "__allowUpdate": true
         }
+      },
+      "appProp7": {
+        "__type": "array",
+        "__default": [],
+        "__required": false,
+        "__schema": {
+          "name": {
+            "__type": "string",
+            "__required": true,
+            "__default": "",
+            "__allowUpdate": true
+          },
+          "isInteresting": {
+            "__type": "boolean",
+            "__required": false,
+            "__default": false,
+            "__allowUpdate": true
+          },
+          "dateInteresting": {
+            "__type": "date",
+            "__required": false,
+            "__default": null,
+            "__allowUpdate": true
+          },
+          "nestedInteresting": {
+            "nestedBool": {
+              "__type": "boolean",
+              "__required": false,
+              "__default": false,
+              "__allowUpdate": true
+            },
+            "nestedString": {
+              "__type": "string",
+              "__required": false,
+              "__default": "pending",
+              "__enum": ["pending", "completed"],
+              "__allowUpdate": true
+            }
+          }
+        },
+        "__allowUpdate": true
       }
     }
   }

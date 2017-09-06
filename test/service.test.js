@@ -71,7 +71,30 @@ describe('@service-basics', function() {
           appProp3: new Date('2017-08-15'),
           appProp4: ['hello', 'to', 'me'],
           appProp5: 'pending',
-          appProp6: {nested: {value: 'foobar', approverId: _user.id}, test: 'hello', companyId: _companies[1].id, date: new Date()}
+          appProp6: {
+            nested: {
+              value: 'foobar',
+              approverId: _user.id,
+              approvals: [
+                {
+                  approverId: _user.id
+                }
+              ]
+            },
+            test: 'hello',
+            companyId: _companies[1].id,
+            date: new Date()
+          },
+          appProp7: [
+            {
+              name: 'name#1',
+              isInteresting: false,
+              invalidProp: 'hello!',
+              nestedInteresting: {
+                nestedBool: true
+              }
+            }
+          ]
         })
         .then(function(service) {
           _service = service;
@@ -91,9 +114,16 @@ describe('@service-basics', function() {
           _service.appProp6.nested.status.should.equal('pending');
           _service.appProp6.nested.approverId.should.equal(_user.id);
           _service.appProp6.nested.value.should.equal('foobar');
+          _service.appProp6.nested.approvals.length.should.equal(1);
+          _service.appProp6.nested.approvals[0].approverId.should.equal(_user.id);
+          _service.appProp6.nested.approvals[0].status.should.equal('pending');
           _service.appProp6.test.should.equal('hello');
           _service.appProp6.bool.should.equal(false);
           _service.appProp6.companyId.should.equal(_companies[1].id);
+          _service.appProp7.length.should.equal(1);
+          should.not.exist(_service.appProp7.invalidProp);
+          _service.appProp7[0].nestedInteresting.nestedBool.should.equal(true);
+          _service.appProp7[0].nestedInteresting.nestedString.should.equal('pending');
           done();
         })
         .catch(function(err) {
@@ -157,15 +187,62 @@ describe('@service-basics', function() {
       if (!_service) {
         return done(new Error("No Service!"));
       }
-      Buttress.Service.update(_service.id, {
-        path: 'appProp6.date',
-        value: new Date('2017-07-31')
-      })
+      Buttress.Service.update(_service.id, [
+        {
+          path: 'appProp6.date',
+          value: new Date('2017-07-31')
+        },
+        {
+          path: 'appProp4.1',
+          value: 'from'
+        },
+        {
+          path: 'appProp7.0.name',
+          value: 'name#2'
+        },
+        {
+          path: 'appProp7.0.nestedInteresting.nestedBool',
+          value: true
+        },
+        {
+          path: 'appProp7',
+          value: {
+            name: 'name#inserted',
+            isInteresting: false,
+            invalidProp: 'hello!',
+            nestedInteresting: {
+              nestedBool: false
+            }
+          }
+        },
+        {
+          path: 'appProp6.nested.approvals.0.status',
+          value: 'approved'
+        }
+      ])
       .then(function(updates) {
-        updates.length.should.equal(1);
+        updates.length.should.equal(6);
         updates[0].type.should.equal('scalar');
         updates[0].path.should.equal('appProp6.date');
         updates[0].value.should.equal('2017-07-31T00:00:00.000Z');
+        updates[1].type.should.equal('scalar');
+        updates[1].path.should.equal('appProp4.1');
+        updates[1].value.should.equal('from');
+        updates[2].type.should.equal('scalar');
+        updates[2].path.should.equal('appProp7.0.name');
+        updates[2].value.should.equal('name#2');
+        updates[3].type.should.equal('scalar');
+        updates[3].path.should.equal('appProp7.0.nestedInteresting.nestedBool');
+        updates[3].value.should.equal(true);
+        updates[3].type.should.equal('scalar');
+        updates[4].path.should.equal('appProp7');
+        const updated = updates[4].value;
+        updated.name.should.equal('name#inserted');
+        updated.nestedInteresting.nestedString.should.equal('pending');
+        updates[5].type.should.equal('scalar');
+        updates[5].path.should.equal('appProp6.nested.approvals.0.status');
+        updates[5].value.should.equal('approved');
+
         done();
       })
       .catch(function(err) {
