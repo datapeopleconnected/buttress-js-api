@@ -58,7 +58,10 @@ describe('@document-basics', function() {
         .create({
           ownerId: _user.id,
           name: 'Letter of Authority',
-          documentId: '1234567890',
+          companyId: _companies[0].id,
+          documentMetadata: {
+            id: '1234567890'
+          }
         })
         .then(function(document) {
           _document = document;
@@ -114,7 +117,10 @@ describe('@document-notes', function() {
           .create({
             ownerId: _user.id,
             name: 'Letter of Authority',
-            documentId: '1234567890',
+            companyId: _companies[0].id,
+            documentMetadata: {
+              id: '1234567890'
+            }
           })
           .then(function(document) {
             _document = document;
@@ -281,7 +287,10 @@ describe('@document-metadata', function() {
           .create({
             ownerId: _user.id,
             name: 'Letter of Authority',
-            documentId: '1234567890',
+            companyId: _companies[0].id,
+            documentMetadata: {
+              id: '1234567890'
+            }
           })
           .then(function(document) {
             _document = document;

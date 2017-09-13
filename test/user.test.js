@@ -131,7 +131,7 @@ describe('@user-basics', function() {
           route: "*",
           permission: "*"
         }],
-        domains: ['test.buttress.com']
+        domains: ['test.buttressjs.com']
       };
       Buttress.Auth
         .findOrCreateUser(userAppAuth, auth)
@@ -159,22 +159,6 @@ describe('@user-basics', function() {
       .remove(_users[0].buttressId)
       .then(function(res) {
         res.should.equal(true);
-        _users[0] = null;
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
-    });
-    it('should use a user token', function(done) {
-      if (!_users[1]) {
-        return done(new Error("No User!"));
-      }
-
-      Buttress
-      .Person.getAll(_users[1].buttressAuthToken)
-      .then(function(people) {
-        people.should.have.length(1);
         _users[0] = null;
         done();
       })

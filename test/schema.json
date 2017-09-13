@@ -1,0 +1,149 @@
+[
+  {
+    "collection": "services",
+    "properties": {
+      "appProp1": {
+        "__type": "string",
+        "__required": true,
+        "__allowUpdate": true
+      },
+      "appProp2": {
+        "__type": "number",
+        "__default": 123,
+        "__required": false,
+        "__allowUpdate": false
+      },
+      "appProp3": {
+        "__type": "date",
+        "__default": null,
+        "__required": false,
+        "__allowUpdate": true
+      },
+      "appProp4": {
+        "__type": "array",
+        "__default": [1, 2, 3, 4],
+        "__required": false,
+        "__allowUpdate": true
+      },
+      "appProp5": {
+        "__type": "string",
+        "__default": "pending",
+        "__enum": ["pending", "in-progress", "completed"],
+        "__required": false,
+        "__allowUpdate": true
+      },
+      "appProp6": {
+        "nested": {
+          "value": {
+            "__type": "string",
+            "__required": false,
+            "__allowUpdate": false
+          },
+          "status": {
+            "__type": "string",
+            "__required": false,
+            "__default": "pending",
+            "__enum": ["pending", "done"],
+            "__allowUpdate": true
+          },
+          "approverId": {
+            "__type": "id",
+            "__required": false,
+            "__allowUpdate": true
+          },
+          "timestamp": {
+            "__type": "date",
+            "__default": "now",
+            "__allowUpdate": true
+          },
+          "approvals": {
+            "__type": "array",
+            "__default": [],
+            "__required": false,
+            "__allowUpdate": true,
+            "__schema": {
+              "approverId": {
+                "__type": "id",
+                "__required": true,
+                "__allowUpdate": true
+              },
+              "timestamp": {
+                "__type": "date",
+                "__default": "now",
+                "__allowUpdate": true
+              },
+              "status": {
+                "__type": "string",
+                "__default": "pending",
+                "__enum": ["pending", "approved", "rejected"],
+                "__allowUpdate": true
+              }
+            }    
+          }
+        },
+        "companyId": {
+          "__type": "id",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "test": {
+          "__type": "string",
+          "__required": false,
+          "__allowUpdate": false
+        },
+        "bool": {
+          "__type": "boolean",
+          "__required": false,
+          "__default": false,
+          "__allowUpdate": true
+        },
+        "date": {
+          "__type": "date",
+          "__required": false,
+          "__allowUpdate": true
+        }
+      },
+      "appProp7": {
+        "__type": "array",
+        "__default": [],
+        "__required": false,
+        "__schema": {
+          "name": {
+            "__type": "string",
+            "__required": true,
+            "__default": "",
+            "__allowUpdate": true
+          },
+          "isInteresting": {
+            "__type": "boolean",
+            "__required": false,
+            "__default": false,
+            "__allowUpdate": true
+          },
+          "dateInteresting": {
+            "__type": "date",
+            "__required": false,
+            "__default": null,
+            "__allowUpdate": true
+          },
+          "nestedInteresting": {
+            "nestedBool": {
+              "__type": "boolean",
+              "__required": false,
+              "__default": false,
+              "__allowUpdate": true
+            },
+            "nestedString": {
+              "__type": "string",
+              "__required": false,
+              "__default": "pending",
+              "__enum": ["pending", "completed"],
+              "__allowUpdate": true
+            }
+          }
+        },
+        "__allowUpdate": true
+      }
+    }
+  }
+]

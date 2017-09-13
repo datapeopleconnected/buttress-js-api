@@ -1,6 +1,14 @@
 # buttress-api-js
-### version: 1.0.0
-Node.js API for [Buttrress](https://github.com/wearelighten/buttress-js).
+### version: 1.5.0
+- Added new service Model & API
+- Added new schema API
+- Added bulk add for documents
+- Refactor Bulk delete api now uses POST and accepts id's via the post body
+- Fixed, Added and Improved tests throughout
+- Various Fixes
+
+### 1.0.0
+Node.js API for [Buttress](https://github.com/wearelighten/buttress-js).
 
 ## Installation
 `npm install buttress-js-api`

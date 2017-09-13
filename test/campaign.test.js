@@ -51,7 +51,7 @@ describe('@campaign-basics', function() {
           description: "Test campaign for testing.",
           legals: "Copyright Coders for Labour",
           filters: [{type: 'location', value: 'Leeds'}],
-          companies: [_companies[0].id]
+          companyIds: [_companies[0].id]
         })
         .then(function(campaign) {
           _campaign = campaign;
@@ -111,7 +111,7 @@ describe('@campaign-notes', function() {
             description: "Test campaign for testing.",
             legals: "Copyright Coders for Labour",
             filters: [{type: 'location', value: 'Leeds'}],
-            companies: [_companies[0].id]
+            companyIds: [_companies[0].id]
           })
           .then(function(campaign) {
             _campaign = campaign;
@@ -282,7 +282,7 @@ describe('@campaign-contactlists', function() {
         description: "Test campaign for testing.",
         legals: "Copyright Coders for Labour",
         filters: [{type: 'location', value: 'Leeds'}],
-        companies: _companies.map(c => c.id)
+        companyIds: _companies.map(c => c.id)
       })
       .then(function(campaign) {
         _campaign = campaign;
@@ -314,7 +314,7 @@ describe('@campaign-contactlists', function() {
       Buttress.Campaign
         .load(_campaign.id)
         .then(function(campaign) {
-          campaign.companies.length.should.equal(5);
+          campaign.companyIds.length.should.equal(5);
           done();
         })
         .catch(function(err) {
@@ -330,8 +330,8 @@ describe('@campaign-contactlists', function() {
         .create({
           campaignId: _campaign.id,
           name: 'test list',
-          companyIds: _campaign.companies,
-          userId: _user.id
+          companyIds: _campaign.companyIds,
+          assignedToUserId: _user.id
         })
         .then(function(contactList) {
           contactList.name.should.equal('test list');
@@ -365,7 +365,7 @@ describe('@campaign-contactlists', function() {
           contactList.name.should.equal('test list');
           contactList.campaignId.should.equal(_campaign.id);
           contactList.companyIds.length.should.equal(5);
-          contactList.userId.should.equal(_user.id);
+          contactList.assignedToUserId.should.equal(_user.id);
           done();
         })
         .catch(function(err) {
@@ -403,7 +403,7 @@ describe('@campaign-metadata', function() {
           description: "Test campaign for testing.",
           legals: "Copyright Coders for Labour",
           filters: [{type: 'location', value: 'Leeds'}],
-          companies: _companies.map(c => c.id)
+          companyIds: _companies.map(c => c.id)
         })
         .then(function(campaign) {
           _campaign = campaign;
@@ -528,7 +528,7 @@ describe('@campaign-assets', function() {
           description: "Test campaign for testing.",
           legals: "Copyright Coders for Labour",
           filters: [{type: 'location', value: 'Leeds'}],
-          companies: _companies.map(c => c.id)
+          companyIds: _companies.map(c => c.id)
         })
         .then(function(campaign) {
           _campaign = campaign;

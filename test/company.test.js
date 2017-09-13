@@ -12,6 +12,7 @@
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 const should = require('should');
+const ObjectId = require('mongodb').ObjectId;
 
 Config.init();
 
@@ -45,39 +46,54 @@ describe('@company-basics', function() {
         });
     });
     it('should add a company', function(done) {
+      const _companyId = (new ObjectId()).toHexString();
+      const _locationId = (new ObjectId()).toHexString();
+      const _contactId = (new ObjectId()).toHexString();
+
+      // console.log(_companyId);
+
       Buttress.Company
         .save({
+          id: _companyId,
           name: 'Blackburn Widget Company',
-          location: {
+          companyType: 'prospect',
+          locations: [{
+            id: _locationId,
             name: "Headquarters",
             address: "124 Bonsall Street, Mill Hill",
             city: "Blackburn",
             postCode: "BB2 5DS",
             phoneNumber: "01254 123123"
-          },
-          contact: {
+          }],
+          contacts: [{
+            id: _contactId,
             name: 'Robert McBobson',
             role: 'Managing Director'
-          }
+          }]
         })
-        .then(function(companyId) {
-          return Buttress.Company.load(companyId);
+        .then(function(company) {
+          // console.log(companyId === _companyId);
+          company.id.should.equal(_companyId);
+          return company;
         })
         .then(function(company) {
           _company = company;
+          company.id.should.equal(_companyId);
           company.name.should.equal('Blackburn Widget Company');
           company.companyType.should.equal('prospect');
           company.locations.length.should.equal(1);
-          company.primaryLocation.should.equal(company.locations[0].id);
-          company.primaryContact.should.equal(company.contacts[0].id);
+          company.locations[0]._id.should.equal(_locationId);
+          company.contacts[0]._id.should.equal(_contactId);
+          company.primaryLocation.should.equal(company.locations[0]._id);
+          company.primaryContact.should.equal(company.contacts[0]._id);
 
-          const location = company.locations.find(l => l.id === company.primaryLocation);
+          const location = company.locations.find(l => l._id === company.primaryLocation);
           location.address.should.equal('124 Bonsall Street, Mill Hill');
           location.city.should.equal('Blackburn');
           location.postCode.should.equal('BB2 5DS');
           location.phoneNumber.should.equal('01254 123123');
 
-          const contact = company.contacts.find(c => c.id === company.primaryContact);
+          const contact = company.contacts.find(c => c._id === company.primaryContact);
           contact.name.should.equal('Robert McBobson');
           contact.role.should.equal('Managing Director');
           done();
@@ -111,6 +127,30 @@ describe('@company-basics', function() {
           done(err);
         });
     });
+    it('should add a company with no locations', function(done) {
+      const _companyId = (new ObjectId()).toHexString();
+      const _contactId = (new ObjectId()).toHexString();
+
+      // console.log(_companyId);
+
+      Buttress.Company
+        .save({
+          id: _companyId,
+          name: 'Blackburn Widget Company',
+          companyType: 'prospect',
+          contacts: [{
+            id: _contactId,
+            name: 'Robert McBobson',
+            role: 'Managing Director'
+          }]
+        })
+        .then(function(company) {
+          // console.log(companyId === _companyId);
+          company.id.should.equal(_companyId);
+          company.locations.length.should.equal(0);
+          done();
+        });
+    });
     it('should add several companies', function(done) {
       const __gen = num => {
         let arr = [];
@@ -135,9 +175,9 @@ describe('@company-basics', function() {
       };
 
       Buttress.Company
-        .saveAll({companies: __gen(300)})
+        .saveAll({companies: __gen(1000)})
         .then(function(companies) {
-          companies.length.should.equal(300);
+          companies.length.should.equal(1000);
           _companies = companies;
           done();
         })
@@ -167,8 +207,8 @@ describe('@company-contacts', function() {
           role: 'Managing Director'
         }
       })
-      .then(function(companyId) {
-        _companyId = companyId;
+      .then(function(company) {
+        _companyId = company.id;
         done();
       })
       .catch(done);
@@ -312,8 +352,8 @@ describe('@company-locations', function() {
           role: 'Managing Director'
         }
       })
-      .then(function(companyId) {
-        _companyId = companyId;
+      .then(function(company) {
+        _companyId = company.id;
         done();
       })
       .catch(done);
@@ -509,8 +549,8 @@ describe('@company-notes', function() {
           role: 'Managing Director'
         }
       })
-      .then(function(companyId) {
-        _companyId = companyId;
+      .then(function(company) {
+        _companyId = company.id;
         done();
       })
       .catch(done);
@@ -672,9 +712,6 @@ describe('@company-metadata', function() {
           name: "Robert McBobson",
           role: 'Managing Director'
         }
-      })
-      .then(function(companyId) {
-        return Buttress.Company.load(companyId);
       })
       .then(function(company) {
         _company = company;
