@@ -104,15 +104,29 @@ describe('@company-basics', function() {
     });
     it('should return 1 company', function(done) {
       Buttress.Company
-        .getAll()
-        .then(function(companies) {
-          companies.should.have.length(1);
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
+      .getAll()
+      .then(function(companies) {
+        companies.should.have.length(1);
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
     });
+    it('should update the company', function(done) {
+      Buttress.Company
+      .update(_company.id, {
+        path: 'siccode',
+        value: "Get Fucked"
+      })
+      .then(function(results) {
+        done(new Error('Should not succeed'));
+      })
+      .catch(function(err) {
+        err.statusCode.should.equal(400);
+        done();
+      });
+  });
     it('should remove a company', function(done) {
       if (!_company) {
         return done(new Error("No Company!"));
