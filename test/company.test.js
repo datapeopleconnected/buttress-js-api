@@ -117,7 +117,7 @@ describe('@company-basics', function() {
       Buttress.Company
       .update(_company.id, {
         path: 'siccode',
-        value: "Get Fucked"
+        value: "Not a String"
       })
       .then(function(results) {
         done(new Error('Should not succeed'));
