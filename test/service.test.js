@@ -222,10 +222,18 @@ describe('@service-basics', function() {
         {
           path: 'appProp6.nested.approvals.0.approverId',
           value: _user.id
+        },
+        {
+          path: 'appProp6.nested.approvals',
+          value: {
+            status: 'approved',
+            approverId: _user.id
+            // approverId: null
+          }
         }
       ])
       .then(function(updates) {
-        updates.length.should.equal(7);
+        updates.length.should.equal(8);
         updates[0].type.should.equal('scalar');
         updates[0].path.should.equal('appProp6.date');
         updates[0].value.should.equal('2017-07-31T00:00:00.000Z');
