@@ -1,5 +1,5 @@
 # buttress-api-js
-### version: 1.5.0
+### version: 1.5.1
 - Added new service Model & API
 - Added new schema API
 - Added bulk add for documents
