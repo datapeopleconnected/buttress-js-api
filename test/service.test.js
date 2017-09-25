@@ -261,6 +261,24 @@ describe('@service-basics', function() {
         done(err);
       });
     });
+    it('should update an app schema id property', function(done) {
+      const _newCompanyId = (new ObjectId()).toHexString();
+      if (!_service) {
+        return done(new Error("No Service!"));
+      }
+      Buttress.Service.update(_service.id, {
+        path: 'appProp6.companyId',
+        value: _newCompanyId
+      })
+      .then(function(updates) {
+        updates.length.should.equal(1);
+        updates[0].value.should.equal(_newCompanyId);
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
+    });
     it('should not update an app schema property', function(done) {
       if (!_service) {
         return done(new Error("No Service!"));
