@@ -1,4 +1,7 @@
 # buttress-api-js
+### version: 1.5.4
+- Version bump to match buttress.
+
 ### version: 1.5.1
 - Added new service Model & API
 - Added new schema API
