@@ -34,6 +34,10 @@ describe('@company-basics', function() {
 
   describe('Company Basics', function() {
     let _company = null;
+    const _companyId = (new ObjectId()).toHexString();
+    const _locationId = (new ObjectId()).toHexString();
+    const _contactId = (new ObjectId()).toHexString();
+
     it('should return no companies', function(done) {
       Buttress.Company
         .getAll()
@@ -46,12 +50,6 @@ describe('@company-basics', function() {
         });
     });
     it('should add a company', function(done) {
-      const _companyId = (new ObjectId()).toHexString();
-      const _locationId = (new ObjectId()).toHexString();
-      const _contactId = (new ObjectId()).toHexString();
-
-      // console.log(_companyId);
-
       Buttress.Company
         .save({
           id: _companyId,
@@ -72,7 +70,6 @@ describe('@company-basics', function() {
           }]
         })
         .then(function(company) {
-          // console.log(companyId === _companyId);
           company.id.should.equal(_companyId);
           return company;
         })
@@ -82,18 +79,18 @@ describe('@company-basics', function() {
           company.name.should.equal('Blackburn Widget Company');
           company.companyType.should.equal('prospect');
           company.locations.length.should.equal(1);
-          company.locations[0]._id.should.equal(_locationId);
-          company.contacts[0]._id.should.equal(_contactId);
-          company.primaryLocation.should.equal(company.locations[0]._id);
-          company.primaryContact.should.equal(company.contacts[0]._id);
+          company.locations[0].id.should.equal(_locationId);
+          company.contacts[0].id.should.equal(_contactId);
+          company.primaryLocation.should.equal(_locationId);
+          company.primaryContact.should.equal(_contactId);
 
-          const location = company.locations.find(l => l._id === company.primaryLocation);
+          const location = company.locations.find(l => l.id === company.primaryLocation);
           location.address.should.equal('124 Bonsall Street, Mill Hill');
           location.city.should.equal('Blackburn');
           location.postCode.should.equal('BB2 5DS');
           location.phoneNumber.should.equal('01254 123123');
 
-          const contact = company.contacts.find(c => c._id === company.primaryContact);
+          const contact = company.contacts.find(c => c.id === company.primaryContact);
           contact.name.should.equal('Robert McBobson');
           contact.role.should.equal('Managing Director');
           done();
@@ -107,6 +104,9 @@ describe('@company-basics', function() {
       .getAll()
       .then(function(companies) {
         companies.should.have.length(1);
+        should.exist(companies[0].locations[0].id);
+        companies[0].locations[0].id.should.equal(_locationId);
+
         done();
       })
       .catch(function(err) {
@@ -126,7 +126,19 @@ describe('@company-basics', function() {
         err.statusCode.should.equal(400);
         done();
       });
-  });
+    });
+    it('should update the company', function(done) {
+      Buttress.Company
+      .update(_company.id, {
+        path: 'siccode',
+        value: 123456
+      })
+      .then(function(results) {
+        results.length.should.equal(1);
+        done();
+      })
+      .catch(done);
+    });
     it('should remove a company', function(done) {
       if (!_company) {
         return done(new Error("No Company!"));
@@ -144,8 +156,6 @@ describe('@company-basics', function() {
     it('should add a company with no locations', function(done) {
       const _companyId = (new ObjectId()).toHexString();
       const _contactId = (new ObjectId()).toHexString();
-
-      // console.log(_companyId);
 
       Buttress.Company
         .save({
@@ -171,13 +181,14 @@ describe('@company-basics', function() {
         for (let x = 0; x < num; x++) {
           arr.push({
             name: `Blackburn Widget Company ${x + 1}`,
-            location: {
+            locations: [{
+              id: (new ObjectId()).toHexString(),
               name: "Headquarters",
               address: "124 Bonsall Street, Mill Hill",
               city: "Blackburn",
               postCode: "BB2 5DS",
               phoneNumber: "01254 123123"
-            },
+            }],
             contact: {
               name: "Robert McBobson",
               role: 'Managing Director'
@@ -209,17 +220,19 @@ describe('@company-contacts', function() {
     Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
-        location: {
+        locations: [{
+          id: (new ObjectId()).toHexString(),
           name: "Headquarters",
           address: "124 Bonsall Street, Mill Hill",
           city: "Blackburn",
           postCode: "BB2 5DS",
           phoneNumber: "01254 123123"
-        },
-        contact: {
+        }],
+        contacts: [{
+          id: (new ObjectId()).toHexString(),
           name: "Robert McBobson",
           role: 'Managing Director'
-        }
+        }]
       })
       .then(function(company) {
         _companyId = company.id;
@@ -244,6 +257,7 @@ describe('@company-contacts', function() {
       Buttress.Company.update(_companyId, {
         path: 'contacts',
         value: {
+          id: new ObjectId(),
           name: 'Han Solo',
           role: 'Sales Director'
         }
@@ -349,25 +363,32 @@ describe('@company-contacts', function() {
 
 describe('@company-locations', function() {
   let _companyId = '';
+  const _locationIds = [
+    (new ObjectId()).toHexString(),
+    (new ObjectId()).toHexString()
+  ];
 
   before(function(done) {
     Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
-        location: {
+        locations: [{
+          id: _locationIds[0],
           name: "Headquarters",
           address: "124 Bonsall Street, Mill Hill",
           city: "Blackburn",
           postCode: "BB2 5DS",
           phoneNumber: "01254 123123"
-        },
-        contact: {
+        }],
+        contacts: [{
+          id: (new ObjectId()).toHexString(),
           name: "Robert McBobson",
           role: 'Managing Director'
-        }
+        }]
       })
       .then(function(company) {
         _companyId = company.id;
+        company.locations[0].id.should.equal(_locationIds[0]);
         done();
       })
       .catch(done);
@@ -389,6 +410,7 @@ describe('@company-locations', function() {
       Buttress.Company.update(_companyId, {
         path: 'locations',
         value: {
+          id: _locationIds[1],
           name: 'Distribution Depot',
           address: '25 East Street, Feniscowles',
           city: "Blackburn",
@@ -402,6 +424,7 @@ describe('@company-locations', function() {
           updates[0].path.should.equal('locations');
           should.not.exist(updates[0].value._id);
           should.exist(updates[0].value.id);
+          updates[0].value.id.should.equal(_locationIds[1]);
           updates[0].value.name.should.equal('Distribution Depot');
           updates[0].value.address.should.equal('25 East Street, Feniscowles');
           updates[0].value.city.should.equal('Blackburn');
@@ -421,7 +444,10 @@ describe('@company-locations', function() {
       Buttress.Company
         .load(_companyId)
         .then(function(company) {
+          // console.log(company);
           company.locations.should.have.length(2);
+          company.locations[1].id.should.equal(_locationIds[1]);
+
           done();
         })
         .catch(function(err) {
@@ -473,7 +499,7 @@ describe('@company-locations', function() {
         .update(_companyId, {
           path: 'locations.1',
           value: {
-            name: 'Distribution Despot',
+            name: 'Distribution Depot',
             address: '24 East Street, Feniscowles',
             city: "Whiteburn",
             postCode: "BB1 5ET",
@@ -483,7 +509,7 @@ describe('@company-locations', function() {
         .then(function(cr) {
           cr[0].type.should.equal('scalar');
           cr[0].path.should.equal('locations.1');
-          cr[0].value.name.should.equal('Distribution Despot');
+          cr[0].value.name.should.equal('Distribution Depot');
           cr[0].value.phoneNumber.should.equal('01254 654321');
           done();
         })
@@ -500,7 +526,7 @@ describe('@company-locations', function() {
         .load(_companyId)
         .then(function(company) {
           company.locations.should.have.length(2);
-          company.locations[1].name.should.equal('Distribution Despot');
+          company.locations[1].name.should.equal('Distribution Depot');
           done();
         })
         .catch(function(err) {
@@ -551,17 +577,19 @@ describe('@company-notes', function() {
     Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
-        location: {
+        locations: [{
+          id: (new ObjectId()).toHexString(),
           name: "Headquarters",
           address: "124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS",
           city: "Blackburn",
           postCode: "BB2 5DS",
           phoneNumber: "01254 123123"
-        },
-        contact: {
+        }],
+        contacts: [{
+          id: (new ObjectId()).toHexString(),
           name: "Robert McBobson",
           role: 'Managing Director'
-        }
+        }]
       })
       .then(function(company) {
         _companyId = company.id;
@@ -715,17 +743,19 @@ describe('@company-metadata', function() {
     Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
-        location: {
+        locations: [{
+          id: (new ObjectId()).toHexString(),
           name: "Headquarters",
           address: "124 Bonsall Street, Mill Hill",
           city: "Blackburn",
           postCode: "BB2 5DS",
           phoneNumber: "01254 123123"
-        },
-        contact: {
+        }],
+        contacts: [{
+          id: (new ObjectId()).toHexString(),
           name: "Robert McBobson",
           role: 'Managing Director'
-        }
+        }]
       })
       .then(function(company) {
         _company = company;
