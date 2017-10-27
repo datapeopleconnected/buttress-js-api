@@ -1,5 +1,5 @@
 # buttress-api-js
-### version: 1.5.4
+### version: 1.5.5
 - Version bump to match buttress.
 
 ### version: 1.5.1
