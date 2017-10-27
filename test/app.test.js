@@ -30,12 +30,12 @@ describe('@app-basics', function() {
       Buttress.App
         .getSchema()
         .then(function(schema) {
-          schema.length.should.equal(1);
-          schema[0].collection.should.equal('services');
-          schema[0].properties.appProp1.__type.should.equal('string');
-          schema[0].properties.appProp1.__required.should.equal(true);
-          schema[0].properties.appProp1.__allowUpdate.should.equal(true);
-          schema[0].properties.appProp5.__default.should.equal('pending');
+          schema.length.should.equal(2);
+          schema[1].collection.should.equal('services');
+          schema[1].properties.appProp1.__type.should.equal('string');
+          schema[1].properties.appProp1.__required.should.equal(true);
+          schema[1].properties.appProp1.__allowUpdate.should.equal(true);
+          schema[1].properties.appProp5.__default.should.equal('pending');
           done();
         })
         .catch(function(err) {
