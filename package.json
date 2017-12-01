@@ -1,7 +1,7 @@
 {
   "name": "buttress-js-api",
   "description": "ButtressJS API for Node.js",
-  "version": "1.5.7",
+  "version": "1.5.9",
   "author": "Lighten",
   "contributors": [
     "Chris Bates-Keegan <chris@wearelighten.co.uk>"
