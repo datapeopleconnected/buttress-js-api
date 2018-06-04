@@ -1,5 +1,5 @@
 # buttress-api-js
-### version: 1.5.11
+### version: 1.5.12
 - Added support for bulk adding (campaigns, contact lists & appointments)
 
 ### version: 1.5.6
