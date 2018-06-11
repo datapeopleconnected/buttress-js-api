@@ -1,12 +1,15 @@
 # buttress-api-js
-### version: 1.5.13
+### Version: 1.5.14
+- FIX: Schema API _checkOptions not being passed options
+
+### 1.5.13
 - TWEAK: Added Add/Update/Remove to generic schema api
 
 ### 1.5.12
 - Added support for bulk adding (campaigns, contact lists & appointments)
 
 ### 1.5.6
-- Version bump to match buttress.
+- Version bump to match buttress
 
 ### 1.5.1
 - Added new service Model & API
