@@ -1,11 +1,14 @@
 # buttress-api-js
-### version: 1.5.12
+### version: 1.5.13
+- TWEAK: Added Add/Update/Remove to generic schema api
+
+### 1.5.12
 - Added support for bulk adding (campaigns, contact lists & appointments)
 
-### version: 1.5.6
+### 1.5.6
 - Version bump to match buttress.
 
-### version: 1.5.1
+### 1.5.1
 - Added new service Model & API
 - Added new schema API
 - Added bulk add for documents
