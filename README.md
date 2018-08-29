@@ -1,22 +1,25 @@
 # buttress-api-js
-### Version: 1.5.14
+### Latest: 1.5.15
+- ADDED: API Support for location schema
+
+### 1.5.14
 - FIX: Schema API _checkOptions not being passed options
 
 ### 1.5.13
 - TWEAK: Added Add/Update/Remove to generic schema api
 
 ### 1.5.12
-- Added support for bulk adding (campaigns, contact lists & appointments)
+- ADDED: support for bulk adding (campaigns, contact lists & appointments)
 
 ### 1.5.6
-- Version bump to match buttress
+- TWEAK: Version bump to match buttress
 
 ### 1.5.1
-- Added new service Model & API
-- Added new schema API
-- Added bulk add for documents
-- Refactor Bulk delete api now uses POST and accepts id's via the post body
-- Fixed, Added and Improved tests throughout
+- ADDED: new service Model & API
+- ADDED: new schema API
+- ADDED: bulk add for documents
+- REFACTOR: Bulk delete api now uses POST and accepts id's via the post body
+- FIXED, ADDED and IMPROVED tests throughout
 - Various Fixes
 
 ### 1.0.0
