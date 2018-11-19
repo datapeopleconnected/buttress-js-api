@@ -1,6 +1,9 @@
 [
   {
+    "name": "companies",
+    "type": "collection",
     "collection": "companies",
+    "extends": [],
     "properties": {
       "siccode": {
         "__type": "number",
@@ -136,7 +139,10 @@
     }
   },
   {
+    "name": "services",
+    "type": "collection",
     "collection": "services",
+    "extends": [],
     "properties": {
       "appProp1": {
         "__type": "string",
