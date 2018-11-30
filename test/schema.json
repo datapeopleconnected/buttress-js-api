@@ -1,6 +1,6 @@
 [
   {
-    "name": "companies",
+    "name": "company",
     "type": "collection",
     "collection": "companies",
     "extends": [],
@@ -139,7 +139,7 @@
     }
   },
   {
-    "name": "services",
+    "name": "service",
     "type": "collection",
     "collection": "services",
     "extends": [],
