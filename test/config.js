@@ -33,18 +33,11 @@ class Config {
     before(function(done) {
       Promise.all([
         Buttress.initSchema(),
-        Buttress.Campaign.removeAll(),
         Buttress.User.removeAll(),
         Buttress.Person.removeAll(),
         Buttress.Token.removeAllUserTokens(),
-        Buttress.Company.removeAll(),
-        Buttress.Contactlist.removeAll(),
-        Buttress.Call.removeAll(),
-        Buttress.Task.removeAll(),
-        Buttress.Notification.removeAll(),
-        Buttress.Appointment.removeAll(),
         Buttress.Service.removeAll(),
-        Buttress.Contract.removeAll()
+        Buttress.Company.removeAll()
       ])
         .then(() => done())
         .catch(err => {
