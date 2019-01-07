@@ -142,6 +142,36 @@
     "type": "collection",
     "collection": "services",
     "properties": {
+      "name": {
+        "__type": "string",
+        "__required": true,
+        "__allowUpdate": true
+      },
+      "companyId": {
+        "__type": "id",
+        "__required": false,
+        "__allowUpdate": true
+      },
+      "statusCode": {
+        "__type": "number",
+        "__required": true,
+        "__allowUpdate": true
+      },
+      "description": {
+        "__type": "string",
+        "__required": false,
+        "__allowUpdate": true
+      },
+      "serviceType": {
+        "__type": "string",
+        "__required": true,
+        "__allowUpdate": true
+      },
+      "ownerUserId": {
+        "__type": "id",
+        "__required": true,
+        "__allowUpdate": true
+      },
       "appProp1": {
         "__type": "string",
         "__required": true,
