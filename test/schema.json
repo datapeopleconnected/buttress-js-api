@@ -1,5 +1,7 @@
 [
   {
+    "name": "company",
+    "type": "collection",
     "collection": "companies",
     "properties": {
       "siccode": {
@@ -136,6 +138,8 @@
     }
   },
   {
+    "name": "service",
+    "type": "collection",
     "collection": "services",
     "properties": {
       "appProp1": {

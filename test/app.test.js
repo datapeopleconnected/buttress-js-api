@@ -32,6 +32,7 @@ describe('@app-basics', function() {
         .then(function(schema) {
           schema.length.should.equal(2);
           schema[1].collection.should.equal('services');
+          schema[1].name.should.equal('service');
           schema[1].properties.appProp1.__type.should.equal('string');
           schema[1].properties.appProp1.__required.should.equal(true);
           schema[1].properties.appProp1.__allowUpdate.should.equal(true);
