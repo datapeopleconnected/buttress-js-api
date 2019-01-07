@@ -64,6 +64,7 @@ describe('@service-basics', function() {
           ownerUserId: _user.id,
           companyId: _companies[0].id,
           name: 'Open Source',
+          statusCode: 20,
           description: 'Open source development consultancy',
           serviceType: 'consultancy',
           appProp1: 'This is required!',
@@ -130,228 +131,229 @@ describe('@service-basics', function() {
           done(new Error(err.message));
         });
     });
-//     it('should not add a service with invalid properties', function(done) {
-//       Buttress.Service
-//         .save({
-//           ownerUserId: _user.id,
-//           companyId: _companies[0].id,
-//           name: 'Open Source (Extended)',
-//           description: 'Open source development consultancy',
-//           serviceType: 'consultancy',
-//           appProp2: "This isn't a number"
-//         })
-//         .then(function(service) {
-//           done(new Error('Should not succeed'));
-//         })
-//         .catch(function(err) {
-//           err.statusCode.should.equal(400);
-//           done();
-//         });
-//     });
-//     it('should not add a service with missing required properties', function(done) {
-//       Buttress.Service
-//         .save({
-//           ownerUserId: _user.id,
-//           companyId: _companies[0].id,
-//           name: 'Open Source (Extended)',
-//           description: 'Open source development consultancy',
-//           serviceType: 'consultancy',
-//           appProp2: 123
-//         })
-//         .then(function(service) {
-//           done(new Error('Should not succeed'));
-//         })
-//         .catch(function(err) {
-//           err.statusCode.should.equal(400);
-//           done();
-//         });
-//     });
-//     it('should get a specific service', function(done) {
-//       Buttress.Service
-//         .load(_serviceId)
-//         .then(function(service) {
-//           _service = service;
-//           _service.id.should.equal(_serviceId);
-//           _service.companyId.should.equal(_companies[0].id);
-//           _service.name.should.equal('Open Source');
-//           _service.description.should.equal('Open source development consultancy');
-//           _service.serviceType.should.equal('consultancy');
-//           _service.ownerUserId.should.equal(_user.id);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should update an app schema property', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.Service.update(_service.id, [
-//         {
-//           path: 'appProp6.date',
-//           value: new Date('2017-07-31')
-//         },
-//         {
-//           path: 'appProp4.1',
-//           value: 'from'
-//         },
-//         {
-//           path: 'appProp7.0.name',
-//           value: 'name#2'
-//         },
-//         {
-//           path: 'appProp7.0.nestedInteresting.nestedBool',
-//           value: true
-//         },
-//         {
-//           path: 'appProp7',
-//           value: {
-//             name: 'name#inserted',
-//             isInteresting: false,
-//             invalidProp: 'hello!',
-//             nestedInteresting: {
-//               nestedBool: false
-//             }
-//           }
-//         },
-//         {
-//           path: 'appProp6.nested.approvals.0.status',
-//           value: 'approved'
-//         },
-//         {
-//           path: 'appProp6.nested.approvals.0.approverId',
-//           value: _user.id
-//         },
-//         {
-//           path: 'appProp6.nested.approvals',
-//           value: {
-//             status: 'approved',
-//             approverId: _user.id
-//             // approverId: null
-//           }
-//         }
-//       ])
-//       .then(function(updates) {
-//         updates.length.should.equal(8);
-//         updates[0].type.should.equal('scalar');
-//         updates[0].path.should.equal('appProp6.date');
-//         updates[0].value.should.equal('2017-07-31T00:00:00.000Z');
-//         updates[1].type.should.equal('scalar');
-//         updates[1].path.should.equal('appProp4.1');
-//         updates[1].value.should.equal('from');
-//         updates[2].type.should.equal('scalar');
-//         updates[2].path.should.equal('appProp7.0.name');
-//         updates[2].value.should.equal('name#2');
-//         updates[3].type.should.equal('scalar');
-//         updates[3].path.should.equal('appProp7.0.nestedInteresting.nestedBool');
-//         updates[3].value.should.equal(true);
-//         updates[3].type.should.equal('scalar');
-//         updates[4].path.should.equal('appProp7');
-//         const updated = updates[4].value;
-//         updated.name.should.equal('name#inserted');
-//         updated.nestedInteresting.nestedString.should.equal('pending');
-//         updates[5].type.should.equal('scalar');
-//         updates[5].path.should.equal('appProp6.nested.approvals.0.status');
-//         updates[5].value.should.equal('approved');
+    it('should not add a service with invalid properties', function(done) {
+      Buttress.Service
+        .save({
+          ownerUserId: _user.id,
+          companyId: _companies[0].id,
+          name: 'Open Source (Extended)',
+          description: 'Open source development consultancy',
+          serviceType: 'consultancy',
+          appProp2: "This isn't a number"
+        })
+        .then(function(service) {
+          done(new Error('Should not succeed'));
+        })
+        .catch(function(err) {
+          err.statusCode.should.equal(400);
+          done();
+        });
+    });
+    it('should not add a service with missing required properties', function(done) {
+      Buttress.Service
+        .save({
+          ownerUserId: _user.id,
+          companyId: _companies[0].id,
+          name: 'Open Source (Extended)',
+          description: 'Open source development consultancy',
+          serviceType: 'consultancy',
+          appProp2: 123
+        })
+        .then(function(service) {
+          done(new Error('Should not succeed'));
+        })
+        .catch(function(err) {
+          err.statusCode.should.equal(400);
+          done();
+        });
+    });
+    it('should get a specific service', function(done) {
+      Buttress.Service
+        .load(_serviceId)
+        .then(function(service) {
+          _service = service;
+          _service.id.should.equal(_serviceId);
+          _service.companyId.should.equal(_companies[0].id);
+          _service.name.should.equal('Open Source');
+          _service.description.should.equal('Open source development consultancy');
+          _service.serviceType.should.equal('consultancy');
+          _service.ownerUserId.should.equal(_user.id);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should update an app schema property', function(done) {
+      if (!_service) {
+        return done(new Error("No Service!"));
+      }
+      Buttress.Service.update(_service.id, [
+        {
+          path: 'appProp6.date',
+          value: new Date('2017-07-31')
+        },
+        {
+          path: 'appProp4.1',
+          value: 'from'
+        },
+        {
+          path: 'appProp7.0.name',
+          value: 'name#2'
+        },
+        {
+          path: 'appProp7.0.nestedInteresting.nestedBool',
+          value: true
+        },
+        {
+          path: 'appProp7',
+          value: {
+            name: 'name#inserted',
+            isInteresting: false,
+            invalidProp: 'hello!',
+            nestedInteresting: {
+              nestedBool: false
+            }
+          }
+        },
+        {
+          path: 'appProp6.nested.approvals.0.status',
+          value: 'approved'
+        },
+        {
+          path: 'appProp6.nested.approvals.0.approverId',
+          value: _user.id
+        },
+        {
+          path: 'appProp6.nested.approvals',
+          value: {
+            status: 'approved',
+            approverId: _user.id
+            // approverId: null
+          }
+        }
+      ])
+      .then(function(updates) {
+        updates.length.should.equal(8);
+        updates[0].type.should.equal('scalar');
+        updates[0].path.should.equal('appProp6.date');
+        updates[0].value.should.equal('2017-07-31T00:00:00.000Z');
+        updates[1].type.should.equal('scalar');
+        updates[1].path.should.equal('appProp4.1');
+        updates[1].value.should.equal('from');
+        updates[2].type.should.equal('scalar');
+        updates[2].path.should.equal('appProp7.0.name');
+        updates[2].value.should.equal('name#2');
+        updates[3].type.should.equal('scalar');
+        updates[3].path.should.equal('appProp7.0.nestedInteresting.nestedBool');
+        updates[3].value.should.equal(true);
+        updates[3].type.should.equal('scalar');
+        updates[4].path.should.equal('appProp7');
+        const updated = updates[4].value;
+        updated.name.should.equal('name#inserted');
+        updated.nestedInteresting.nestedString.should.equal('pending');
+        updates[5].type.should.equal('scalar');
+        updates[5].path.should.equal('appProp6.nested.approvals.0.status');
+        updates[5].value.should.equal('approved');
 
-//         done();
-//       })
-//       .catch(function(err) {
-//         done(err);
-//       });
-//     });
-//     it('should update an app schema id property', function(done) {
-//       const _newCompanyId = (new ObjectId()).toHexString();
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.Service.update(_service.id, {
-//         path: 'appProp6.companyId',
-//         value: _newCompanyId
-//       })
-//       .then(function(updates) {
-//         updates.length.should.equal(1);
-//         updates[0].value.should.equal(_newCompanyId);
-//         done();
-//       })
-//       .catch(function(err) {
-//         done(err);
-//       });
-//     });
-//     it('should not update an app schema property', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.Service.update(_service.id, {
-//         path: 'appProp6.test',
-//         value: 'don\'t change this'
-//       })
-//       .then(function(updates) {
-//         done(new Error('Should not succeed'));
-//       })
-//       .catch(function(err) {
-//         err.statusCode.should.equal(400);
-//         done();
-//       });
-//     });
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
+    });
+    it('should update an app schema id property', function(done) {
+      const _newCompanyId = (new ObjectId()).toHexString();
+      if (!_service) {
+        return done(new Error("No Service!"));
+      }
+      Buttress.Service.update(_service.id, {
+        path: 'appProp6.companyId',
+        value: _newCompanyId
+      })
+      .then(function(updates) {
+        updates.length.should.equal(1);
+        updates[0].value.should.equal(_newCompanyId);
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
+    });
+    it('should not update an app schema property', function(done) {
+      if (!_service) {
+        return done(new Error("No Service!"));
+      }
+      Buttress.Service.update(_service.id, {
+        path: 'appProp6.test',
+        value: 'don\'t change this'
+      })
+      .then(function(updates) {
+        done(new Error('Should not succeed'));
+      })
+      .catch(function(err) {
+        err.statusCode.should.equal(400);
+        done();
+      });
+    });
 
-//     it('should return 1 service', function(done) {
-//       Buttress.Service
-//         .getAll()
-//         .then(function(services) {
-//           services.should.have.length(1);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should remove a service', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.Service
-//         .remove(_service.id)
-//         .then(function(res) {
-//           res.should.equal(true);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should add several services', function(done) {
-//       const __gen = num => {
-//         let arr = [];
-//         for (let x = 0; x < num; x++) {
-//           arr.push({
-//             id: (new ObjectId()).toHexString(),
-//             ownerUserId: _user.id,
-//             companyId: _companies[0].id,
-//             name: `Open Source ${x + 1}`,
-//             description: 'Open source development consultancy',
-//             serviceType: 'consultancy',
-//             appProp1: 'Required app property'
-//           });
-//         }
+    it('should return 1 service', function(done) {
+      Buttress.Service
+        .getAll()
+        .then(function(services) {
+          services.should.have.length(1);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should remove a service', function(done) {
+      if (!_service) {
+        return done(new Error("No Service!"));
+      }
+      Buttress.Service
+        .remove(_service.id)
+        .then(function(res) {
+          res.should.equal(true);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+    it('should add several services', function(done) {
+      const __gen = num => {
+        let arr = [];
+        for (let x = 0; x < num; x++) {
+          arr.push({
+            id: (new ObjectId()).toHexString(),
+            ownerUserId: _user.id,
+            companyId: _companies[0].id,
+            statusCode: 1,
+            name: `Open Source ${x + 1}`,
+            description: 'Open source development consultancy',
+            serviceType: 'consultancy',
+            appProp1: 'Required app property'
+          });
+        }
 
-//         return arr;
-//       };
+        return arr;
+      };
 
-//       Buttress.Service
-//         .saveAll({services: __gen(300)})
-//         .then(function(services) {
-//           services.length.should.equal(300);
-//           _services = services;
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//   });
-// });
+      Buttress.Service
+        .saveAll(__gen(300))
+        .then(function(services) {
+          services.length.should.equal(300);
+          _services = services;
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+  });
+});
 
 // describe('@service-notes', function() {
 //   let _service = null;
@@ -522,130 +524,3 @@ describe('@service-basics', function() {
 //     });
 //   });
 // });
-
-// describe('@service-metadata', function() {
-//   let _service = null;
-//   let _companies = [];
-//   let _user = null;
-
-//   before(function(done) {
-//     Config.createUser().then(user => {
-//       _user = user;
-//     })
-//       .then(Config.createCompanies)
-//       .then(function(companies) {
-//         _companies = companies;
-//         Buttress.Service
-//           .save({
-//             ownerUserId: _user.id,
-//             companyId: _companies[0].id,
-//             name: 'Open Source',
-//             description: 'Open source development consultancy',
-//             serviceType: 'consultancy',
-//             appProp1: 'Required app property'
-//           })
-//           .then(function(service) {
-//             _service = service;
-//             done();
-//           });
-//       }).catch(done);
-//   });
-
-//   after(function(done) {
-//     let tasks = [
-//       Buttress.Company.bulkRemove(_companies.map(c => c.id)),
-//       Buttress.User.remove(_user.id),
-//       Buttress.Person.remove(_user.person.id),
-//       Buttress.Service.remove(_service.id)
-//     ];
-
-//     Promise.all(tasks).then(() => done()).catch(done);
-//   });
-
-//   describe('Metadata', function() {
-//     it('should get default metadata', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.Service.Metadata
-//         .load(_service.id, 'TEST_DATA', false)
-//         .then(function(metadata) {
-//           metadata.should.equal(false);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should add metadata', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.Service.Metadata
-//         .save(_service.id, 'TEST_DATA', {foo: 'bar'})
-//         .then(function(metadata) {
-//           metadata.foo.should.equal('bar');
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should get metadata', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.Service.Metadata
-//         .load(_service.id, 'TEST_DATA', false)
-//         .then(function(metadata) {
-//           metadata.foo.should.equal('bar');
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should delete metadata', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.Service.Metadata
-//         .remove(_service.id, 'TEST_DATA')
-//         .then(function(metadata) {
-//           metadata.should.equal(true);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should get default metadata (post-deletion)', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.Service.Metadata
-//         .load(_service.id, 'TEST_DATA', false)
-//         .then(function(metadata) {
-//           metadata.should.equal(false);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should fail to delete metadata', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.Service.Metadata
-//         .remove(_service.id, 'TEST_DATA')
-//         .then(function(metadata) {
-//           metadata.should.equal(false);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-  });
-});

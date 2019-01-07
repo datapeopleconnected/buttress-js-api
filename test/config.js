@@ -35,9 +35,9 @@ class Config {
         Buttress.initSchema(),
         Buttress.User.removeAll(),
         Buttress.Person.removeAll(),
-        Buttress.Token.removeAllUserTokens()
-        // Buttress.Service.removeAll(),
-        // Buttress.Company.removeAll()
+        Buttress.Token.removeAllUserTokens(),
+        Buttress.Service.removeAll(),
+        Buttress.Company.removeAll()
       ])
         .then(() => done())
         .catch(err => {
