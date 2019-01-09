@@ -55,6 +55,8 @@ describe('@company-basics', function() {
           id: _companyId,
           name: 'Blackburn Widget Company',
           companyType: 'prospect',
+          primaryLocation: _locationId,
+          primaryContact: _contactId,
           locations: [{
             id: _locationId,
             name: "Headquarters",
@@ -181,6 +183,7 @@ describe('@company-basics', function() {
         for (let x = 0; x < num; x++) {
           arr.push({
             name: `Blackburn Widget Company ${x + 1}`,
+            companyType: 'prospect',
             locations: [{
               id: (new ObjectId()).toHexString(),
               name: "Headquarters",
@@ -200,7 +203,7 @@ describe('@company-basics', function() {
       };
 
       Buttress.Company
-        .saveAll({companies: __gen(1000)})
+        .saveAll(__gen(1000))
         .then(function(companies) {
           companies.length.should.equal(1000);
           _companies = companies;
@@ -220,6 +223,7 @@ describe('@company-contacts', function() {
     Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: "Headquarters",
@@ -372,6 +376,7 @@ describe('@company-locations', function() {
     Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
+        companyType: 'prospect',
         locations: [{
           id: _locationIds[0],
           name: "Headquarters",
@@ -577,6 +582,7 @@ describe('@company-notes', function() {
     Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: "Headquarters",
@@ -614,6 +620,7 @@ describe('@company-notes', function() {
       Buttress.Company.update(_companyId, {
         path: 'notes',
         value: {
+          id: (new ObjectId()).toHexString(),
           text: 'This is an important note'
         }
       })
@@ -635,6 +642,7 @@ describe('@company-notes', function() {
       Buttress.Company.update(_companyId, {
         path: 'notes',
         value: {
+          id: (new ObjectId()).toHexString(),
           text: 'This is another important note'
         }
       })

@@ -4,11 +4,36 @@
     "type": "collection",
     "collection": "companies",
     "properties": {
+      "name": {
+        "__type": "string",
+        "__required": true,
+        "__allowUpdate": true
+      },
+      "companyType": {
+        "__type": "string",
+        "__enum": ["prospect", "client", "supplier"],
+        "__default": "prospect",
+        "__required": true,
+        "__allowUpdate": true
+      },
+
+      "primaryContact": {
+        "__type": "string",
+        "__required": false,
+        "__default": null
+      },
+      "primaryLocation": {
+        "__type": "string",
+        "__required": false,
+        "__default": null
+      },
+
       "siccode": {
         "__type": "number",
         "__default": 0,
         "__allowUpdate": true
       },
+
       "contacts": {
         "__type": "array",
         "__default": [],
@@ -132,6 +157,28 @@
             "__default": "",
             "__required": false,
             "__allowUpdate": true
+          }
+        }
+      },
+      "notes": {
+        "__type": "array",
+        "__default": [],
+        "__allowUpdate": true,
+        "__schema": {
+          "id": {
+            "__type": "id",
+            "__required": true,
+            "__allowUpdate": false
+          },
+          "text": {
+            "__type": "string",
+            "__required": true,
+            "__allowUpdate": true
+          },
+          "timestamp": {
+            "__type": "date",
+            "__default": "now",
+            "__allowUpdate": false
           }
         }
       }

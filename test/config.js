@@ -58,6 +58,7 @@ class Config {
     const companies = [
       {
         name: 'Company 1',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: 'HQ',
@@ -77,6 +78,7 @@ class Config {
       },
       {
         name: 'Company 2',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: 'HQ',
@@ -95,6 +97,7 @@ class Config {
       },
       {
         name: 'Company 3',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: 'HQ',
@@ -113,6 +116,7 @@ class Config {
       },
       {
         name: 'Company 4',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: 'HQ',
@@ -131,6 +135,7 @@ class Config {
       },
       {
         name: 'Company 5',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: 'HQ',
