@@ -6,32 +6,31 @@
 		"extends": [
 			"timestamps"
 		],
-		"roles": {
-			"public": {
-				"endpointDisposition": {
-					"GET": "allow",
-					"PUT": "deny",
-					"POST": "deny",
-					"DELETE": "deny"
-				},
-				"dataDisposition": {
-					"read": "deny",
-					"update": "deny"
-				}
+		"roles": [{
+			"role": "public",
+			"endpointDisposition": {
+				"GET": "allow",
+				"PUT": "deny",
+				"POST": "deny",
+				"DELETE": "deny"
 			},
-			"user.member": {
-				"endpointDisposition": {
-					"GET": "allow",
-					"PUT": "allow",
-					"POST": "allow",
-					"DELETE": "deny"
-				},
-				"dataDisposition": {
-					"read": "allow",
-					"update": "deny"
-				}
+			"dataDisposition": {
+				"read": "deny",
+				"update": "deny"
 			}
-		},
+		}, {
+			"role": "test",
+			"endpointDisposition": {
+				"GET": "allow",
+				"PUT": "allow",
+				"POST": "allow",
+				"DELETE": "deny"
+			},
+			"dataDisposition": {
+				"read": "allow",
+				"update": "deny"
+			}
+		}],
 		"properties": {
 			"content": {
 				"__type": "string",
@@ -42,12 +41,11 @@
 				"__type": "string",
 				"__required": true,
 				"__allowUpdate": true,
-				"__permissions": {
-          "user.member": [{
-            "read": "allow",
-						"update": "deny"
-          }]
-        }
+				"__permissions": [{
+					"role": "user.member",
+					"read": "allow",
+					"update": "deny"
+				}]
 			},
 			"adminSecretContent": {
 				"__type": "string",
