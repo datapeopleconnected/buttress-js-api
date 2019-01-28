@@ -10,7 +10,8 @@
  */
 
 const Buttress = require('../lib/buttressjs');
-const TestSchema = require('./schema.json');
+const TestSchema = require('./data/schema.json');
+const TestUserRoles = require('./data/schema.json');
 const ObjectId = require('mongodb').ObjectId;
 
 class Config {
@@ -27,7 +28,8 @@ class Config {
     Buttress.init({
       buttressUrl: process.env.BUTTRESS_TEST_API_URL,
       appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY,
-      schema: TestSchema
+      schema: TestSchema,
+      userRoles: TestUserRoles
     });
 
     before(function(done) {
