@@ -11,7 +11,7 @@
 
 const Buttress = require('../lib/buttressjs');
 const TestSchema = require('./data/schema.json');
-const TestUserRoles = require('./data/schema.json');
+const TestUserRoles = require('./data/userRoles.json');
 const ObjectId = require('mongodb').ObjectId;
 
 class Config {
