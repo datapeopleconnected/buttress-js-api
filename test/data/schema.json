@@ -56,7 +56,7 @@
 				"__type": "number",
 				"__default": 0,
 				"__required": false,
-				"__allowUpdate": false
+				"__allowUpdate": true
 			},
 			"parentPostId": {
 				"__type": "id",
