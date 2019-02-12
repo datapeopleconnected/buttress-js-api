@@ -26,7 +26,8 @@
     "test-service": "mocha --require should --reporter nyan -g service",
     "test-person": "mocha --require should --reporter nyan -g person",
     "test-post": "mocha --require should --reporter nyan -g post",
-    "test-user": "mocha --require should --reporter nyan -g user"
+    "test-user": "mocha --require should --reporter nyan -g user",
+    "test-roles": "mocha --require should --reporter nyan -g roles"
   },
   "main": "./lib/buttressjs",
   "dependencies": {
