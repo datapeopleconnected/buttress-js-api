@@ -39,6 +39,7 @@ describe('@user-basics', function() {
   describe('User Basics', function() {
     let _users = [null, null];
     let _userId = false;
+
     it('should return no users', function(done) {
       Buttress.User
         .getAll()
@@ -50,6 +51,7 @@ describe('@user-basics', function() {
           done(err);
         });
     });
+
     it('should create a user (without creating an auth token)', function(done) {
       let userAppAuth = {
         app: 'google',
@@ -77,6 +79,7 @@ describe('@user-basics', function() {
           done(err);
         });
     });
+
     it('should return 1 user', function(done) {
       Buttress.User
         .getAll()
@@ -89,6 +92,7 @@ describe('@user-basics', function() {
           done(err);
         });
     });
+
     it('should find an existing user', function(done) {
       let userAppAuth = {
         app: 'google',
@@ -115,6 +119,7 @@ describe('@user-basics', function() {
           done(err);
         });
     });
+
     it('should create a user (with an auth token)', function(done) {
       let userAppAuth = {
         app: 'google',
@@ -143,7 +148,7 @@ describe('@user-basics', function() {
           user.person.surname.should.equal('Bates-Keegan');
           user.auth.length.should.equal(1);
           user.auth[0].appId.should.equal('98765432109876543210');
-          user.buttressAuthToken.should.not.equal(false);
+          user.authToken.should.not.equal(false);
           _users[1] = user;
           done();
         })
@@ -151,12 +156,13 @@ describe('@user-basics', function() {
           done(err);
         });
     });
+
     it('should remove a user', function(done) {
       if (!_users[0]) {
         return done(new Error("No User!"));
       }
       Buttress.User
-      .remove(_users[0].buttressId)
+      .remove(_users[0].id)
       .then(function(res) {
         res.should.equal(true);
         _users[0] = null;
