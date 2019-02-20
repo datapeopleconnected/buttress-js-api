@@ -37,14 +37,16 @@ describe('@roles-basics', function() {
   this.timeout(2000);
 
   const Auth = Buttress.getCollection('auth');
+  const Post = Buttress.getCollection('post');
+
   const TestUsersRoles = _mapUserRoles(TestAppRoles);
 
-  const _testUsers = [];
+  let _testUsers = [];
 
   before(function(done) {
-
     // NOTE: Why not use bulk add instead?
     // Setup promise queue for adding test users
+
     const addUserTasks = TestUsersRoles.map(user => {
       return new Promise(resolve => {
         return Buttress.Auth
@@ -56,14 +58,22 @@ describe('@roles-basics', function() {
             email: 'test@test.com',
             profileUrl: 'http://test.com/thisisatest',
             profileImgUrl: 'http://test.com/thisisatest.png'
+          }, {
+            authLevel: Buttress.Token.AuthLevel.USER,
+            permissions: [{
+              route: "*",
+              permission: "*"
+            }],
+            role: user.name,
+            domains: ['test.buttressjs.com']
           })
-          .then(res => resolve());
+          .then(res => resolve(res));
       });
     });
 
     Promise.all(addUserTasks)
       .then(res => {
-        console.log(res);
+        _testUsers = res;
         done();
       });
   });
@@ -73,7 +83,81 @@ describe('@roles-basics', function() {
   });
 
   describe('Role Basics', function() {
-    it('should pass', function(done) {
+    it('should have test users for each role', function(done) {
+      _testUsers.length.should.equal(TestUsersRoles.length);
+      done();
+    });
+  });
+
+  describe('Role public', function() {
+    let requestOptions = {
+      query: {
+        token: null
+      }
+    };
+
+    it('should have a public test user', function(done) {
+      let _user = _testUsers.find(u => u.person.name === 'public');
+      if (_user) {
+        requestOptions.query.token = _user.authToken;
+        done();
+      } else {
+        done(new Error('a user with the role public doesn\'t exist'));
+      }
+    });
+
+    it('should make get a 200 responce', function(done) {
+      Post.getAll({}, requestOptions)
+        .then(function(posts) {
+          posts.length.should.equal(0);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should make get a 403 responce', function(done) {
+      Buttress.Token.removeAllUserTokens({}, requestOptions)
+        .then(function(posts) {
+          posts.length.should.equal(0);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+      done();
+    });
+
+    it('should make get a 400 responce', function(done) {
+      done();
+    });
+  });
+
+  describe('Role user.member', function() {
+    it('should make get a 200 responce', function(done) {
+      done();
+    });
+
+    it('should make get a 403 responce', function(done) {
+      done();
+    });
+
+    it('should make get a 400 responce', function(done) {
+      done();
+    });
+  });
+
+  describe('Role admin.super', function() {
+    it('should make get a 200 responce', function(done) {
+      done();
+    });
+
+    it('should make get a 403 responce', function(done) {
+      done();
+    });
+
+    it('should make get a 400 responce', function(done) {
       done();
     });
   });
