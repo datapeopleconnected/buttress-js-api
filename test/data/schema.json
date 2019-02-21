@@ -7,7 +7,7 @@
 			"timestamps"
 		],
 		"roles": [{
-			"role": "public",
+			"name": "public",
 			"endpointDisposition": {
 				"GET": "allow",
 				"PUT": "deny",
@@ -19,7 +19,7 @@
 				"update": "deny"
 			}
 		}, {
-			"role": "test",
+			"name": "test",
 			"endpointDisposition": {
 				"GET": "allow",
 				"PUT": "allow",
