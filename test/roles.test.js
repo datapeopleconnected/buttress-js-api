@@ -65,7 +65,7 @@ describe('@roles-basics', function() {
               permission: "*"
             }],
             role: user.name,
-            domains: ['test.buttressjs.com']
+            domains: [Buttress.options.url.host]
           })
           .then(res => resolve(res));
       });
@@ -74,8 +74,9 @@ describe('@roles-basics', function() {
     Promise.all(addUserTasks)
       .then(res => {
         _testUsers = res;
-        done();
-      });
+      })
+      .then(Post.removeAll())
+      .then(() => done());
   });
 
   after(function(done) {
@@ -91,6 +92,7 @@ describe('@roles-basics', function() {
 
   describe('Role public', function() {
     const roleName = 'public';
+    let _user = null;
     let requestOptions = {
       query: {
         token: null
@@ -98,7 +100,7 @@ describe('@roles-basics', function() {
     };
 
     it(`should have a ${roleName} test user`, function(done) {
-      let _user = _testUsers.find(u => u.person.name === roleName);
+      _user = _testUsers.find(u => u.person.name === roleName);
       if (_user) {
         requestOptions.query.token = _user.authToken;
         done();
@@ -119,15 +121,21 @@ describe('@roles-basics', function() {
     });
 
     it('should make get a 403 responce', function(done) {
-      Buttress.Token.removeAllUserTokens({}, requestOptions)
-        .then(function(posts) {
+      // TODO: Remove required non-user fields
+      Post.save({
+        content: "Hello world",
+        memberSecretContent: "",
+        adminSecretContent: "",
+        parentPostId: null,
+        userId: _user.id
+      }, requestOptions)
+        .then(function() {
           done(new Error('Should not succeed'));
         })
         .catch(function(err) {
           err.statusCode.should.equal(403);
           done();
         });
-      done();
     });
 
     it('should make get a 400 responce', function(done) {
