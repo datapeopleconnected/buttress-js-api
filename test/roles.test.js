@@ -90,19 +90,20 @@ describe('@roles-basics', function() {
   });
 
   describe('Role public', function() {
+    const roleName = 'public';
     let requestOptions = {
       query: {
         token: null
       }
     };
 
-    it('should have a public test user', function(done) {
-      let _user = _testUsers.find(u => u.person.name === 'public');
+    it(`should have a ${roleName} test user`, function(done) {
+      let _user = _testUsers.find(u => u.person.name === roleName);
       if (_user) {
         requestOptions.query.token = _user.authToken;
         done();
       } else {
-        done(new Error('a user with the role public doesn\'t exist'));
+        done(new Error(`a user with the role ${roleName} doesn't exist`));
       }
     });
 
@@ -120,11 +121,11 @@ describe('@roles-basics', function() {
     it('should make get a 403 responce', function(done) {
       Buttress.Token.removeAllUserTokens({}, requestOptions)
         .then(function(posts) {
-          posts.length.should.equal(0);
-          done();
+          done(new Error('Should not succeed'));
         })
         .catch(function(err) {
-          done(err);
+          err.statusCode.should.equal(403);
+          done();
         });
       done();
     });
@@ -135,6 +136,23 @@ describe('@roles-basics', function() {
   });
 
   describe('Role user.member', function() {
+    const roleName = 'user.member';
+    let requestOptions = {
+      query: {
+        token: null
+      }
+    };
+
+    it(`should have a ${roleName} test user`, function(done) {
+      let _user = _testUsers.find(u => u.person.name === roleName);
+      if (_user) {
+        requestOptions.query.token = _user.authToken;
+        done();
+      } else {
+        done(new Error(`a user with the role ${roleName} doesn't exist`));
+      }
+    });
+
     it('should make get a 200 responce', function(done) {
       done();
     });
@@ -149,6 +167,23 @@ describe('@roles-basics', function() {
   });
 
   describe('Role admin.super', function() {
+    const roleName = 'admin.super';
+    let requestOptions = {
+      query: {
+        token: null
+      }
+    };
+
+    it(`should have a ${roleName} test user`, function(done) {
+      let _user = _testUsers.find(u => u.person.name === roleName);
+      if (_user) {
+        requestOptions.query.token = _user.authToken;
+        done();
+      } else {
+        done(new Error(`a user with the role ${roleName} doesn't exist`));
+      }
+    });
+
     it('should make get a 200 responce', function(done) {
       done();
     });
