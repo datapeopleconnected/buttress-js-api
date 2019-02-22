@@ -15,11 +15,11 @@
 				"DELETE": "deny"
 			},
 			"dataDisposition": {
-				"read": "deny",
-				"update": "deny"
+				"READ": "deny",
+				"UPDATE": "deny"
 			}
 		}, {
-			"name": "test",
+			"name": "user.member",
 			"endpointDisposition": {
 				"GET": "allow",
 				"PUT": "allow",
@@ -27,8 +27,8 @@
 				"DELETE": "deny"
 			},
 			"dataDisposition": {
-				"read": "allow",
-				"update": "deny"
+				"READ": "allow",
+				"UPDATE": "deny"
 			}
 		}],
 		"properties": {
@@ -43,14 +43,19 @@
 				"__allowUpdate": true,
 				"__permissions": [{
 					"role": "user.member",
-					"read": "allow",
-					"update": "deny"
+					"READ": "allow",
+					"UPDATE": "deny"
 				}]
 			},
 			"adminSecretContent": {
 				"__type": "string",
 				"__required": true,
-				"__allowUpdate": true
+				"__allowUpdate": true,
+				"__permissions": [{
+					"role": "user.member",
+					"READ": "deny",
+					"UPDATE": "deny"
+				}]
 			},
 			"kudos": {
 				"__type": "number",
