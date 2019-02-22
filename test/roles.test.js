@@ -67,7 +67,10 @@ describe('@roles-basics', function() {
             role: user.name,
             domains: [Buttress.options.url.host]
           })
-          .then(res => resolve(res));
+          .then(res => resolve(res))
+          .catch(function(err) {
+            throw err;
+          });
       });
     });
 
@@ -76,7 +79,10 @@ describe('@roles-basics', function() {
         _testUsers = res;
       })
       .then(Post.removeAll())
-      .then(() => done());
+      .then(() => done())
+      .catch(function(err) {
+        throw err;
+      });
   });
 
   after(function(done) {
@@ -145,6 +151,7 @@ describe('@roles-basics', function() {
 
   describe('Role user.member', function() {
     const roleName = 'user.member';
+    let _user = null;
     let requestOptions = {
       query: {
         token: null
@@ -152,7 +159,7 @@ describe('@roles-basics', function() {
     };
 
     it(`should have a ${roleName} test user`, function(done) {
-      let _user = _testUsers.find(u => u.person.name === roleName);
+      _user = _testUsers.find(u => u.person.name === roleName);
       if (_user) {
         requestOptions.query.token = _user.authToken;
         done();
@@ -162,11 +169,38 @@ describe('@roles-basics', function() {
     });
 
     it('should make get a 200 responce', function(done) {
-      done();
+      Post.getAll({}, requestOptions)
+        .then(function(posts) {
+          posts.length.should.equal(1);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
     });
 
-    it('should make get a 403 responce', function(done) {
-      done();
+    it('should successfully post some data', function(done) {
+      let _postData = {
+        content: "Hello world",
+        memberSecretContent: "",
+        adminSecretContent: "",
+        parentPostId: null,
+        userId: _user.id
+      };
+
+      Post.save(_postData, requestOptions)
+        .then(function(post) {
+          post.content.should.equal(_postData.content);
+          post.userId.should.equal(_postData.userId);
+          post.memberSecretContent.should.equal(_postData.memberSecretContent);
+
+          post.adminSecretContent.should.equal(_postData.adminSecretContent); // Should be undefined
+
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
     });
 
     it('should make get a 400 responce', function(done) {
