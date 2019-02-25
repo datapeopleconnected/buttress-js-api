@@ -15,7 +15,7 @@ const ObjectId = require('mongodb').ObjectId;
 
 Config.init();
 
-describe('@post-basics', function() {
+describe('@posts', function() {
   this.timeout(2000);
 
   const collection = Buttress.getCollection('post');

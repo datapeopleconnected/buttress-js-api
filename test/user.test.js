@@ -27,7 +27,7 @@ Config.init();
 //   ]).then(() => done());
 // });
 
-describe('@user-basics', function() {
+describe('@users', function() {
   before(function(done) {
     Buttress.User.removeAll()
       .then(() => done()).catch(done);

@@ -33,7 +33,7 @@ const _mapUserRoles = (data, path) => {
   }, []);
 };
 
-describe('@roles-basics', function() {
+describe('@roles', function() {
   this.timeout(2000);
 
   const Auth = Buttress.getCollection('auth');
@@ -89,7 +89,7 @@ describe('@roles-basics', function() {
     done();
   });
 
-  describe('Role Basics', function() {
+  describe('Role basics', function() {
     it('should have test users for each role', function(done) {
       _testUsers.length.should.equal(TestUsersRoles.length);
       done();
