@@ -183,7 +183,7 @@ describe('@roles', function() {
       let _postData = {
         content: "Hello world",
         memberSecretContent: "",
-        adminSecretContent: "",
+        adminSecretContent: "test",
         parentPostId: null,
         userId: _user.id
       };
@@ -193,8 +193,6 @@ describe('@roles', function() {
           post.content.should.equal(_postData.content);
           post.userId.should.equal(_postData.userId);
           post.memberSecretContent.should.equal(_postData.memberSecretContent);
-
-          post.adminSecretContent.should.equal(_postData.adminSecretContent); // Should be undefined
 
           done();
         })
