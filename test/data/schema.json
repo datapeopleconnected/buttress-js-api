@@ -35,7 +35,11 @@
 			"content": {
 				"__type": "string",
 				"__required": true,
-				"__allowUpdate": true
+				"__allowUpdate": true,
+				"__permissions": [{
+					"role": "public",
+					"READ": "allow"
+				}]
 			},
 			"memberSecretContent": {
 				"__type": "string",
@@ -61,12 +65,20 @@
 				"__type": "number",
 				"__default": 0,
 				"__required": false,
-				"__allowUpdate": true
+				"__allowUpdate": true,
+				"__permissions": [{
+					"role": "public",
+					"READ": "allow"
+				}]
 			},
 			"parentPostId": {
 				"__type": "id",
 				"__required": true,
-				"__allowUpdate": false
+				"__allowUpdate": false,
+				"__permissions": [{
+					"role": "public",
+					"READ": "allow"
+				}]
 			},
 			"someArray": {
 				"__type": "array",
@@ -120,7 +132,11 @@
 			"userId": {
 				"__type": "id",
 				"__required": true,
-				"__allowUpdate": false
+				"__allowUpdate": false,
+				"__permissions": [{
+					"role": "public",
+					"READ": "allow"
+				}]
 			}
 		}
 	},

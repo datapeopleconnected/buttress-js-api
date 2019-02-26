@@ -46,7 +46,6 @@ describe('@roles', function() {
   before(function(done) {
     // NOTE: Why not use bulk add instead?
     // Setup promise queue for adding test users
-
     const addUserTasks = TestUsersRoles.map(user => {
       return new Promise(resolve => {
         return Buttress.Auth
@@ -74,19 +73,33 @@ describe('@roles', function() {
       });
     });
 
-    Promise.all(addUserTasks)
-      .then(res => {
-        _testUsers = res;
-      })
-      .then(Post.removeAll())
-      .then(() => done())
-      .catch(function(err) {
-        throw err;
+    const addTestPosts = [1, 2, 3, 4, 5].map(() => {
+      return new Promise(resolve => {
+        return Post.save({
+          content: "Hello world",
+          memberSecretContent: "",
+          adminSecretContent: "",
+          parentPostId: null,
+          userId: null
+        })
+        .then(res => resolve(res))
+        .catch(function(err) {
+          throw err;
+        });
       });
+    });
+
+    Promise.all(addUserTasks)
+    .then(res => {
+      _testUsers = res;
+    })
+    .then(() => Promise.all(addTestPosts))
+    .then(() => done());
   });
 
   after(function(done) {
-    done();
+    Post.removeAll()
+    .then(() => done()).catch(done);
   });
 
   describe('Role basics', function() {
@@ -118,7 +131,7 @@ describe('@roles', function() {
     it('should make get a 200 responce', function(done) {
       Post.getAll({}, requestOptions)
         .then(function(posts) {
-          posts.length.should.equal(0);
+          posts.should.be.instanceof(Array);
           done();
         })
         .catch(function(err) {
@@ -171,7 +184,7 @@ describe('@roles', function() {
     it('should make get a 200 responce', function(done) {
       Post.getAll({}, requestOptions)
         .then(function(posts) {
-          posts.length.should.equal(1);
+          posts.should.be.instanceof(Array);
           done();
         })
         .catch(function(err) {
