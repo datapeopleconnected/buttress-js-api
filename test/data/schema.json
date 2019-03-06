@@ -30,6 +30,18 @@
 				"READ": "allow",
 				"UPDATE": "deny"
 			}
+		}, {
+			"name": "admin.super",
+			"endpointDisposition": {
+				"GET": "allow",
+				"PUT": "allow",
+				"POST": "allow",
+				"DELETE": "allow"
+			},
+			"dataDisposition": {
+				"READ": "allow",
+				"UPDATE": "allow"
+			}
 		}],
 		"properties": {
 			"content": {

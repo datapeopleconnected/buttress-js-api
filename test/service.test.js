@@ -36,8 +36,7 @@ describe('@service-basics', function() {
     let tasks = [
       Buttress.Company.bulkRemove(_companies.map(c => c.id)),
       Buttress.Service.bulkRemove(_services),
-      Buttress.User.remove(_user.id),
-      Buttress.Person.remove(_user.person.id)
+      Buttress.User.remove(_user.id)
     ];
 
     Promise.all(tasks).then(() => done()).catch(done);
@@ -387,7 +386,6 @@ describe('@service-basics', function() {
 //     let tasks = [
 //       Buttress.Company.bulkRemove(_companies.map(c => c.id)),
 //       Buttress.User.remove(_user.id),
-//       Buttress.Person.remove(_user.person.id),
 //       Buttress.Service.remove(_service.id)
 //     ];
 

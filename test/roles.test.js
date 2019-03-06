@@ -73,7 +73,7 @@ describe('@roles', function() {
       });
     });
 
-    const addTestPosts = [1, 2, 3, 4, 5].map(() => {
+    const addTestPosts = [1].map(() => {
       return new Promise(resolve => {
         return Post.save({
           content: "Hello world",
@@ -143,8 +143,6 @@ describe('@roles', function() {
       // TODO: Remove required non-user fields
       Post.save({
         content: "Hello world",
-        memberSecretContent: "",
-        adminSecretContent: "",
         parentPostId: null,
         userId: _user.id
       }, requestOptions)
@@ -181,21 +179,10 @@ describe('@roles', function() {
       }
     });
 
-    it('should make get a 200 responce', function(done) {
-      Post.getAll({}, requestOptions)
-        .then(function(posts) {
-          posts.should.be.instanceof(Array);
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
-    });
-
     it('should successfully post some data', function(done) {
       let _postData = {
         content: "Hello world",
-        memberSecretContent: "",
+        memberSecretContent: "superMemberSecret",
         adminSecretContent: "test",
         parentPostId: null,
         userId: _user.id
@@ -214,8 +201,20 @@ describe('@roles', function() {
         });
     });
 
-    it('should make get a 400 responce', function(done) {
-      done();
+    it('should make get a 200 responce', function(done) {
+      Post.getAll({}, requestOptions)
+        .then(function(posts) {
+          posts.should.be.instanceof(Array);
+          const userPosts = posts.filter(p => p.userId === _user.id);
+          const userPost = userPosts.pop();
+
+          userPost.memberSecretContent.should.equal("superMemberSecret");
+
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
     });
   });
 
@@ -238,15 +237,14 @@ describe('@roles', function() {
     });
 
     it('should make get a 200 responce', function(done) {
-      done();
-    });
-
-    it('should make get a 403 responce', function(done) {
-      done();
-    });
-
-    it('should make get a 400 responce', function(done) {
-      done();
+      Post.getAll({}, requestOptions)
+        .then(function(posts) {
+          posts.should.be.instanceof(Array);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
     });
   });
 });

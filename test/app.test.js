@@ -3,7 +3,7 @@
 /**
  * Buttress API -
  *
- * @file person.test.js
+ * @file app.test.js
  * @description
  * @author Chris Bates-Keegan
  *

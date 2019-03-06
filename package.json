@@ -24,7 +24,6 @@
     "test-app": "mocha --require should --reporter nyan -g app-basics",
     "test-company": "mocha --require should --reporter nyan -g company",
     "test-service": "mocha --require should --reporter nyan -g service",
-    "test-person": "mocha --require should --reporter nyan -g person",
     "test-posts": "mocha --require should --reporter nyan -g @posts",
     "test-users": "mocha --require should --reporter nyan -g @users",
     "test-roles": "mocha --require should --reporter nyan -g @roles"
