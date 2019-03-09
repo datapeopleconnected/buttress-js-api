@@ -25,6 +25,9 @@ class Config {
     }
     this._initialised = true;
 
+    console.log(`BUTTRESS_TEST_API_URL: `, process.env.BUTTRESS_TEST_API_URL);
+    console.log(`BUTTRESS_TEST_SUPER_APP_KEY: `, process.env.BUTTRESS_TEST_SUPER_APP_KEY);
+
     Buttress.init({
       buttressUrl: process.env.BUTTRESS_TEST_API_URL,
       appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY,
