@@ -1,5 +1,26 @@
 [
 	{
+		"name": "board",
+		"type": "collection",
+		"collection": "boards",
+		"extends": [
+			"timestamps"
+		],
+		"roles": [],
+		"properties": {
+			"name": {
+				"__type": "string",
+				"__required": true,
+				"__allowUpdate": true
+			},
+			"subscribed": {
+				"__type": "array",
+				"__required": true,
+				"__allowUpdate": true
+			}
+		}
+	},
+	{
 		"name": "post",
 		"type": "collection",
 		"collection": "posts",
@@ -78,6 +99,15 @@
 				"__default": 0,
 				"__required": false,
 				"__allowUpdate": true,
+				"__permissions": [{
+					"role": "public",
+					"READ": "allow"
+				}]
+			},
+			"boardId": {
+				"__type": "id",
+				"__required": false,
+				"__allowUpdate": false,
 				"__permissions": [{
 					"role": "public",
 					"READ": "allow"
