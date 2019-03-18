@@ -1,0 +1,162 @@
+{
+  "name": "post",
+  "type": "collection",
+  "collection": "posts",
+  "extends": [
+    "timestamps"
+  ],
+  "roles": [{
+    "name": "public",
+    "endpointDisposition": {
+      "GET": "allow",
+      "PUT": "deny",
+      "POST": "deny",
+      "DELETE": "deny"
+    },
+    "dataDisposition": {
+      "READ": "deny",
+      "UPDATE": "deny"
+    }
+  }, {
+    "name": "user.member",
+    "endpointDisposition": {
+      "GET": "allow",
+      "PUT": "allow",
+      "POST": "allow",
+      "DELETE": "deny"
+    },
+    "dataDisposition": {
+      "READ": "allow",
+      "UPDATE": "deny"
+    }
+  }, {
+    "name": "admin.super",
+    "endpointDisposition": {
+      "GET": "allow",
+      "PUT": "allow",
+      "POST": "allow",
+      "DELETE": "allow"
+    },
+    "dataDisposition": {
+      "READ": "allow",
+      "UPDATE": "allow"
+    }
+  }],
+  "properties": {
+    "content": {
+      "__type": "string",
+      "__required": true,
+      "__allowUpdate": true,
+      "__permissions": [{
+        "role": "public",
+        "READ": "allow"
+      }]
+    },
+    "memberSecretContent": {
+      "__type": "string",
+      "__required": true,
+      "__allowUpdate": true,
+      "__permissions": [{
+        "role": "user.member",
+        "READ": "allow",
+        "UPDATE": "deny"
+      }]
+    },
+    "adminSecretContent": {
+      "__type": "string",
+      "__required": true,
+      "__allowUpdate": true,
+      "__permissions": [{
+        "role": "user.member",
+        "READ": "deny",
+        "UPDATE": "deny"
+      }]
+    },
+    "kudos": {
+      "__type": "number",
+      "__default": 0,
+      "__required": false,
+      "__allowUpdate": true,
+      "__permissions": [{
+        "role": "public",
+        "READ": "allow"
+      }]
+    },
+    "boardId": {
+      "__type": "id",
+      "__required": false,
+      "__allowUpdate": false,
+      "__permissions": [{
+        "role": "public",
+        "READ": "allow"
+      }]
+    },
+    "parentPostId": {
+      "__type": "id",
+      "__required": true,
+      "__allowUpdate": false,
+      "__permissions": [{
+        "role": "public",
+        "READ": "allow"
+      }]
+    },
+    "someArray": {
+      "__type": "array",
+      "__default": [],
+      "__allowUpdate": true,
+      "__schema": {
+        "id": {
+          "__type": "id",
+          "__required": true,
+          "__allowUpdate": false
+        },
+        "name": {
+          "__type": "string",
+          "__default": "",
+          "__required": true,
+          "__allowUpdate": true,
+          "__permissions": [{
+            "role": "user.member",
+            "READ": "deny",
+            "UPDATE": "deny"
+          }]
+        }
+      }
+    },
+    "someObject": {
+      "someObjectData": {
+        "someProperty": {
+          "__type": "string",
+          "__required": false,
+          "__default": "someValue",
+          "__allowUpdate": true,
+          "__permissions": [{
+            "role": "user.member",
+            "READ": "allow",
+            "UPDATE": "deny"
+          }]
+        },
+        "stringProperty": {
+          "__type": "string",
+          "__required": false,
+          "__default": "sometest",
+          "__allowUpdate": true,
+          "__permissions": [{
+            "role": "user.member",
+            "READ": "deny",
+            "UPDATE": "deny"
+          }]
+        }
+      }
+    },
+    "userId": {
+      "__type": "id",
+      "__required": true,
+      "__allowUpdate": false,
+      "__permissions": [{
+        "role": "public",
+        "READ": "allow"
+      }]
+    }
+  }
+}

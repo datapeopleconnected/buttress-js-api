@@ -1,0 +1,33 @@
+{
+  "name": "board",
+  "type": "collection",
+  "collection": "boards",
+  "extends": [
+    "timestamps"
+  ],
+  "roles": [{
+    "name": "public",
+    "endpointDisposition": {
+      "GET": "allow",
+      "PUT": "deny",
+      "POST": "deny",
+      "DELETE": "deny"
+    },
+    "dataDisposition": {
+      "READ": "deny",
+      "UPDATE": "deny"
+    }
+  }],
+  "properties": {
+    "name": {
+      "__type": "string",
+      "__required": true,
+      "__allowUpdate": true
+    },
+    "subscribed": {
+      "__type": "array",
+      "__required": true,
+      "__allowUpdate": true
+    }
+  }
+}

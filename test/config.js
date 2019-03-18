@@ -10,7 +10,7 @@
  */
 
 const Buttress = require('../lib/buttressjs');
-const TestSchema = require('./data/schema.json');
+const TestSchema = require('./data/schema');
 const TestAppRoles = require('./data/appRoles.json');
 const ObjectId = require('mongodb').ObjectId;
 
