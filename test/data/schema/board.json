@@ -16,13 +16,22 @@
     "dataDisposition": {
       "READ": "deny",
       "UPDATE": "deny"
+    },
+    "filter": {
+      "subscribed": {
+        "eq": "env.userId"
+      }
     }
   }],
   "properties": {
     "name": {
       "__type": "string",
       "__required": true,
-      "__allowUpdate": true
+      "__allowUpdate": true,
+      "__permissions": [{
+        "role": "public",
+        "READ": "allow"
+      }]
     },
     "subscribed": {
       "__type": "array",

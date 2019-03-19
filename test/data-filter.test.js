@@ -133,10 +133,6 @@ describe('@data-filter', function() {
           boards.should.be.instanceof(Array);
           boards.should.not.be.empty();
 
-          boards.forEach(post => {
-            post.userId.should.be.equal(publicUser.id);
-          });
-
           done();
         })
         .catch(function(err) {
