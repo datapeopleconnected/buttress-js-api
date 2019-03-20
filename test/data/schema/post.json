@@ -16,6 +16,20 @@
     "dataDisposition": {
       "READ": "deny",
       "UPDATE": "deny"
+    },
+    "authFilter" : {
+      "env": [{
+        "boardIds": {
+          "schema.board.subscribed" : {
+            "$eq": "req.userId"
+          }
+        }
+      }],
+      "query": [{
+        "boardId": {
+          "$in": "$boardIds"
+        }
+      }]
     }
   }, {
     "name": "user.member",
