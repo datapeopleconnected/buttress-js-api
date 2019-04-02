@@ -17,9 +17,11 @@
       "READ": "deny",
       "UPDATE": "deny"
     },
-    "filter": {
-      "subscribed": {
-        "eq": "env.userId"
+    "authFilter" : {
+      "query": {
+        "subscribed": {
+          "eq": "env.authUserId"
+        }
       }
     }
   }],
@@ -36,7 +38,8 @@
     "subscribed": {
       "__type": "array",
       "__required": true,
-      "__allowUpdate": true
+      "__allowUpdate": true,
+      "__itemtype": "id"
     }
   }
 }

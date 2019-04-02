@@ -18,18 +18,18 @@
       "UPDATE": "deny"
     },
     "authFilter" : {
-      "env": [{
+      "env": {
         "boardIds": {
           "schema.board.subscribed" : {
-            "$eq": "req.userId"
+            "eq": "env.authUserId"
           }
         }
-      }],
-      "query": [{
+      },
+      "query": {
         "boardId": {
-          "$in": "$boardIds"
+          "in": "env.boardIds"
         }
-      }]
+      }
     }
   }, {
     "name": "user.member",
