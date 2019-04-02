@@ -120,7 +120,7 @@ describe('@data-filter', function() {
   //     - user.id (single)  -> board.subscribed (many)
   //     - board.id (single) -> post.boardId (single)
 
-  describe('Post Basics', function() {
+  describe('Boards', function() {
     it('should return only public boards', function(done) {
       const publicUser = _testUsers.find(user => user.person.name === 'public');
 
@@ -132,6 +132,37 @@ describe('@data-filter', function() {
         .then(function(boards) {
           boards.should.be.instanceof(Array);
           boards.should.not.be.empty();
+          boards.should.be.lengthOf(1);
+          boards[0].name.should.be.equal('public');
+
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+  });
+
+  describe('Posts', function() {
+    it('should return posts that are part of the public board', function(done) {
+      const publicUser = _testUsers.find(user => user.person.name === 'public');
+      const publicBoard = _testBoards.find(board => board.name === 'public');
+
+      Post.getAll({}, {
+        query: {
+          token: publicUser.authToken
+        }
+      })
+        .then(function(posts) {
+          posts.should.be.instanceof(Array);
+          posts.should.not.be.empty();
+
+          for (const idx in posts) {
+            if (!posts.hasOwnProperty(idx)) continue;
+            posts[idx].boardId.should.equal(publicBoard.id);
+          }
+
+          console.log(posts);
 
           done();
         })
