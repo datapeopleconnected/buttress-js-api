@@ -40,8 +40,10 @@ class Config {
         Buttress.initSchema(),
         Buttress.User.removeAll(),
         Buttress.Token.removeAllUserTokens(),
-        Buttress.Service.removeAll(),
-        Buttress.Company.removeAll()
+        Buttress.getCollection('service').removeAll(),
+        Buttress.getCollection('company').removeAll(),
+        Buttress.getCollection('board').removeAll(),
+        Buttress.getCollection('post').removeAll()
       ])
         .then(() => done())
         .catch(err => {

@@ -109,7 +109,8 @@ describe('@data-filter', function() {
   });
 
   after(function(done) {
-    Post.removeAll()
+    Buttress.User.removeAll()
+      .then(Post.removeAll())
       .then(Board.removeAll())
       .then(() => done()).catch(done);
   });

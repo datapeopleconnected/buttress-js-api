@@ -28,8 +28,11 @@ Config.init();
 
 describe('@users', function() {
   before(function(done) {
-    Buttress.User.removeAll()
-      .then(() => done()).catch(done);
+    Promise.all([
+      Buttress.User.removeAll(),
+      Buttress.Token.removeAllUserTokens()
+    ])
+      .then(() => done());
   });
 
   after(function(done) {
