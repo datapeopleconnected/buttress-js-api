@@ -20,7 +20,7 @@
     "authFilter" : {
       "env": {
         "boardIds": {
-          "schema.board.subscribed" : {
+          "schema.boards.subscribed" : {
             "eq": "env.authUserId"
           }
         }
