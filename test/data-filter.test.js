@@ -163,8 +163,6 @@ describe('@data-filter', function() {
             posts[idx].boardId.should.equal(publicBoard.id);
           }
 
-          console.log(posts);
-
           done();
         })
         .catch(function(err) {

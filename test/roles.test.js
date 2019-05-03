@@ -26,8 +26,6 @@ const _mapUserRoles = (data, path) => {
       return _roles.concat(_mapUserRoles(role, _path));
     }
 
-    role.name = _path.join('.');
-
     _roles.push(role);
     return _roles;
   }, []);
@@ -36,7 +34,6 @@ const _mapUserRoles = (data, path) => {
 describe('@roles', function() {
   this.timeout(2000);
 
-  const Auth = Buttress.getCollection('auth');
   const Post = Buttress.getCollection('post');
 
   const TestUsersRoles = _mapUserRoles(TestAppRoles);
