@@ -11,6 +11,7 @@
 
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
+const Schemas = require('./data/schema');
 
 Config.init();
 
@@ -30,7 +31,7 @@ describe('@app-basics', function() {
       Buttress.App
         .getSchema()
         .then(function(schema) {
-          schema.length.should.equal(5);
+          schema.length.should.equal(Schemas.length);
           schema[3].collection.should.equal('services');
           schema[3].name.should.equal('service');
           schema[3].properties.appProp1.__type.should.equal('string');
