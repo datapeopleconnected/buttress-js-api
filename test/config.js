@@ -10,8 +10,8 @@
  */
 
 const Buttress = require('../lib/buttressjs');
-const TestSchema = require('./data/schema.json');
-const TestUserRoles = require('./data/schema.json');
+const TestSchema = require('./data/schema');
+const TestAppRoles = require('./data/appRoles.json');
 const ObjectId = require('mongodb').ObjectId;
 
 class Config {
@@ -25,21 +25,25 @@ class Config {
     }
     this._initialised = true;
 
+    console.log(`BUTTRESS_TEST_API_URL: `, process.env.BUTTRESS_TEST_API_URL);
+    console.log(`BUTTRESS_TEST_SUPER_APP_KEY: `, process.env.BUTTRESS_TEST_SUPER_APP_KEY);
+
     Buttress.init({
       buttressUrl: process.env.BUTTRESS_TEST_API_URL,
       appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY,
       schema: TestSchema,
-      userRoles: TestUserRoles
+      roles: TestAppRoles
     });
 
     before(function(done) {
       Promise.all([
         Buttress.initSchema(),
         Buttress.User.removeAll(),
-        Buttress.Person.removeAll(),
         Buttress.Token.removeAllUserTokens(),
-        Buttress.Service.removeAll(),
-        Buttress.Company.removeAll()
+        Buttress.getCollection('service').removeAll(),
+        Buttress.getCollection('company').removeAll(),
+        Buttress.getCollection('board').removeAll(),
+        Buttress.getCollection('post').removeAll()
       ])
         .then(() => done())
         .catch(err => {

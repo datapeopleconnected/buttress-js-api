@@ -20,35 +20,29 @@
     "npm": "~3.10.x"
   },
   "scripts": {
-    "test": "mocha --require should --reporter nyan",
-    "test-appointment": "mocha --require should --reporter nyan -g appointment",
-    "test-app": "mocha --require should --reporter nyan -g app-basics",
-    "test-call": "mocha --require should --reporter nyan -g call",
-    "test-campaign": "mocha --require should --reporter nyan -g campaign",
-    "test-company": "mocha --require should --reporter nyan -g company",
-    "test-service": "mocha --require should --reporter nyan -g service",
-    "test-contract": "mocha --require should --reporter nyan -g contract",
-    "test-document": "mocha --require should --reporter nyan -g document",
-    "test-notification": "mocha --require should --reporter nyan -g notification",
-    "test-org": "mocha --require should --reporter nyan -g org",
-    "test-person": "mocha --require should --reporter nyan -g person",
-    "test-post": "mocha --require should --reporter nyan -g post",
-    "test-task": "mocha --require should --reporter nyan -g task",
-    "test-user": "mocha --require should --reporter nyan -g user"
+    "test": "mocha --require should --reporter spec",
+    "test-app": "mocha --require should --reporter spec -g app-basics",
+    "test-company": "mocha --require should --reporter spec -g company",
+    "test-service": "mocha --require should --reporter spec -g service",
+    "test-posts": "mocha --require should --reporter spec -g @posts",
+    "test-users": "mocha --require should --reporter spec -g @users",
+    "test-roles": "mocha --require should --reporter spec -g @roles",
+    "test-boards": "mocha --require should --reporter spec -g @boards",
+    "test-data-filter": "mocha --require should --reporter spec -g @data-filter"
   },
   "main": "./lib/buttressjs",
   "dependencies": {
-    "restler": "~3.4.0",
+    "restler": "^3.4.0",
     "sugar": "^2.0.2"
   },
   "devDependencies": {
-    "eslint": "~3.3.0",
-    "eslint-config-google": "~0.6.0",
-    "eslint-config-xo": "~0.15.3",
-    "gulp": "~3.9.1",
-    "gulp-bump": "~2.4.0",
-    "mocha": "~3.1.0",
+    "eslint": "^3.19.0",
+    "eslint-config-google": "^0.6.0",
+    "eslint-config-xo": "^0.15.3",
+    "gulp": "^3.9.1",
+    "gulp-bump": "^2.9.0",
+    "mocha": "^3.5.3",
     "mongodb": "^2.2.31",
-    "should": "~11.1.0"
+    "should": "^11.2.1"
   }
 }

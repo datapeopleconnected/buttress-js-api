@@ -1,0 +1,45 @@
+{
+  "name": "board",
+  "type": "collection",
+  "collection": "boards",
+  "extends": [
+    "timestamps"
+  ],
+  "roles": [{
+    "name": "public",
+    "endpointDisposition": {
+      "GET": "allow",
+      "PUT": "deny",
+      "POST": "deny",
+      "DELETE": "deny"
+    },
+    "dataDisposition": {
+      "READ": "deny",
+      "UPDATE": "deny"
+    },
+    "authFilter" : {
+      "query": {
+        "subscribed": {
+          "eq": "env.authUserId"
+        }
+      }
+    }
+  }],
+  "properties": {
+    "name": {
+      "__type": "string",
+      "__required": true,
+      "__allowUpdate": true,
+      "__permissions": [{
+        "role": "public",
+        "READ": "allow"
+      }]
+    },
+    "subscribed": {
+      "__type": "array",
+      "__required": true,
+      "__allowUpdate": true,
+      "__itemtype": "id"
+    }
+  }
+}

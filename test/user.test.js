@@ -22,13 +22,17 @@ Config.init();
 // after(function(done) {
 //   Promise.all([
 //     Buttress.User.removeAll(),
-//     Buttress.Person.removeAll(),
 //     Buttress.Token.removeAllUserTokens()
 //   ]).then(() => done());
 // });
 
-describe('@user-basics', function() {
-  before(function() {
+describe('@users', function() {
+  before(function(done) {
+    Promise.all([
+      Buttress.User.removeAll(),
+      Buttress.Token.removeAllUserTokens()
+    ])
+      .then(() => done());
   });
 
   after(function(done) {
@@ -39,6 +43,7 @@ describe('@user-basics', function() {
   describe('User Basics', function() {
     let _users = [null, null];
     let _userId = false;
+
     it('should return no users', function(done) {
       Buttress.User
         .getAll()
@@ -50,6 +55,7 @@ describe('@user-basics', function() {
           done(err);
         });
     });
+
     it('should create a user (without creating an auth token)', function(done) {
       let userAppAuth = {
         app: 'google',
@@ -77,6 +83,7 @@ describe('@user-basics', function() {
           done(err);
         });
     });
+
     it('should return 1 user', function(done) {
       Buttress.User
         .getAll()
@@ -89,6 +96,7 @@ describe('@user-basics', function() {
           done(err);
         });
     });
+
     it('should find an existing user', function(done) {
       let userAppAuth = {
         app: 'google',
@@ -115,6 +123,7 @@ describe('@user-basics', function() {
           done(err);
         });
     });
+
     it('should create a user (with an auth token)', function(done) {
       let userAppAuth = {
         app: 'google',
@@ -143,7 +152,7 @@ describe('@user-basics', function() {
           user.person.surname.should.equal('Bates-Keegan');
           user.auth.length.should.equal(1);
           user.auth[0].appId.should.equal('98765432109876543210');
-          user.buttressAuthToken.should.not.equal(false);
+          user.authToken.should.not.equal(false);
           _users[1] = user;
           done();
         })
@@ -151,12 +160,13 @@ describe('@user-basics', function() {
           done(err);
         });
     });
+
     it('should remove a user', function(done) {
       if (!_users[0]) {
         return done(new Error("No User!"));
       }
       Buttress.User
-      .remove(_users[0].buttressId)
+      .remove(_users[0].id)
       .then(function(res) {
         res.should.equal(true);
         _users[0] = null;
@@ -168,121 +178,3 @@ describe('@user-basics', function() {
     });
   });
 });
-
-// describe('@model', function() {
-//   var _person = null;
-//   before(function(done) {
-//     Buttress.Person
-//       .save({
-//         name: 'Mr Chris G Bates-Keegan',
-//         email: 'test@email.com'
-//       })
-//       .then(function(person) {
-//         _person = person;
-//         done();
-//       })
-//       .catch(function(err) {
-//         done(err);
-//       });
-//   });
-
-//   after(function(done) {
-//     Buttress.Person
-//       .remove(_person.id)
-//       .then(function() {
-//         _person = null;
-//         done();
-//       })
-//       .catch(function(err) {
-//         done(err);
-//       });
-//   });
-
-//   describe('Person Metadata', function() {
-//     it('should get default metadata', function(done) {
-//       if (!_person) {
-//         return done(new Error("No Person!"));
-//       }
-//       Buttress.Person
-//         .loadMetadata(_person.id, 'TEST_DATA', false)
-//         .then(function(metadata) {
-//           metadata.should.equal(false);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should add metadata', function(done) {
-//       if (!_person) {
-//         return done(new Error("No Person!"));
-//       }
-//       Buttress.Person
-//         .saveMetadata(_person.id, 'TEST_DATA', {foo: 'bar'})
-//         .then(function(metadata) {
-//           metadata.foo.should.equal('bar');
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should get metadata', function(done) {
-//       if (!_person) {
-//         return done(new Error("No Person!"));
-//       }
-//       Buttress.Person
-//         .loadMetadata(_person.id, 'TEST_DATA', false)
-//         .then(function(metadata) {
-//           metadata.should.not.equal(false);
-//           metadata.foo.should.equal('bar');
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should delete metadata', function(done) {
-//       if (!_person) {
-//         return done(new Error("No Person!"));
-//       }
-//       Buttress.Person
-//         .removeMetadata(_person.id, 'TEST_DATA')
-//         .then(function(result) {
-//           result.should.equal(true);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should get default metadata (post-deletion)', function(done) {
-//       if (!_person) {
-//         return done(new Error("No Person!"));
-//       }
-//       Buttress.Person
-//         .loadMetadata(_person.id, 'TEST_DATA', false)
-//         .then(function(metadata) {
-//           metadata.should.equal(false);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should fail to delete metadata', function(done) {
-//       if (!_person) {
-//         return done(new Error("No Person!"));
-//       }
-//       Buttress.Person
-//         .removeMetadata(_person.id, 'TEST_DATA')
-//         .then(function(metadata) {
-//           metadata.should.equal(false);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//   });
-// });
