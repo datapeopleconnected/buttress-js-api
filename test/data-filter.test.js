@@ -26,15 +26,14 @@ const _mapUserRoles = (data, path) => {
       return _roles.concat(_mapUserRoles(role, _path));
     }
 
-    role.name = _path.join('.');
-
-    _roles.push(role);
+    const flatRole = Object.assign({}, role);
+    flatRole.name = _path.join('.');
+    _roles.push(flatRole);
     return _roles;
   }, []);
 };
 
 describe('@data-filter', function() {
-  this.timeout(2000);
 
   const Auth = Buttress.getCollection('auth');
   const Post = Buttress.getCollection('post');
@@ -76,8 +75,9 @@ describe('@data-filter', function() {
 
     const addPostBoards = () => {
       return _testUsers.map(user => {
+        const token = user.tokens[0];
         return Board.save({
-          name: user.person.name,
+          name: token.role,
           subscribed: [user.id]
         });
       });
@@ -123,11 +123,12 @@ describe('@data-filter', function() {
 
   describe('Boards', function() {
     it('should return only public boards', function(done) {
-      const publicUser = _testUsers.find(user => user.person.name === 'public');
+      const publicUser = _testUsers.find(u => u.tokens.some(t => t.role === 'public'));
+      const token = publicUser.tokens.find(t => t.role === 'public');
 
       Board.getAll({}, {
         query: {
-          token: publicUser.authToken
+          token: token.value
         }
       })
         .then(function(boards) {
@@ -146,12 +147,13 @@ describe('@data-filter', function() {
 
   describe('Posts', function() {
     it('should return posts that are part of the public board', function(done) {
-      const publicUser = _testUsers.find(user => user.person.name === 'public');
+      const publicUser = _testUsers.find(u => u.tokens.some(t => t.role === 'public'));
+      const token = publicUser.tokens.find(t => t.role === 'public');
       const publicBoard = _testBoards.find(board => board.name === 'public');
 
       Post.getAll({}, {
         query: {
-          token: publicUser.authToken
+          token: token.value
         }
       })
         .then(function(posts) {

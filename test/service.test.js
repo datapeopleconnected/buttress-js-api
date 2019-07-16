@@ -23,23 +23,24 @@ describe('@service-basics', function() {
   let _user = null;
 
   before(function(done) {
-    Config.createUser().then(user => {
-      _user = user;
-    })
-    .then(Config.createCompanies)
-    .then(function(companies) {
-      _companies = companies;
-    }).then(done);
+    Config.createUser()
+      .then(user => {
+        _user = user;
+      })
+      .then(Config.createCompanies)
+      .then(function(companies) {
+        _companies = companies;
+      }).then(done);
   });
 
   after(function(done) {
-    let tasks = [
+    Promise.all([
       Buttress.Company.bulkRemove(_companies.map(c => c.id)),
       Buttress.Service.bulkRemove(_services),
       Buttress.User.remove(_user.id)
-    ];
-
-    Promise.all(tasks).then(() => done()).catch(done);
+    ])
+      .then(() => done())
+      .catch(done);
   });
 
   describe('Basics', function() {

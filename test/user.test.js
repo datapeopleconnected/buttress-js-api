@@ -56,26 +56,34 @@ describe('@users', function() {
         });
     });
 
-    it('should create a user (without creating an auth token)', function(done) {
-      let userAppAuth = {
-        app: 'google',
-        id: '12345678987654321',
-        name: 'Chris Bates-Keegan',
-        token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-        email: 'test@test.com',
-        profileUrl: 'http://test.com/thisisatest',
-        profileImgUrl: 'http://test.com/thisisatest.png'
-      };
+    it('should create a user', function(done) {
       Buttress.Auth
-        .findOrCreateUser(userAppAuth)
+        .findOrCreateUser({
+          app: 'google',
+          id: '12345678987654321',
+          name: 'Chris Bates-Keegan',
+          token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
+          email: 'test@test.com',
+          profileUrl: 'http://test.com/thisisatest',
+          profileImgUrl: 'http://test.com/thisisatest.png'
+        }, {
+          authLevel: Buttress.Token.AuthLevel.USER,
+          permissions: [{
+            route: "*",
+            permission: "*"
+          }],
+          role: 'public',
+          domains: [Buttress.options.url.host]
+        })
         .then(function(user) {
           user.should.not.equal(false);
-          user.person.name.should.equal('Chris Bates-Keegan');
-          user.person.forename.should.equal('Chris');
-          user.person.surname.should.equal('Bates-Keegan');
           user.auth.length.should.equal(1);
           user.auth[0].appId.should.equal('12345678987654321');
           user.should.not.have.property('token');
+
+          const hasPublicToken = user.tokens.some((t) => t.role === 'public');
+          hasPublicToken.should.equal(true);
+
           _users[0] = user;
           done();
         })
@@ -98,25 +106,32 @@ describe('@users', function() {
     });
 
     it('should find an existing user', function(done) {
-      let userAppAuth = {
-        app: 'google',
-        id: '12345678987654321',
-        name: 'Chris Bates-Keegan',
-        token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-        email: 'test@test.com',
-        profileUrl: 'http://test.com/thisisatest',
-        profileImgUrl: 'http://test.com/thisisatest.png'
-      };
       Buttress.Auth
-        .findOrCreateUser(userAppAuth)
+        .findOrCreateUser({
+          app: 'google',
+          id: '12345678987654321',
+          name: 'Chris Bates-Keegan',
+          token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
+          email: 'test@test.com',
+          profileUrl: 'http://test.com/thisisatest',
+          profileImgUrl: 'http://test.com/thisisatest.png'
+        }, {
+          authLevel: Buttress.Token.AuthLevel.USER,
+          permissions: [{
+            route: "*",
+            permission: "*"
+          }],
+          domains: [Buttress.options.url.host]
+        })
         .then(function(user) {
-          user.buttressId.should.equal(_userId);
-          user.buttressAuthToken.should.equal(false);
-          user.person.name.should.equal('Chris Bates-Keegan');
-          user.person.forename.should.equal('Chris');
-          user.person.surname.should.equal('Bates-Keegan');
+          user.should.not.equal(false);
+          user.id.should.equal(_userId);
           user.auth.length.should.equal(1);
           user.auth[0].appId.should.equal('12345678987654321');
+
+          const hasPublicToken = user.tokens.some((t) => t.role === 'public');
+          hasPublicToken.should.equal(true);
+
           done();
         })
         .catch(function(err) {
@@ -124,35 +139,33 @@ describe('@users', function() {
         });
     });
 
-    it('should create a user (with an auth token)', function(done) {
-      let userAppAuth = {
-        app: 'google',
-        id: '98765432109876543210',
-        name: 'Chris Bates-Keegan',
-        token: 'testisathistestisathistestisathistestisathistestisathis',
-        email: 'test@test.com',
-        profileUrl: 'http://test.com/thisisatest',
-        profileImgUrl: 'http://test.com/thisisatest.png'
-      };
-      let auth = {
-        authLevel: Buttress.Token.AuthLevel.SUPER,
-        permissions: [{
-          route: "*",
-          permission: "*"
-        }],
-        domains: ['test.buttressjs.com']
-      };
+    it('should create a another user (default role)', function(done) {
       Buttress.Auth
-        .findOrCreateUser(userAppAuth, auth)
+        .findOrCreateUser({
+          app: 'google',
+          id: '98765432109876543210',
+          name: 'Chris Bates-Keegan',
+          token: 'testisathistestisathistestisathistestisathistestisathis',
+          email: 'test@test.com',
+          profileUrl: 'http://test.com/thisisatest',
+          profileImgUrl: 'http://test.com/thisisatest.png'
+        }, {
+          authLevel: Buttress.Token.AuthLevel.SUPER,
+          permissions: [{
+            route: "*",
+            permission: "*"
+          }],
+          domains: [Buttress.options.url.host]
+        })
         .then(function(user) {
           user.should.not.equal(false);
           user.id.should.not.equal(_userId);
-          user.person.name.should.equal('Chris Bates-Keegan');
-          user.person.forename.should.equal('Chris');
-          user.person.surname.should.equal('Bates-Keegan');
           user.auth.length.should.equal(1);
           user.auth[0].appId.should.equal('98765432109876543210');
-          user.authToken.should.not.equal(false);
+
+          const hasPublicToken = user.tokens.some((t) => t.role === 'user.member');
+          hasPublicToken.should.equal(true);
+
           _users[1] = user;
           done();
         })

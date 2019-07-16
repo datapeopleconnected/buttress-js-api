@@ -169,7 +169,7 @@ class Config {
   }
 
   createUser() {
-    let userAppAuth = {
+    return Buttress.Auth.findOrCreateUser({
       app: 'google',
       id: '12345678987654321',
       name: 'Chris Bates-Keegan',
@@ -177,8 +177,14 @@ class Config {
       email: 'test@test.com',
       profileUrl: 'http://test.com/thisisatest',
       profileImgUrl: 'http://test.com/thisisatest.png'
-    };
-    return Buttress.Auth.findOrCreateUser(userAppAuth)
+    }, {
+      authLevel: Buttress.Token.AuthLevel.USER,
+      permissions: [{
+        route: "*",
+        permission: "*"
+      }],
+      domains: [Buttress.options.url.host]
+    })
       .catch(err => {
         console.log(err);
       });

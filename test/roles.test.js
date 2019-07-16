@@ -26,7 +26,9 @@ const _mapUserRoles = (data, path) => {
       return _roles.concat(_mapUserRoles(role, _path));
     }
 
-    _roles.push(role);
+    const flatRole = Object.assign({}, role);
+    flatRole.name = _path.join('.');
+    _roles.push(flatRole);
     return _roles;
   }, []);
 };
@@ -45,13 +47,14 @@ describe('@roles', function() {
     // Setup promise queue for adding test users
     const addUserTasks = TestUsersRoles.map(user => {
       return new Promise(resolve => {
+        const appId = Math.floor(Math.random() * Math.floor(200)) + 1;
         return Buttress.Auth
           .findOrCreateUser({
             app: 'google',
-            id: '12345678987654321',
+            id: appId,
             name: user.name,
             token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-            email: 'test@test.com',
+            email: `test${appId}@example.com`,
             profileUrl: 'http://test.com/thisisatest',
             profileImgUrl: 'http://test.com/thisisatest.png'
           }, {
@@ -116,9 +119,9 @@ describe('@roles', function() {
     };
 
     it(`should have a ${roleName} test user`, function(done) {
-      _user = _testUsers.find(u => u.person.name === roleName);
+      _user = _testUsers.find(u => u.tokens.some(t => t.role === roleName));
       if (_user) {
-        requestOptions.query.token = _user.authToken;
+        requestOptions.query.token = _user.tokens.find(t => t.role === roleName).value;
         done();
       } else {
         done(new Error(`a user with the role ${roleName} doesn't exist`));
@@ -167,9 +170,9 @@ describe('@roles', function() {
     };
 
     it(`should have a ${roleName} test user`, function(done) {
-      _user = _testUsers.find(u => u.person.name === roleName);
+      _user = _testUsers.find(u => u.tokens.some(t => t.role === roleName));
       if (_user) {
-        requestOptions.query.token = _user.authToken;
+        requestOptions.query.token = _user.tokens.find(t => t.role === roleName).value;
         done();
       } else {
         done(new Error(`a user with the role ${roleName} doesn't exist`));
@@ -217,6 +220,7 @@ describe('@roles', function() {
 
   describe('Role admin.super', function() {
     const roleName = 'admin.super';
+    let _user = null;
     let requestOptions = {
       query: {
         token: null
@@ -224,9 +228,9 @@ describe('@roles', function() {
     };
 
     it(`should have a ${roleName} test user`, function(done) {
-      let _user = _testUsers.find(u => u.person.name === roleName);
+      _user = _testUsers.find(u => u.tokens.some(t => t.role === roleName));
       if (_user) {
-        requestOptions.query.token = _user.authToken;
+        requestOptions.query.token = _user.tokens.find(t => t.role === roleName).value;
         done();
       } else {
         done(new Error(`a user with the role ${roleName} doesn't exist`));
