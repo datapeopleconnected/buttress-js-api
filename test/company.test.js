@@ -55,6 +55,8 @@ describe('@company-basics', function() {
           id: _companyId,
           name: 'Blackburn Widget Company',
           companyType: 'prospect',
+          primaryLocation: _locationId,
+          primaryContact: _contactId,
           locations: [{
             id: _locationId,
             name: "Headquarters",
@@ -181,6 +183,7 @@ describe('@company-basics', function() {
         for (let x = 0; x < num; x++) {
           arr.push({
             name: `Blackburn Widget Company ${x + 1}`,
+            companyType: 'prospect',
             locations: [{
               id: (new ObjectId()).toHexString(),
               name: "Headquarters",
@@ -200,7 +203,7 @@ describe('@company-basics', function() {
       };
 
       Buttress.Company
-        .saveAll({companies: __gen(1000)})
+        .saveAll(__gen(1000))
         .then(function(companies) {
           companies.length.should.equal(1000);
           _companies = companies;
@@ -220,6 +223,7 @@ describe('@company-contacts', function() {
     Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: "Headquarters",
@@ -372,6 +376,7 @@ describe('@company-locations', function() {
     Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
+        companyType: 'prospect',
         locations: [{
           id: _locationIds[0],
           name: "Headquarters",
@@ -577,6 +582,7 @@ describe('@company-notes', function() {
     Buttress.Company
       .save({
         name: 'Blackburn Widget Company',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: "Headquarters",
@@ -614,6 +620,7 @@ describe('@company-notes', function() {
       Buttress.Company.update(_companyId, {
         path: 'notes',
         value: {
+          id: (new ObjectId()).toHexString(),
           text: 'This is an important note'
         }
       })
@@ -635,6 +642,7 @@ describe('@company-notes', function() {
       Buttress.Company.update(_companyId, {
         path: 'notes',
         value: {
+          id: (new ObjectId()).toHexString(),
           text: 'This is another important note'
         }
       })
@@ -728,151 +736,6 @@ describe('@company-notes', function() {
         .then(function(company) {
           company.notes.should.have.length(1);
           company.notes[0].text.should.equal('This is some updated text');
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
-    });
-  });
-});
-
-describe('@company-metadata', function() {
-  let _company = null;
-  before(function(done) {
-    Buttress.Company
-      .save({
-        name: 'Blackburn Widget Company',
-        locations: [{
-          id: (new ObjectId()).toHexString(),
-          name: "Headquarters",
-          address: "124 Bonsall Street, Mill Hill",
-          city: "Blackburn",
-          postCode: "BB2 5DS",
-          phoneNumber: "01254 123123"
-        }],
-        contacts: [{
-          id: (new ObjectId()).toHexString(),
-          name: "Robert McBobson",
-          role: 'Managing Director'
-        }]
-      })
-      .then(function(company) {
-        _company = company;
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
-  });
-
-  after(function(done) {
-    Buttress.Company
-      .remove(_company.id)
-      .then(function() {
-        _company = null;
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
-  });
-
-  describe('Company Metadata', function() {
-    it('should get default metadata', function(done) {
-      if (!_company) {
-        return done(new Error("No Company!"));
-      }
-      Buttress.Company.Metadata
-        .load(_company.id, 'TEST_DATA', false)
-        .then(function(metadata) {
-          metadata.should.equal(false);
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
-    });
-    it('should add metadata', function(done) {
-      if (!_company) {
-        return done(new Error("No Company!"));
-      }
-      Buttress.Company.Metadata
-        .save(_company.id, 'TEST_DATA', {foo: 'bar'})
-        .then(function(metadata) {
-          metadata.foo.should.equal('bar');
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
-    });
-    it('should get metadata', function(done) {
-      if (!_company) {
-        return done(new Error("No Company!"));
-      }
-      Buttress.Company.Metadata
-        .load(_company.id, 'TEST_DATA', false)
-        .then(function(metadata) {
-          metadata.should.not.equal(false);
-          metadata.foo.should.equal('bar');
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
-    });
-    it('should get all metadata', function(done) {
-      if (!_company) {
-        return done(new Error("No Company!"));
-      }
-      Buttress.Company.Metadata
-        .loadAll(_company.id)
-        .then(function(metadata) {
-          metadata.should.not.equal(false);
-          metadata.TEST_DATA.foo.should.equal('bar');
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
-    });
-    it('should delete metadata', function(done) {
-      if (!_company) {
-        return done(new Error("No Company!"));
-      }
-      Buttress.Company.Metadata
-        .remove(_company.id, 'TEST_DATA')
-        .then(function(result) {
-          result.should.equal(true);
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
-    });
-    it('should get default metadata (post-deletion)', function(done) {
-      if (!_company) {
-        return done(new Error("No Company!"));
-      }
-      Buttress.Company.Metadata
-        .load(_company.id, 'TEST_DATA', false)
-        .then(function(metadata) {
-          metadata.should.equal(false);
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
-    });
-    it('should fail to delete metadata', function(done) {
-      if (!_company) {
-        return done(new Error("No Company!"));
-      }
-      Buttress.Company.Metadata
-        .remove(_company.id, 'TEST_DATA')
-        .then(function(metadata) {
-          metadata.should.equal(false);
           done();
         })
         .catch(function(err) {
