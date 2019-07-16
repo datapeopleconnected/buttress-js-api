@@ -1,5 +1,7 @@
 # buttress-api-js
-### Latest: 2.0.0 :tada:
+### Latest: 2.0.1
+- ADDED: API for updating a token role
+### 2.0.0 :tada:
 - ADDED: API support for custom schema. (Core schema are now stripped down).
 - ADDED: Ability to pass app roles object to buttress
 - REFACTOR: Breaking data changes to all core API's (app, auth, user, token).
