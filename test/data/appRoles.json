@@ -1,0 +1,30 @@
+{
+	"default": "user.member",
+	"roles": [
+		{
+			"name": "public",
+			"endpointDisposition": "denyAll",
+			"dataDisposition": "denyAll"
+		},
+		{
+			"name": "user",
+			"roles": [
+				{
+					"name": "member",
+					"endpointDisposition": "denyAll",
+					"dataDisposition": "denyAll"
+				}
+			]
+		},
+		{
+			"name": "admin",
+			"roles": [
+				{
+					"name": "super",
+					"endpointDisposition": "allowAll",
+					"dataDisposition": "allowAll"
+				}
+			]
+		}
+	]
+}

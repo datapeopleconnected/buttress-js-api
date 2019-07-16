@@ -1,0 +1,185 @@
+{
+  "name": "company",
+  "type": "collection",
+  "collection": "companies",
+  "properties": {
+    "name": {
+      "__type": "string",
+      "__required": true,
+      "__allowUpdate": true
+    },
+    "companyType": {
+      "__type": "string",
+      "__enum": ["prospect", "client", "supplier"],
+      "__default": "prospect",
+      "__required": true,
+      "__allowUpdate": true
+    },
+
+    "primaryContact": {
+      "__type": "string",
+      "__required": false,
+      "__default": null
+    },
+    "primaryLocation": {
+      "__type": "string",
+      "__required": false,
+      "__default": null
+    },
+
+    "siccode": {
+      "__type": "number",
+      "__default": 0,
+      "__allowUpdate": true
+    },
+
+    "contacts": {
+      "__type": "array",
+      "__default": [],
+      "__allowUpdate": true,
+      "__schema": {
+        "id": {
+          "__type": "id",
+          "__required": true,
+          "__allowUpdate": false
+        },
+        "name": {
+          "__type": "string",
+          "__default": "",
+          "__required": true,
+          "__allowUpdate": true
+        },
+        "role": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "responsibility": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "email": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "mobile": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "directDial": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "linkedInProfile": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "twitterProfile": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        }
+      }
+    },
+    "locations": {
+      "__type": "array",
+      "__default": [],
+      "__allowUpdate": true,
+      "__schema": {
+        "id": {
+          "__type": "id",
+          "__required": true,
+          "__allowUpdate": false
+        },
+        "name": {
+          "__type": "string",
+          "__default": "",
+          "__required": true,
+          "__allowUpdate": true
+        },
+        "site": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "address": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "city": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "county": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "region": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "postCode": {
+          "__type": "string",
+          "__default": "",
+          "__required": true,
+          "__allowUpdate": true
+        },
+        "phoneNumber": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        },
+        "email": {
+          "__type": "string",
+          "__default": "",
+          "__required": false,
+          "__allowUpdate": true
+        }
+      }
+    },
+    "notes": {
+      "__type": "array",
+      "__default": [],
+      "__allowUpdate": true,
+      "__schema": {
+        "id": {
+          "__type": "id",
+          "__required": true,
+          "__allowUpdate": false
+        },
+        "text": {
+          "__type": "string",
+          "__required": true,
+          "__allowUpdate": true
+        },
+        "timestamp": {
+          "__type": "date",
+          "__default": "now",
+          "__allowUpdate": false
+        }
+      }
+    }
+  }
+}

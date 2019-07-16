@@ -10,7 +10,8 @@
  */
 
 const Buttress = require('../lib/buttressjs');
-const TestSchema = require('./schema.json');
+const TestSchema = require('./data/schema');
+const TestAppRoles = require('./data/appRoles.json');
 const ObjectId = require('mongodb').ObjectId;
 
 class Config {
@@ -24,27 +25,25 @@ class Config {
     }
     this._initialised = true;
 
+    console.log(`BUTTRESS_TEST_API_URL: `, process.env.BUTTRESS_TEST_API_URL);
+    console.log(`BUTTRESS_TEST_SUPER_APP_KEY: `, process.env.BUTTRESS_TEST_SUPER_APP_KEY);
+
     Buttress.init({
       buttressUrl: process.env.BUTTRESS_TEST_API_URL,
       appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY,
-      schema: TestSchema
+      schema: TestSchema,
+      roles: TestAppRoles
     });
 
     before(function(done) {
       Promise.all([
         Buttress.initSchema(),
-        Buttress.Campaign.removeAll(),
         Buttress.User.removeAll(),
-        Buttress.Person.removeAll(),
         Buttress.Token.removeAllUserTokens(),
-        Buttress.Company.removeAll(),
-        Buttress.Contactlist.removeAll(),
-        Buttress.Call.removeAll(),
-        Buttress.Task.removeAll(),
-        Buttress.Notification.removeAll(),
-        Buttress.Appointment.removeAll(),
-        Buttress.Service.removeAll(),
-        Buttress.Contract.removeAll()
+        Buttress.getCollection('service').removeAll(),
+        Buttress.getCollection('company').removeAll(),
+        Buttress.getCollection('board').removeAll(),
+        Buttress.getCollection('post').removeAll()
       ])
         .then(() => done())
         .catch(err => {
@@ -65,6 +64,7 @@ class Config {
     const companies = [
       {
         name: 'Company 1',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: 'HQ',
@@ -84,6 +84,7 @@ class Config {
       },
       {
         name: 'Company 2',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: 'HQ',
@@ -102,6 +103,7 @@ class Config {
       },
       {
         name: 'Company 3',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: 'HQ',
@@ -120,6 +122,7 @@ class Config {
       },
       {
         name: 'Company 4',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: 'HQ',
@@ -138,6 +141,7 @@ class Config {
       },
       {
         name: 'Company 5',
+        companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
           name: 'HQ',
@@ -155,7 +159,7 @@ class Config {
         }]
       }
     ];
-    return Buttress.Company.saveAll({companies: companies})
+    return Buttress.Company.saveAll(companies)
       .then(companyIds => {
         return Buttress.Company.bulkLoad(companyIds);
       })
@@ -165,7 +169,7 @@ class Config {
   }
 
   createUser() {
-    let userAppAuth = {
+    return Buttress.Auth.findOrCreateUser({
       app: 'google',
       id: '12345678987654321',
       name: 'Chris Bates-Keegan',
@@ -173,8 +177,14 @@ class Config {
       email: 'test@test.com',
       profileUrl: 'http://test.com/thisisatest',
       profileImgUrl: 'http://test.com/thisisatest.png'
-    };
-    return Buttress.Auth.findOrCreateUser(userAppAuth)
+    }, {
+      authLevel: Buttress.Token.AuthLevel.USER,
+      permissions: [{
+        route: "*",
+        permission: "*"
+      }],
+      domains: [Buttress.options.url.host]
+    })
       .catch(err => {
         console.log(err);
       });
