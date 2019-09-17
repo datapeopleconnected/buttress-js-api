@@ -32,7 +32,9 @@ class Config {
       buttressUrl: process.env.BUTTRESS_TEST_API_URL,
       appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY,
       schema: TestSchema,
-      roles: TestAppRoles
+      roles: TestAppRoles,
+      apiPath: 'bjs',
+      version: 1
     });
 
     before(function(done) {

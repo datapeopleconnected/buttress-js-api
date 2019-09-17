@@ -17,7 +17,9 @@ First of all you need to initialise Buttress with a valid App Token. App Tokens 
 const Buttress = require('buttress-js-api');
 Buttress.init({
   buttressUrl: 'http://buttress.url',
-  appToken: 'Get this from the Buttress Admin' [REQUIRED]
+  apiPath: 'my-app',
+  appToken: 'Get this from the Buttress Admin',
+  version: 1
 });
 ```
 Once you have initialised Buttress you can use it as follows:
