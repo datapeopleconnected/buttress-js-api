@@ -1,5 +1,7 @@
 # buttress-api-js
-### Latest: 2.0.1
+### Latest: 2.1.0
+- ADDED: Apps API's are now prefixed with there own name
+### 2.0.1
 - ADDED: API for updating a token role
 ### 2.0.0 :tada:
 - ADDED: API support for custom schema. (Core schema are now stripped down).
