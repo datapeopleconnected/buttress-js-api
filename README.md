@@ -1,5 +1,7 @@
 # buttress-api-js
-### Latest: 2.0.1
+### Latest: 2.1.0
+- ADDED: Apps API's are now prefixed with there own name
+### 2.0.1
 - ADDED: API for updating a token role
 ### 2.0.0 :tada:
 - ADDED: API support for custom schema. (Core schema are now stripped down).
@@ -17,7 +19,9 @@ First of all you need to initialise Buttress with a valid App Token. App Tokens 
 const Buttress = require('buttress-js-api');
 Buttress.init({
   buttressUrl: 'http://buttress.url',
-  appToken: 'Get this from the Buttress Admin' [REQUIRED]
+  apiPath: 'my-app',
+  appToken: 'Get this from the Buttress Admin',
+  version: 1
 });
 ```
 Once you have initialised Buttress you can use it as follows:
