@@ -1,4 +1,6 @@
-### Latest: 2.1.0
+### Latest: 2.1.1
+- ADDED: API under Auth for creating new tokens for a user
+### 2.1.0
 - ADDED: Apps API's are now prefixed with there own name
 ### 2.0.1
 - ADDED: API for updating a token role
