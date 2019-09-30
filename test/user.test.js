@@ -26,6 +26,24 @@ Config.init();
 //   ]).then(() => done());
 // });
 
+const USERS = [{
+  app: 'google',
+  id: '12345678987654321',
+  name: 'Chris Bates-Keegan',
+  token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
+  email: 'test@test.com',
+  profileUrl: 'http://test.com/thisisatest',
+  profileImgUrl: 'http://test.com/thisisatest.png'
+}, {
+  app: 'google',
+  id: '98765432109876543210',
+  name: 'Chris Bates-Keegan',
+  token: 'testisathistestisathistestisathistestisathistestisathis',
+  email: 'test@test.com',
+  profileUrl: 'http://test.com/thisisatest',
+  profileImgUrl: 'http://test.com/thisisatest.png'
+}];
+
 describe('@users', function() {
   before(function(done) {
     Promise.all([
@@ -36,8 +54,7 @@ describe('@users', function() {
   });
 
   after(function(done) {
-    Buttress.User.removeAll()
-      .then(() => done()).catch(done);
+    done();
   });
 
   describe('User Basics', function() {
@@ -58,15 +75,7 @@ describe('@users', function() {
 
     it('should create a user', function(done) {
       Buttress.Auth
-        .findOrCreateUser({
-          app: 'google',
-          id: '12345678987654321',
-          name: 'Chris Bates-Keegan',
-          token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-          email: 'test@test.com',
-          profileUrl: 'http://test.com/thisisatest',
-          profileImgUrl: 'http://test.com/thisisatest.png'
-        }, {
+        .findOrCreateUser(USERS[0], {
           authLevel: Buttress.Token.AuthLevel.USER,
           permissions: [{
             route: "*",
@@ -107,15 +116,7 @@ describe('@users', function() {
 
     it('should find an existing user', function(done) {
       Buttress.Auth
-        .findOrCreateUser({
-          app: 'google',
-          id: '12345678987654321',
-          name: 'Chris Bates-Keegan',
-          token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-          email: 'test@test.com',
-          profileUrl: 'http://test.com/thisisatest',
-          profileImgUrl: 'http://test.com/thisisatest.png'
-        }, {
+        .findOrCreateUser(USERS[0], {
           authLevel: Buttress.Token.AuthLevel.USER,
           permissions: [{
             route: "*",
@@ -141,15 +142,7 @@ describe('@users', function() {
 
     it('should create a another user (default role)', function(done) {
       Buttress.Auth
-        .findOrCreateUser({
-          app: 'google',
-          id: '98765432109876543210',
-          name: 'Chris Bates-Keegan',
-          token: 'testisathistestisathistestisathistestisathistestisathis',
-          email: 'test@test.com',
-          profileUrl: 'http://test.com/thisisatest',
-          profileImgUrl: 'http://test.com/thisisatest.png'
-        }, {
+        .findOrCreateUser(USERS[1], {
           authLevel: Buttress.Token.AuthLevel.SUPER,
           permissions: [{
             route: "*",
@@ -167,6 +160,43 @@ describe('@users', function() {
           hasPublicToken.should.equal(true);
 
           _users[1] = user;
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should create a user token', function(done) {
+      const user = _users[0];
+
+      Buttress.Auth
+        .createToken(user.id, {
+          authLevel: Buttress.Token.AuthLevel.USER,
+          permissions: [{
+            route: "*",
+            permission: "*"
+          }],
+          role: 'user.member',
+          domains: [Buttress.options.url.host]
+        })
+        .then(function(token) {
+          token.should.not.equal(false);
+          token.role.should.equal('user.member');
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should have multiple tokens', function(done) {
+      const userData = USERS[0];
+
+      Buttress.User
+        .findUser(userData.app, userData.id)
+        .then(u => {
+          u.tokens.should.have.length(2);
           done();
         })
         .catch(function(err) {
