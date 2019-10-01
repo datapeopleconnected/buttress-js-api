@@ -161,9 +161,9 @@ class Config {
         }]
       }
     ];
-    return Buttress.Company.saveAll(companies)
+    return Buttress.getCollection('company').saveAll(companies)
       .then(companyIds => {
-        return Buttress.Company.bulkLoad(companyIds);
+        return Buttress.getCollection('company').bulkLoad(companyIds);
       })
       .catch(err => {
         console.log(err);
