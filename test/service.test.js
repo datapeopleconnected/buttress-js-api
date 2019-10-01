@@ -35,8 +35,8 @@ describe('@service-basics', function() {
 
   after(function(done) {
     Promise.all([
-      Buttress.Company.bulkRemove(_companies.map(c => c.id)),
-      Buttress.Service.bulkRemove(_services),
+      Buttress.getCollection('company').bulkRemove(_companies.map(c => c.id)),
+      Buttress.getCollection('service').bulkRemove(_services),
       Buttress.User.remove(_user.id)
     ])
       .then(() => done())
@@ -47,7 +47,7 @@ describe('@service-basics', function() {
     const _serviceId = (new ObjectId()).toHexString();
     let _service = null;
     it('should return no services', function(done) {
-      Buttress.Service
+      Buttress.getCollection('service')
         .getAll()
         .then(function(services) {
           services.length.should.equal(0);
@@ -58,7 +58,7 @@ describe('@service-basics', function() {
         });
     });
     it('should add a service', function(done) {
-      Buttress.Service
+      Buttress.getCollection('service')
         .save({
           id: _serviceId,
           ownerUserId: _user.id,
@@ -132,7 +132,7 @@ describe('@service-basics', function() {
         });
     });
     it('should not add a service with invalid properties', function(done) {
-      Buttress.Service
+      Buttress.getCollection('service')
         .save({
           ownerUserId: _user.id,
           companyId: _companies[0].id,
@@ -150,7 +150,7 @@ describe('@service-basics', function() {
         });
     });
     it('should not add a service with missing required properties', function(done) {
-      Buttress.Service
+      Buttress.getCollection('service')
         .save({
           ownerUserId: _user.id,
           companyId: _companies[0].id,
@@ -168,8 +168,8 @@ describe('@service-basics', function() {
         });
     });
     it('should get a specific service', function(done) {
-      Buttress.Service
-        .load(_serviceId)
+      Buttress.getCollection('service')
+        .get(_serviceId)
         .then(function(service) {
           _service = service;
           _service.id.should.equal(_serviceId);
@@ -188,7 +188,7 @@ describe('@service-basics', function() {
       if (!_service) {
         return done(new Error("No Service!"));
       }
-      Buttress.Service.update(_service.id, [
+      Buttress.getCollection('service').update(_service.id, [
         {
           path: 'appProp6.date',
           value: new Date('2017-07-31')
@@ -267,7 +267,7 @@ describe('@service-basics', function() {
       if (!_service) {
         return done(new Error("No Service!"));
       }
-      Buttress.Service.update(_service.id, {
+      Buttress.getCollection('service').update(_service.id, {
         path: 'appProp6.companyId',
         value: _newCompanyId
       })
@@ -284,7 +284,7 @@ describe('@service-basics', function() {
       if (!_service) {
         return done(new Error("No Service!"));
       }
-      Buttress.Service.update(_service.id, {
+      Buttress.getCollection('service').update(_service.id, {
         path: 'appProp6.test',
         value: 'don\'t change this'
       })
@@ -298,7 +298,7 @@ describe('@service-basics', function() {
     });
 
     it('should return 1 service', function(done) {
-      Buttress.Service
+      Buttress.getCollection('service')
         .getAll()
         .then(function(services) {
           services.should.have.length(1);
@@ -312,7 +312,7 @@ describe('@service-basics', function() {
       if (!_service) {
         return done(new Error("No Service!"));
       }
-      Buttress.Service
+      Buttress.getCollection('service')
         .remove(_service.id)
         .then(function(res) {
           res.should.equal(true);
@@ -341,7 +341,7 @@ describe('@service-basics', function() {
         return arr;
       };
 
-      Buttress.Service
+      Buttress.getCollection('service')
         .saveAll(__gen(300))
         .then(function(services) {
           services.length.should.equal(300);
@@ -367,7 +367,7 @@ describe('@service-basics', function() {
 //       .then(Config.createCompanies)
 //       .then(function(companies) {
 //         _companies = companies;
-//         Buttress.Service
+//         Buttress.getCollection('service')
 //           .save({
 //             ownerUserId: _user.id,
 //             companyId: _companies[0].id,
@@ -385,9 +385,9 @@ describe('@service-basics', function() {
 
 //   after(function(done) {
 //     let tasks = [
-//       Buttress.Company.bulkRemove(_companies.map(c => c.id)),
+//       Buttress.getCollection('company').bulkRemove(_companies.map(c => c.id)),
 //       Buttress.User.remove(_user.id),
-//       Buttress.Service.remove(_service.id)
+//       Buttress.getCollection('service').remove(_service.id)
 //     ];
 
 //     Promise.all(tasks).then(() => done()).catch(done);
@@ -398,7 +398,7 @@ describe('@service-basics', function() {
 //       if (!_service) {
 //         return done(new Error("No Service!"));
 //       }
-//       Buttress.Service.update(_service.id, {
+//       Buttress.getCollection('service').update(_service.id, {
 //         path: 'notes',
 //         value: {
 //           text: 'This is an important note'
@@ -419,7 +419,7 @@ describe('@service-basics', function() {
 //       if (!_service) {
 //         return done(new Error("No Service!"));
 //       }
-//       Buttress.Service.update(_service.id, {
+//       Buttress.getCollection('service').update(_service.id, {
 //         path: 'notes',
 //         value: {
 //           text: 'This is another important note'
@@ -441,8 +441,8 @@ describe('@service-basics', function() {
 //         return done(new Error("No Service!"));
 //       }
 
-//       Buttress.Service
-//         .load(_service.id)
+//       Buttress.getCollection('service')
+//         .get(_service.id)
 //         .then(function(service) {
 //           service.notes.should.have.length(2);
 //           done();
@@ -455,7 +455,7 @@ describe('@service-basics', function() {
 //       if (!_service) {
 //         return done(new Error("No Service!"));
 //       }
-//       Buttress.Service.update(_service.id, {
+//       Buttress.getCollection('service').update(_service.id, {
 //         path: 'notes.0.__remove__',
 //         value: ''
 //       })
@@ -475,8 +475,8 @@ describe('@service-basics', function() {
 //         return done(new Error("No Service!"));
 //       }
 
-//       Buttress.Service
-//         .load(_service.id)
+//       Buttress.getCollection('service')
+//         .get(_service.id)
 //         .then(function(service) {
 //           service.notes.should.have.length(1);
 //           done();
@@ -490,7 +490,7 @@ describe('@service-basics', function() {
 //         return done(new Error("No Service!"));
 //       }
 
-//       Buttress.Service
+//       Buttress.getCollection('service')
 //         .update(_service.id, {
 //           path: 'notes.0.text',
 //           value: 'This is some updated text'
@@ -510,8 +510,8 @@ describe('@service-basics', function() {
 //         return done(new Error("No Service!"));
 //       }
 
-//       Buttress.Service
-//         .load(_service.id)
+//       Buttress.getCollection('service')
+//         .get(_service.id)
 //         .then(function(service) {
 //           service.notes.should.have.length(1);
 //           service.notes[0].text.should.equal('This is some updated text');
