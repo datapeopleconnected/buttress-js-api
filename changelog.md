@@ -1,4 +1,6 @@
-### Latest: 2.1.1
+### Latest: 2.1.2
+- FIX: Replaced APIs using load/create -> get/save for consistency
+### 2.1.1
 - ADDED: API under Auth for creating new tokens for a user
 ### 2.1.0
 - ADDED: Apps API's are now prefixed with there own name
