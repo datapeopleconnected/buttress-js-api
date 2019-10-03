@@ -1,4 +1,6 @@
-### Latest: 2.1.2
+### Latest: 2.1.3
+- FIX: Token not passed through from default options to get request
+### 2.1.2
 - FIX: Replaced APIs using load/create -> get/save for consistency
 ### 2.1.1
 - ADDED: API under Auth for creating new tokens for a user
