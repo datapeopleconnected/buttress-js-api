@@ -16,8 +16,7 @@
     "url": "https://github.com/wearelighten/buttress-js-api/issues"
   },
   "engines": {
-    "node": "~6.11.x",
-    "npm": "~3.10.x"
+    "node": "^10.15.0"
   },
   "scripts": {
     "test": "mocha --require should --reporter spec",
