@@ -1,7 +1,7 @@
 {
   "name": "buttress-js-api",
   "description": "ButtressJS API for Node.js",
-  "version": "2.1.4",
+  "version": "2.2.0",
   "author": "Lighten",
   "contributors": [
     "Chris Bates-Keegan <chris@wearelighten.co.uk>"
@@ -32,7 +32,8 @@
   "main": "./lib/buttressjs",
   "dependencies": {
     "restler": "^3.4.0",
-    "sugar": "^2.0.2"
+    "sugar": "^2.0.2",
+    "mongodb": "^2.2.31"
   },
   "devDependencies": {
     "eslint": "^3.19.0",
@@ -41,7 +42,6 @@
     "gulp": "^3.9.1",
     "gulp-bump": "^2.9.0",
     "mocha": "^3.5.3",
-    "mongodb": "^2.2.31",
     "should": "^11.2.1"
   }
 }
