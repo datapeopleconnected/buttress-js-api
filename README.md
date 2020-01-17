@@ -1,5 +1,10 @@
 # buttress-api-js
-### Latest: 2.1.4
+### Latest: 2.2.0
+- ADDED: Schema method for creating a object with default values
+- ADDED: Helpers for schema handling (flattern, inflate)
+- ADDED: data type 'id' now has default 'new' which will generate a new id
+### 2.1.4
+- FIX: Update package.json engine 'node' version
 ### 2.1.3
 - FIX: Token not passed through from default options to get request
 ### 2.1.2
