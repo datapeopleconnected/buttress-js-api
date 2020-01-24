@@ -1,4 +1,6 @@
-### Latest: 2.2.0
+### Latest: 2.2.1
+- FIX: Update outdated npm packages
+### 2.2.1
 - ADDED: Schema method for creating a object with default values
 - ADDED: Helpers for schema handling (flattern, inflate)
 - ADDED: data type 'id' now has default 'new' which will generate a new id
