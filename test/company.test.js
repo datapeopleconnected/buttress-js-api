@@ -178,7 +178,7 @@ describe('@company-basics', function() {
         });
     });
 
-    it('should add several companies', function(done) {
+    it('should add several companies (bulk)', function(done) {
       const __gen = num => {
         let arr = [];
         for (let x = 0; x < num; x++) {
@@ -213,6 +213,49 @@ describe('@company-basics', function() {
           done(err);
         });
     });
+
+    it('should add several companies (per company)', function(done) {
+      const __gen = num => {
+        let arr = [];
+        for (let x = 0; x < num; x++) {
+          const company = Buttress.getCollection('companies').createObject();
+          company.name = `Blackburn Widget Company ${x + 1}`;
+          company.companyType = 'prospect';
+
+          const location = Buttress.getCollection('companies').createObject('locations');
+          location.name = "Headquarters";
+          location.address = "124 Bonsall Street, Mill Hill";
+          location.city = "Blackburn";
+          location.postCode = "BB2 5DS";
+          location.phoneNumber = "01254 123123";
+
+          const contact = Buttress.getCollection('companies').createObject('contacts');
+          contact.name = "Robert McBobson";
+          contact.role = 'Managing Director';
+
+          arr.push(company);
+        }
+
+        return arr;
+      };
+
+      const companies = __gen(1000);
+      companies.reduce((prev, company) => {
+        return prev
+          .then((arr) => {
+            return Buttress.getCollection('companies').save(company)
+              .then((res) => arr.push(res))
+              .then(() => arr);
+          });
+      }, Promise.resolve([]))
+        .then(function(companies) {
+          companies.length.should.equal(1000);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    }).timeout(20000);
   });
 });
 
