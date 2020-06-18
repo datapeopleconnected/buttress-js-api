@@ -51,7 +51,7 @@ describe('@data-filter', function() {
         return Buttress.Auth
           .findOrCreateUser({
             app: 'google',
-            id: '12345678987654321',
+            id:  `${Math.floor(Math.random() * Math.floor(9999999999))}`,
             name: user.name,
             token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
             email: 'test@test.com',
