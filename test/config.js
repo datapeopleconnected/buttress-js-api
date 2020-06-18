@@ -28,32 +28,33 @@ class Config {
     console.log(`BUTTRESS_TEST_API_URL: `, process.env.BUTTRESS_TEST_API_URL);
     console.log(`BUTTRESS_TEST_SUPER_APP_KEY: `, process.env.BUTTRESS_TEST_SUPER_APP_KEY);
 
-    Buttress.init({
-      buttressUrl: process.env.BUTTRESS_TEST_API_URL,
-      appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY,
-      schema: TestSchema,
-      roles: TestAppRoles,
-      apiPath: 'bjs',
-      version: 1
-    });
-
     before(function(done) {
-      Promise.all([
-        Buttress.initSchema(),
-        Buttress.User.removeAll(),
-        Buttress.Token.removeAllUserTokens(),
-        Buttress.getCollection('service').removeAll(),
-        Buttress.getCollection('company').removeAll(),
-        Buttress.getCollection('board').removeAll(),
-        Buttress.getCollection('post').removeAll()
-      ])
+      Buttress.init({
+        buttressUrl: process.env.BUTTRESS_TEST_API_URL,
+        appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY,
+        schema: TestSchema,
+        roles: TestAppRoles,
+        apiPath: 'bjs',
+        version: 1
+      })
+        .then(() => {
+          return Promise.all([
+            Buttress.initSchema(),
+            Buttress.User.removeAll(),
+            Buttress.Token.removeAllUserTokens(),
+            Buttress.getCollection('services').removeAll(),
+            Buttress.getCollection('companies').removeAll(),
+            Buttress.getCollection('boards').removeAll(),
+            Buttress.getCollection('posts').removeAll()
+          ]);
+        })
         .then(() => done())
         .catch(err => {
           if (err.statusCode) {
-            console.log(`${err.statusCode}: ${err.statusMessage}`);
+            console.error(`${err.statusCode}: ${err.statusMessage}`);
             return;
           }
-          console.log(err);
+          console.error(err);
         });
     });
 
@@ -161,13 +162,9 @@ class Config {
         }]
       }
     ];
-    return Buttress.getCollection('company').saveAll(companies)
-      .then(companyIds => {
-        return Buttress.getCollection('company').bulkLoad(companyIds);
-      })
-      .catch(err => {
-        console.log(err);
-      });
+
+    return Buttress.getCollection('companies').bulkSave(companies)
+      .then((companyIds) => Buttress.getCollection('companies').bulkGet(companyIds));
   }
 
   createUser() {

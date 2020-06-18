@@ -35,10 +35,6 @@ const _mapUserRoles = (data, path) => {
 
 describe('@data-filter', function() {
 
-  const Auth = Buttress.getCollection('auth');
-  const Post = Buttress.getCollection('post');
-  const Board = Buttress.getCollection('board');
-
   const TestUsersRoles = _mapUserRoles(TestAppRoles);
 
   let _testUsers = [];
@@ -72,7 +68,7 @@ describe('@data-filter', function() {
     const addPostBoards = () => {
       return _testUsers.map(user => {
         const token = user.tokens[0];
-        return Board.save({
+        return Buttress.getCollection('boards').save({
           name: token.role,
           subscribed: [user.id]
         });
@@ -82,7 +78,7 @@ describe('@data-filter', function() {
     const addTestPosts = () => {
       return _testBoards.reduce((arr, board) => {
         const posts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(() => {
-          return Post.save({
+          return Buttress.getCollection('posts').save({
             content: "Hello world",
             memberSecretContent: "",
             adminSecretContent: "",
@@ -106,8 +102,8 @@ describe('@data-filter', function() {
 
   after(function(done) {
     Buttress.User.removeAll()
-      .then(() => Post.removeAll())
-      .then(() => Board.removeAll())
+      .then(() => Buttress.getCollection('posts').removeAll())
+      .then(() => Buttress.getCollection('boards').removeAll())
       .then(() => done()).catch(done);
   });
 
@@ -122,7 +118,7 @@ describe('@data-filter', function() {
       const publicUser = _testUsers.find((u) => u.tokens.some(t => t.role === 'public'));
       const token = publicUser.tokens.find(t => t.role === 'public');
 
-      Board.getAll({}, {
+      Buttress.getCollection('boards').getAll({}, {
         query: {
           token: token.value
         }
@@ -147,7 +143,7 @@ describe('@data-filter', function() {
       const token = publicUser.tokens.find(t => t.role === 'public');
       const publicBoard = _testBoards.find(board => board.name === 'public');
 
-      Post.getAll({}, {
+      Buttress.getCollection('posts').getAll({}, {
         query: {
           token: token.value
         }
