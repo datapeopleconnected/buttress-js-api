@@ -46,8 +46,8 @@ describe('@data-filter', function() {
   let _testPosts = [];
 
   before(function(done) {
-    const addUserRoles = TestUsersRoles.map(user => {
-      return new Promise(resolve => {
+    const addUserRoles = () => {
+      return TestUsersRoles.map(user => {
         return Buttress.Auth
           .findOrCreateUser({
             app: 'google',
@@ -65,13 +65,9 @@ describe('@data-filter', function() {
             }],
             role: user.name,
             domains: [Buttress.options.url.host]
-          })
-          .then(res => resolve(res))
-          .catch(function(err) {
-            throw err;
           });
       });
-    });
+    };
 
     const addPostBoards = () => {
       return _testUsers.map(user => {
@@ -99,19 +95,19 @@ describe('@data-filter', function() {
       }, []);
     };
 
-    Promise.all(addUserRoles)
-    .then(res => _testUsers = res) // eslint-disable-line no-return-assign
-    .then(() => Promise.all(addPostBoards()))
-    .then(res => _testBoards = res) // eslint-disable-line no-return-assign
-    .then(() => Promise.all(addTestPosts()))
-    .then(res => _testPosts = res) // eslint-disable-line no-return-assign
-    .then(() => done());
+    Promise.all(addUserRoles())
+      .then(res => _testUsers = res) // eslint-disable-line no-return-assign
+      .then(() => Promise.all(addPostBoards()))
+      .then(res => _testBoards = res) // eslint-disable-line no-return-assign
+      .then(() => Promise.all(addTestPosts()))
+      .then(res => _testPosts = res) // eslint-disable-line no-return-assign
+      .then(() => done());
   });
 
   after(function(done) {
     Buttress.User.removeAll()
-      .then(Post.removeAll())
-      .then(Board.removeAll())
+      .then(() => Post.removeAll())
+      .then(() => Board.removeAll())
       .then(() => done()).catch(done);
   });
 
@@ -122,8 +118,8 @@ describe('@data-filter', function() {
   //     - board.id (single) -> post.boardId (single)
 
   describe('Boards', function() {
-    it('should return only public boards', function(done) {
-      const publicUser = _testUsers.find(u => u.tokens.some(t => t.role === 'public'));
+    it('should only return boards user is subscribed to', function(done) {
+      const publicUser = _testUsers.find((u) => u.tokens.some(t => t.role === 'public'));
       const token = publicUser.tokens.find(t => t.role === 'public');
 
       Board.getAll({}, {

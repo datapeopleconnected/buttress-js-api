@@ -22,14 +22,14 @@ Config.init();
  */
 
 describe('@company-basics', function() {
-  let _companies = [];
+  const collection = Buttress.getCollection('company');
+
   before(function() {
   });
 
   after(function(done) {
-    // let ids = _companies.map(c => c.id);
-    Buttress.getCollection('company').bulkRemove(_companies)
-    .then(() => done()).catch(done);
+    collection.removeAll()
+      .then(() => done()).catch(done);
   });
 
   describe('Company Basics', function() {
@@ -206,7 +206,6 @@ describe('@company-basics', function() {
         .saveAll(__gen(1000))
         .then(function(companies) {
           companies.length.should.equal(1000);
-          _companies = companies;
           done();
         })
         .catch(function(err) {
