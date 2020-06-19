@@ -109,6 +109,83 @@ describe('@posts', function() {
       .catch(done);
     });
 
+    it('should increment the view count by 12', function(done) {
+      const increment = 12;
+      let startCount = null;
+
+      Buttress.getCollection('posts').get(_savePostData.id)
+        .then((post) => startCount = post.views)
+        .then(() => Buttress.getCollection('posts').update(_savePostData.id, {path: 'views.__increment__', value: increment}))
+        .then((results) => {
+          results[0].path.should.equal('views.__increment__');
+          results[0].value.should.equal(increment);
+        })
+        .then(() => Buttress.getCollection('posts').get(_savePostData.id))
+        .then((post) => {
+          post.views.should.equal(startCount + increment);
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should increment the view count by 5', function(done) {
+      const increment = 5;
+      let startCount = null;
+
+      Buttress.getCollection('posts').get(_savePostData.id)
+        .then((post) => startCount = post.views)
+        .then(() => Buttress.getCollection('posts').update(_savePostData.id, {path: 'views.__increment__', value: increment}))
+        .then((results) => {
+          results[0].path.should.equal('views.__increment__');
+          results[0].value.should.equal(increment);
+        })
+        .then(() => Buttress.getCollection('posts').get(_savePostData.id))
+        .then((post) => {
+          post.views.should.equal(startCount + increment);
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should decrement the view count by 2', function(done) {
+      const increment = -2;
+      let startCount = null;
+
+      Buttress.getCollection('posts').get(_savePostData.id)
+        .then((post) => startCount = post.views)
+        .then(() => Buttress.getCollection('posts').update(_savePostData.id, {path: 'views.__increment__', value: increment}))
+        .then((results) => {
+          results[0].path.should.equal('views.__increment__');
+          results[0].value.should.equal(increment);
+        })
+        .then(() => Buttress.getCollection('posts').get(_savePostData.id))
+        .then((post) => {
+          post.views.should.equal(startCount + increment);
+          done();
+        })
+        .catch(done);
+    });
+
+    it('should respond 400 when incrementing a stirng', function(done) {
+      const increment = 2;
+
+      Buttress.getCollection('posts').update(_savePostData.id, {path: 'content.__increment__', value: increment})
+        .catch((err) => {
+          err.statusCode.should.be.equal(400);
+          done();
+        });
+    });
+
+    it('should respond 400 passing a string', function(done) {
+      const increment = "string";
+
+      Buttress.getCollection('posts').update(_savePostData.id, {path: 'views.__increment__', value: increment})
+        .catch((err) => {
+          err.statusCode.should.be.equal(400);
+          done();
+        });
+    });
+
     it('should remove the post', function(done) {
       Buttress.getCollection('posts').remove(_savePostData.id)
         .then(function(res) {

@@ -96,6 +96,16 @@
         "READ": "allow"
       }]
     },
+    "views": {
+      "__type": "number",
+      "__default": 0,
+      "__required": false,
+      "__allowUpdate": true,
+      "__permissions": [{
+        "role": "public",
+        "READ": "allow"
+      }]
+    },
     "boardId": {
       "__type": "id",
       "__required": false,
