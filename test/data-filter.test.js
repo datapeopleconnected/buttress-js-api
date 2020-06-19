@@ -113,6 +113,21 @@ describe('@data-filter', function() {
   //     - user.id (single)  -> board.subscribed (many)
   //     - board.id (single) -> post.boardId (single)
 
+  describe('Token', function() {
+    it('should respond 401 with invalid_token', function(done) {
+      Buttress.getCollection('boards').getAll({}, {
+        query: {
+          token: `RANDOMTOKEN`
+        }
+      })
+        .catch(function(err) {
+          err.statusCode.should.equal(401);
+          err.message.should.equal('invalid_token');
+          done();
+        });
+    });
+  });
+
   describe('Boards', function() {
     it('should only return boards user is subscribed to', function(done) {
       const publicUser = _testUsers.find((u) => u.tokens.some(t => t.role === 'public'));
