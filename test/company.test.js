@@ -115,7 +115,7 @@ describe('@company-basics', function() {
         done(err);
       });
     });
-    it('should update the company', function(done) {
+    it('should reject string update to none string property', function(done) {
       Buttress.getCollection('companies')
       .update(_company.id, {
         path: 'siccode',
@@ -129,7 +129,7 @@ describe('@company-basics', function() {
         done();
       });
     });
-    it('should update the company', function(done) {
+    it('should update the company property', function(done) {
       Buttress.getCollection('companies')
       .update(_company.id, {
         path: 'siccode',
