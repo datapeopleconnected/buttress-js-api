@@ -19,7 +19,8 @@ describe('@posts', function() {
   this.timeout(2000);
 
   before(function(done) {
-    done();
+    Buttress.getCollection('posts').removeAll()
+      .then(() => done()).catch(done);
   });
 
   after(function(done) {

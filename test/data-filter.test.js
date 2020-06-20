@@ -97,14 +97,16 @@ describe('@data-filter', function() {
       .then(res => _testBoards = res) // eslint-disable-line no-return-assign
       .then(() => Promise.all(addTestPosts()))
       .then(res => _testPosts = res) // eslint-disable-line no-return-assign
-      .then(() => done());
+      .then(() => done())
+      .catch(done);
   });
 
   after(function(done) {
     Buttress.User.removeAll()
       .then(() => Buttress.getCollection('posts').removeAll())
       .then(() => Buttress.getCollection('boards').removeAll())
-      .then(() => done()).catch(done);
+      .then(() => done())
+      .catch(done);
   });
 
   // TODO:
