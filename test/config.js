@@ -163,8 +163,7 @@ class Config {
       }
     ];
 
-    return Buttress.getCollection('companies').bulkSave(companies)
-      .then((companyIds) => Buttress.getCollection('companies').bulkGet(companyIds));
+    return Buttress.getCollection('companies').bulkSave(companies);
   }
 
   createUser() {
