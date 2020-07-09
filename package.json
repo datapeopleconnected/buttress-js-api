@@ -19,6 +19,7 @@
     "node": "^10.15.0"
   },
   "scripts": {
+    "lint": "eslint 'lib/**/*.js'",
     "test": "mocha --require should --reporter spec",
     "test-app": "mocha --require should --reporter spec -g app-basics",
     "test-company": "mocha --require should --reporter spec -g company",
@@ -37,10 +38,9 @@
     "sugar": "^2.0.6"
   },
   "devDependencies": {
-    "eslint": "^6.8.0",
+    "eslint": "^7.4.0",
     "eslint-config-google": "^0.14.0",
-    "eslint-config-xo": "^0.27.2",
-    "mocha": "^7.0.0",
+    "mocha": "^8.0.1",
     "should": "^13.2.3"
   }
 }
