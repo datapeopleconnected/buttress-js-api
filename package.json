@@ -34,7 +34,6 @@
   "dependencies": {
     "axios": "^0.19.2",
     "mongodb": "^3.5.2",
-    "restler": "^3.4.0",
     "sugar": "^2.0.6"
   },
   "devDependencies": {

@@ -111,7 +111,7 @@ describe('@roles', function() {
     const roleName = 'public';
     let _user = null;
     let requestOptions = {
-      query: {
+      params: {
         token: null
       }
     };
@@ -119,7 +119,7 @@ describe('@roles', function() {
     it(`should have a ${roleName} test user`, function(done) {
       _user = _testUsers.find(u => u.tokens.some(t => t.role === roleName));
       if (_user) {
-        requestOptions.query.token = _user.tokens.find(t => t.role === roleName).value;
+        requestOptions.params.token = _user.tokens.find(t => t.role === roleName).value;
         done();
       } else {
         done(new Error(`a user with the role ${roleName} doesn't exist`));
@@ -162,7 +162,7 @@ describe('@roles', function() {
     const roleName = 'user.member';
     let _user = null;
     let requestOptions = {
-      query: {
+      params: {
         token: null
       }
     };
@@ -170,7 +170,7 @@ describe('@roles', function() {
     it(`should have a ${roleName} test user`, function(done) {
       _user = _testUsers.find(u => u.tokens.some(t => t.role === roleName));
       if (_user) {
-        requestOptions.query.token = _user.tokens.find(t => t.role === roleName).value;
+        requestOptions.params.token = _user.tokens.find(t => t.role === roleName).value;
         done();
       } else {
         done(new Error(`a user with the role ${roleName} doesn't exist`));
@@ -220,7 +220,7 @@ describe('@roles', function() {
     const roleName = 'admin.super';
     let _user = null;
     let requestOptions = {
-      query: {
+      params: {
         token: null
       }
     };
@@ -228,7 +228,7 @@ describe('@roles', function() {
     it(`should have a ${roleName} test user`, function(done) {
       _user = _testUsers.find(u => u.tokens.some(t => t.role === roleName));
       if (_user) {
-        requestOptions.query.token = _user.tokens.find(t => t.role === roleName).value;
+        requestOptions.params.token = _user.tokens.find(t => t.role === roleName).value;
         done();
       } else {
         done(new Error(`a user with the role ${roleName} doesn't exist`));
