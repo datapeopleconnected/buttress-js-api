@@ -1,4 +1,6 @@
-### Latest: 2.3.0
+### Latest: 2.3.1
+- FIX: incorrect dependency name Helper -> Helpers
+### 2.3.0
 - REFACTOR: Removed restler and replaced with axios
 - TWEAK: Testing, added bulk companies save
 - REFACTOR: Bulk save with return the newly added objects
