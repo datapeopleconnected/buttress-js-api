@@ -1,7 +1,13 @@
 # buttress-api-js
-### Latest: 2.2.1
-- FIX: Update outdated npm packages
+### Latest: 2.3.0
+- REFACTOR: Removed restler and replaced with axios
+- TWEAK: Testing, added bulk companies save
+- REFACTOR: Bulk save with return the newly added objects
+- REFACTOR: getCollection should reference collection
+- ADDED: Block user from calling getCollection before init
 ### 2.2.1
+- FIX: Update outdated npm packages
+### 2.2.0
 - ADDED: Schema method for creating a object with default values
 - ADDED: Helpers for schema handling (flattern, inflate)
 - ADDED: data type 'id' now has default 'new' which will generate a new id

@@ -1,7 +1,7 @@
 {
   "name": "buttress-js-api",
   "description": "ButtressJS API for Node.js",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "author": "Lighten",
   "contributors": [
     "Chris Bates-Keegan <chris@wearelighten.co.uk>"
@@ -27,13 +27,14 @@
     "test-users": "mocha --require should --reporter spec -g @users",
     "test-roles": "mocha --require should --reporter spec -g @roles",
     "test-boards": "mocha --require should --reporter spec -g @boards",
-    "test-data-filter": "mocha --require should --reporter spec -g @data-filter"
+    "test-data-filter": "mocha --require should --reporter spec -g @data-filter",
+    "test-socket": "mocha --require should --reporter spec -g @socket"
   },
   "main": "./lib/buttressjs",
   "dependencies": {
-    "restler": "^3.4.0",
-    "sugar": "^2.0.6",
-    "mongodb": "^3.5.2"
+    "axios": "^0.19.2",
+    "mongodb": "^3.5.2",
+    "sugar": "^2.0.6"
   },
   "devDependencies": {
     "eslint": "^6.8.0",

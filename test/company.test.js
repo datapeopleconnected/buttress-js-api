@@ -20,16 +20,16 @@ Config.init();
  * In all tests that make use of promises, you need to use .catch(err => done(err) pattern.
  * Otherwise the promise consumes the assertion failure and you get a timeout instead of useful info.
  */
-
 describe('@company-basics', function() {
-  let _companies = [];
-  before(function() {
+  before(function(done) {
+    Buttress.getCollection('companies').removeAll()
+      .then(() => done()).catch(done);
   });
 
   after(function(done) {
-    // let ids = _companies.map(c => c.id);
-    Buttress.getCollection('company').bulkRemove(_companies)
-    .then(() => done()).catch(done);
+    done();
+    // Buttress.getCollection('companies').removeAll()
+    //   .then(() => done()).catch(done);
   });
 
   describe('Company Basics', function() {
@@ -39,7 +39,7 @@ describe('@company-basics', function() {
     const _contactId = (new ObjectId()).toHexString();
 
     it('should return no companies', function(done) {
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .getAll()
         .then(function(companies) {
           companies.length.should.equal(0);
@@ -50,7 +50,7 @@ describe('@company-basics', function() {
         });
     });
     it('should add a company', function(done) {
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .save({
           id: _companyId,
           name: 'Blackburn Widget Company',
@@ -102,7 +102,7 @@ describe('@company-basics', function() {
         });
     });
     it('should return 1 company', function(done) {
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
       .getAll()
       .then(function(companies) {
         companies.should.have.length(1);
@@ -115,8 +115,8 @@ describe('@company-basics', function() {
         done(err);
       });
     });
-    it('should update the company', function(done) {
-      Buttress.getCollection('company')
+    it('should reject string update to none string property', function(done) {
+      Buttress.getCollection('companies')
       .update(_company.id, {
         path: 'siccode',
         value: "Not a String"
@@ -129,8 +129,8 @@ describe('@company-basics', function() {
         done();
       });
     });
-    it('should update the company', function(done) {
-      Buttress.getCollection('company')
+    it('should update the company property', function(done) {
+      Buttress.getCollection('companies')
       .update(_company.id, {
         path: 'siccode',
         value: 123456
@@ -145,7 +145,7 @@ describe('@company-basics', function() {
       if (!_company) {
         return done(new Error("No Company!"));
       }
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .remove(_company.id)
         .then(function(res) {
           res.should.equal(true);
@@ -159,7 +159,7 @@ describe('@company-basics', function() {
       const _companyId = (new ObjectId()).toHexString();
       const _contactId = (new ObjectId()).toHexString();
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .save({
           id: _companyId,
           name: 'Blackburn Widget Company',
@@ -177,42 +177,85 @@ describe('@company-basics', function() {
           done();
         });
     });
-    it('should add several companies', function(done) {
+
+    it('should add several companies (bulk)', function(done) {
       const __gen = num => {
         let arr = [];
         for (let x = 0; x < num; x++) {
-          arr.push({
-            name: `Blackburn Widget Company ${x + 1}`,
-            companyType: 'prospect',
-            locations: [{
-              id: (new ObjectId()).toHexString(),
-              name: "Headquarters",
-              address: "124 Bonsall Street, Mill Hill",
-              city: "Blackburn",
-              postCode: "BB2 5DS",
-              phoneNumber: "01254 123123"
-            }],
-            contact: {
-              name: "Robert McBobson",
-              role: 'Managing Director'
-            }
-          });
+          const company = Buttress.getCollection('companies').createObject();
+          company.name = `Blackburn Widget Company ${x + 1}`;
+          company.companyType = 'prospect';
+
+          const location = Buttress.getCollection('companies').createObject('locations');
+          location.name = "Headquarters";
+          location.address = "124 Bonsall Street, Mill Hill";
+          location.city = "Blackburn";
+          location.postCode = "BB2 5DS";
+          location.phoneNumber = "01254 123123";
+
+          const contact = Buttress.getCollection('companies').createObject('contacts');
+          contact.name = "Robert McBobson";
+          contact.role = 'Managing Director';
+
+          arr.push(company);
         }
 
         return arr;
       };
 
-      Buttress.getCollection('company')
-        .saveAll(__gen(1000))
+      Buttress.getCollection('companies')
+        .bulkSave(__gen(1000))
         .then(function(companies) {
           companies.length.should.equal(1000);
-          _companies = companies;
           done();
         })
         .catch(function(err) {
           done(err);
         });
     });
+
+    it('should add several companies (per company)', function(done) {
+      const __gen = num => {
+        let arr = [];
+        for (let x = 0; x < num; x++) {
+          const company = Buttress.getCollection('companies').createObject();
+          company.name = `Blackburn Widget Company ${x + 1}`;
+          company.companyType = 'prospect';
+
+          const location = Buttress.getCollection('companies').createObject('locations');
+          location.name = "Headquarters";
+          location.address = "124 Bonsall Street, Mill Hill";
+          location.city = "Blackburn";
+          location.postCode = "BB2 5DS";
+          location.phoneNumber = "01254 123123";
+
+          const contact = Buttress.getCollection('companies').createObject('contacts');
+          contact.name = "Robert McBobson";
+          contact.role = 'Managing Director';
+
+          arr.push(company);
+        }
+
+        return arr;
+      };
+
+      const companies = __gen(1000);
+      companies.reduce((prev, company) => {
+        return prev
+          .then((arr) => {
+            return Buttress.getCollection('companies').save(company)
+              .then((res) => arr.push(res))
+              .then(() => arr);
+          });
+      }, Promise.resolve([]))
+        .then(function(companies) {
+          companies.length.should.equal(1000);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    }).timeout(20000);
   });
 });
 
@@ -220,7 +263,7 @@ describe('@company-contacts', function() {
   let _companyId = '';
 
   before(function(done) {
-    Buttress.getCollection('company')
+    Buttress.getCollection('companies')
       .save({
         name: 'Blackburn Widget Company',
         companyType: 'prospect',
@@ -247,7 +290,7 @@ describe('@company-contacts', function() {
 
   after(function(done) {
     let companies = [
-      Buttress.getCollection('company').remove(_companyId)
+      Buttress.getCollection('companies').remove(_companyId)
     ];
 
     Promise.all(companies).then(() => done()).catch(done);
@@ -258,7 +301,7 @@ describe('@company-contacts', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Buttress.getCollection('company').update(_companyId, {
+      Buttress.getCollection('companies').update(_companyId, {
         path: 'contacts',
         value: {
           id: new ObjectId(),
@@ -282,7 +325,7 @@ describe('@company-contacts', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .get(_companyId)
         .then(function(company) {
           company.contacts.should.have.length(2);
@@ -297,7 +340,7 @@ describe('@company-contacts', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .update(_companyId, {
           path: 'contacts.1.email',
           value: 'han.solo@starwars.com'
@@ -317,7 +360,7 @@ describe('@company-contacts', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .get(_companyId)
         .then(function(company) {
           company.contacts.should.have.length(2);
@@ -332,7 +375,7 @@ describe('@company-contacts', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Buttress.getCollection('company').update(_companyId, {
+      Buttress.getCollection('companies').update(_companyId, {
         path: 'contacts.1.__remove__',
         value: ''
       })
@@ -352,7 +395,7 @@ describe('@company-contacts', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .get(_companyId)
         .then(function(company) {
           company.contacts.should.have.length(1);
@@ -373,7 +416,7 @@ describe('@company-locations', function() {
   ];
 
   before(function(done) {
-    Buttress.getCollection('company')
+    Buttress.getCollection('companies')
       .save({
         name: 'Blackburn Widget Company',
         companyType: 'prospect',
@@ -401,7 +444,7 @@ describe('@company-locations', function() {
 
   after(function(done) {
     let companies = [
-      Buttress.getCollection('company').remove(_companyId)
+      Buttress.getCollection('companies').remove(_companyId)
     ];
 
     Promise.all(companies).then(() => done()).catch(done);
@@ -412,7 +455,7 @@ describe('@company-locations', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Buttress.getCollection('company').update(_companyId, {
+      Buttress.getCollection('companies').update(_companyId, {
         path: 'locations',
         value: {
           id: _locationIds[1],
@@ -446,7 +489,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .get(_companyId)
         .then(function(company) {
           // console.log(company);
@@ -464,7 +507,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .update(_companyId, {
           path: 'locations.1.phoneNumber',
           value: '01772 123456'
@@ -484,7 +527,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .get(_companyId)
         .then(function(company) {
           company.locations.should.have.length(2);
@@ -500,7 +543,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .update(_companyId, {
           path: 'locations.1',
           value: {
@@ -527,7 +570,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .get(_companyId)
         .then(function(company) {
           company.locations.should.have.length(2);
@@ -542,7 +585,7 @@ describe('@company-locations', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Buttress.getCollection('company').update(_companyId, {
+      Buttress.getCollection('companies').update(_companyId, {
         path: 'locations.1.__remove__',
         value: ''
       })
@@ -562,7 +605,7 @@ describe('@company-locations', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .get(_companyId)
         .then(function(company) {
           company.locations.should.have.length(1);
@@ -579,7 +622,7 @@ describe('@company-notes', function() {
   let _companyId = '';
 
   before(function(done) {
-    Buttress.getCollection('company')
+    Buttress.getCollection('companies')
       .save({
         name: 'Blackburn Widget Company',
         companyType: 'prospect',
@@ -606,7 +649,7 @@ describe('@company-notes', function() {
 
   after(function(done) {
     let companies = [
-      Buttress.getCollection('company').remove(_companyId)
+      Buttress.getCollection('companies').remove(_companyId)
     ];
 
     Promise.all(companies).then(() => done()).catch(done);
@@ -617,7 +660,7 @@ describe('@company-notes', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Buttress.getCollection('company').update(_companyId, {
+      Buttress.getCollection('companies').update(_companyId, {
         path: 'notes',
         value: {
           id: (new ObjectId()).toHexString(),
@@ -639,7 +682,7 @@ describe('@company-notes', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Buttress.getCollection('company').update(_companyId, {
+      Buttress.getCollection('companies').update(_companyId, {
         path: 'notes',
         value: {
           id: (new ObjectId()).toHexString(),
@@ -662,7 +705,7 @@ describe('@company-notes', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .get(_companyId)
         .then(function(company) {
           company.notes.should.have.length(2);
@@ -676,7 +719,7 @@ describe('@company-notes', function() {
       if (!_companyId) {
         return done(new Error("No Company!"));
       }
-      Buttress.getCollection('company').update(_companyId, {
+      Buttress.getCollection('companies').update(_companyId, {
         path: 'notes.0.__remove__',
         value: ''
       })
@@ -696,7 +739,7 @@ describe('@company-notes', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .get(_companyId)
         .then(function(company) {
           company.notes.should.have.length(1);
@@ -711,7 +754,7 @@ describe('@company-notes', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .update(_companyId, {
           path: 'notes.0.text',
           value: 'This is some updated text'
@@ -731,7 +774,7 @@ describe('@company-notes', function() {
         return done(new Error("No Company!"));
       }
 
-      Buttress.getCollection('company')
+      Buttress.getCollection('companies')
         .get(_companyId)
         .then(function(company) {
           company.notes.should.have.length(1);

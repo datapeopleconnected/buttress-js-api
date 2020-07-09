@@ -8,7 +8,6 @@
  * @author Chris Bates-Keegan
  *
  */
-
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 const ObjectId = require('mongodb').ObjectId;
@@ -27,17 +26,17 @@ describe('@service-basics', function() {
       .then(user => {
         _user = user;
       })
-      .then(Config.createCompanies)
-      .then(function(companies) {
+      .then(() => Config.createCompanies())
+      .then((companies) => {
         _companies = companies;
       }).then(done);
   });
 
   after(function(done) {
     Promise.all([
-      Buttress.getCollection('company').bulkRemove(_companies.map(c => c.id)),
-      Buttress.getCollection('service').bulkRemove(_services),
-      Buttress.User.remove(_user.id)
+      Buttress.getCollection('companies').removeAll(),
+      Buttress.getCollection('services').removeAll(),
+      Buttress.User.removeAll()
     ])
       .then(() => done())
       .catch(done);
@@ -47,7 +46,7 @@ describe('@service-basics', function() {
     const _serviceId = (new ObjectId()).toHexString();
     let _service = null;
     it('should return no services', function(done) {
-      Buttress.getCollection('service')
+      Buttress.getCollection('services')
         .getAll()
         .then(function(services) {
           services.length.should.equal(0);
@@ -58,7 +57,7 @@ describe('@service-basics', function() {
         });
     });
     it('should add a service', function(done) {
-      Buttress.getCollection('service')
+      Buttress.getCollection('services')
         .save({
           id: _serviceId,
           ownerUserId: _user.id,
@@ -132,7 +131,7 @@ describe('@service-basics', function() {
         });
     });
     it('should not add a service with invalid properties', function(done) {
-      Buttress.getCollection('service')
+      Buttress.getCollection('services')
         .save({
           ownerUserId: _user.id,
           companyId: _companies[0].id,
@@ -150,7 +149,7 @@ describe('@service-basics', function() {
         });
     });
     it('should not add a service with missing required properties', function(done) {
-      Buttress.getCollection('service')
+      Buttress.getCollection('services')
         .save({
           ownerUserId: _user.id,
           companyId: _companies[0].id,
@@ -168,7 +167,7 @@ describe('@service-basics', function() {
         });
     });
     it('should get a specific service', function(done) {
-      Buttress.getCollection('service')
+      Buttress.getCollection('services')
         .get(_serviceId)
         .then(function(service) {
           _service = service;
@@ -188,7 +187,7 @@ describe('@service-basics', function() {
       if (!_service) {
         return done(new Error("No Service!"));
       }
-      Buttress.getCollection('service').update(_service.id, [
+      Buttress.getCollection('services').update(_service.id, [
         {
           path: 'appProp6.date',
           value: new Date('2017-07-31')
@@ -267,7 +266,7 @@ describe('@service-basics', function() {
       if (!_service) {
         return done(new Error("No Service!"));
       }
-      Buttress.getCollection('service').update(_service.id, {
+      Buttress.getCollection('services').update(_service.id, {
         path: 'appProp6.companyId',
         value: _newCompanyId
       })
@@ -284,7 +283,7 @@ describe('@service-basics', function() {
       if (!_service) {
         return done(new Error("No Service!"));
       }
-      Buttress.getCollection('service').update(_service.id, {
+      Buttress.getCollection('services').update(_service.id, {
         path: 'appProp6.test',
         value: 'don\'t change this'
       })
@@ -298,7 +297,7 @@ describe('@service-basics', function() {
     });
 
     it('should return 1 service', function(done) {
-      Buttress.getCollection('service')
+      Buttress.getCollection('services')
         .getAll()
         .then(function(services) {
           services.should.have.length(1);
@@ -312,7 +311,7 @@ describe('@service-basics', function() {
       if (!_service) {
         return done(new Error("No Service!"));
       }
-      Buttress.getCollection('service')
+      Buttress.getCollection('services')
         .remove(_service.id)
         .then(function(res) {
           res.should.equal(true);
@@ -341,8 +340,8 @@ describe('@service-basics', function() {
         return arr;
       };
 
-      Buttress.getCollection('service')
-        .saveAll(__gen(300))
+      Buttress.getCollection('services')
+        .bulkSave(__gen(300))
         .then(function(services) {
           services.length.should.equal(300);
           _services = services;
@@ -354,172 +353,3 @@ describe('@service-basics', function() {
     });
   });
 });
-
-// describe('@service-notes', function() {
-//   let _service = null;
-//   let _companies = [];
-//   let _user = null;
-
-//   before(function(done) {
-//     Config.createUser().then(user => {
-//       _user = user;
-//     })
-//       .then(Config.createCompanies)
-//       .then(function(companies) {
-//         _companies = companies;
-//         Buttress.getCollection('service')
-//           .save({
-//             ownerUserId: _user.id,
-//             companyId: _companies[0].id,
-//             name: 'Open Source',
-//             description: 'Open source development consultancy',
-//             serviceType: 'consultancy',
-//             appProp1: 'Required app property'
-//           })
-//           .then(function(service) {
-//             _service = service;
-//             done();
-//           });
-//       }).catch(done);
-//   });
-
-//   after(function(done) {
-//     let tasks = [
-//       Buttress.getCollection('company').bulkRemove(_companies.map(c => c.id)),
-//       Buttress.User.remove(_user.id),
-//       Buttress.getCollection('service').remove(_service.id)
-//     ];
-
-//     Promise.all(tasks).then(() => done()).catch(done);
-//   });
-
-//   describe('Notes', function() {
-//     it('should add a note', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.getCollection('service').update(_service.id, {
-//         path: 'notes',
-//         value: {
-//           text: 'This is an important note'
-//         }
-//       })
-//         .then(function(updates) {
-//           updates.length.should.equal(1);
-//           updates[0].type.should.equal('vector-add');
-//           updates[0].path.should.equal('notes');
-//           updates[0].value.text.should.equal('This is an important note');
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should add a second note', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.getCollection('service').update(_service.id, {
-//         path: 'notes',
-//         value: {
-//           text: 'This is another important note'
-//         }
-//       })
-//         .then(function(updates) {
-//           updates.length.should.equal(1);
-//           updates[0].type.should.equal('vector-add');
-//           updates[0].path.should.equal('notes');
-//           updates[0].value.text.should.equal('This is another important note');
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should return the service with 2 notes', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-
-//       Buttress.getCollection('service')
-//         .get(_service.id)
-//         .then(function(service) {
-//           service.notes.should.have.length(2);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should remove a note', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-//       Buttress.getCollection('service').update(_service.id, {
-//         path: 'notes.0.__remove__',
-//         value: ''
-//       })
-//         .then(function(updates) {
-//           updates.length.should.equal(1);
-//           updates[0].type.should.equal('vector-rm');
-//           updates[0].path.should.equal('notes');
-//           updates[0].value.index.should.equal('0');
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should return the service with 1 notes', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-
-//       Buttress.getCollection('service')
-//         .get(_service.id)
-//         .then(function(service) {
-//           service.notes.should.have.length(1);
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should update the text of a note', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-
-//       Buttress.getCollection('service')
-//         .update(_service.id, {
-//           path: 'notes.0.text',
-//           value: 'This is some updated text'
-//         })
-//         .then(function(cr) {
-//           cr[0].type.should.equal('scalar');
-//           cr[0].path.should.equal('notes.0.text');
-//           cr[0].value.should.equal('This is some updated text');
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//     it('should return the service with an updated note', function(done) {
-//       if (!_service) {
-//         return done(new Error("No Service!"));
-//       }
-
-//       Buttress.getCollection('service')
-//         .get(_service.id)
-//         .then(function(service) {
-//           service.notes.should.have.length(1);
-//           service.notes[0].text.should.equal('This is some updated text');
-//           done();
-//         })
-//         .catch(function(err) {
-//           done(err);
-//         });
-//     });
-//   });
-// });
