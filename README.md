@@ -1,5 +1,7 @@
 # buttress-api-js
-### Latest: 2.3.1
+### Latest: 2.3.2
+- ADDED: Allow user to pass allowUnauthorized to bypass invalid cert
+### 2.3.1
 - FIX: incorrect dependency name Helper -> Helpers
 ### 2.3.0
 - REFACTOR: Removed restler and replaced with axios
