@@ -1,4 +1,6 @@
-### Latest: 2.3.2
+### Latest: 2.3.3
+- FIX: Failing to update app roles due to non-array being passed
+### 2.3.2
 - ADDED: Allow user to pass allowUnauthorized to bypass invalid cert
 ### 2.3.1
 - FIX: incorrect dependency name Helper -> Helpers
