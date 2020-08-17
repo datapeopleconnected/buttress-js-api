@@ -1,4 +1,8 @@
-### Latest: 2.3.3
+### Latest: 2.3.4
+- ADDED: Customer Error definitions for NotYetInitiated && SchemaNotFound
+- ADDED: Test for interacting with a buttress app after a schema update
+- FIX: Fetch the latest compiled Schema after a schema update
+### 2.3.3
 - FIX: Failing to update app roles due to non-array being passed
 ### 2.3.2
 - ADDED: Allow user to pass allowUnauthorized to bypass invalid cert
