@@ -88,7 +88,7 @@ describe('@app-basics', function() {
 
     it(`should be able to interact with 'test' schema`, function(done) {
       try {
-        const tests = Buttress.getCollection('tests');
+        Buttress.getCollection('tests');
       } catch (err) {
         return done(err);
       }
