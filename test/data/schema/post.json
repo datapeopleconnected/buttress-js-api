@@ -57,6 +57,12 @@
     }
   }],
   "properties": {
+    "id": {
+      "__type": "id",
+      "__required": true,
+      "__allowUpdate": false,
+      "__default": "new"
+    },
     "content": {
       "__type": "string",
       "__required": true,
