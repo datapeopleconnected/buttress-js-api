@@ -1,4 +1,7 @@
-### Latest: 2.3.4
+### Latest: 2.3.5
+- ADDED: Generate a id locally when creating collection documents
+- BUMP: dependencies (mongodb), devDependencies (eslint, mocha)
+### 2.3.4
 - ADDED: Customer Error definitions for NotYetInitiated && SchemaNotFound
 - ADDED: Test for interacting with a buttress app after a schema update
 - FIX: Fetch the latest compiled Schema after a schema update
