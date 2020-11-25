@@ -35,11 +35,11 @@ class Config {
         schema: TestSchema,
         roles: TestAppRoles,
         apiPath: 'bjs',
-        version: 1
+        version: 1,
+        update: true
       })
         .then(() => {
           return Promise.all([
-            Buttress.initSchema(),
             Buttress.User.removeAll(),
             Buttress.Token.removeAllUserTokens(),
             Buttress.getCollection('services').removeAll(),
