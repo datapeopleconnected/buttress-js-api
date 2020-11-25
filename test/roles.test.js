@@ -127,7 +127,7 @@ describe('@roles', function() {
     });
 
     it('should make get a 200 responce', function(done) {
-      Buttress.getCollection('posts').getAll({}, requestOptions)
+      Buttress.getCollection('posts').getAll(requestOptions)
         .then(function(posts) {
           posts.should.be.instanceof(Array);
           done();
@@ -200,7 +200,7 @@ describe('@roles', function() {
     });
 
     it('should make get a 200 responce', function(done) {
-      Buttress.getCollection('posts').getAll({}, requestOptions)
+      Buttress.getCollection('posts').getAll(requestOptions)
         .then(function(posts) {
           posts.should.be.instanceof(Array);
           const userPosts = posts.filter(p => p.userId === _user.id);
@@ -236,7 +236,7 @@ describe('@roles', function() {
     });
 
     it('should make get a 200 responce', function(done) {
-      Buttress.getCollection('posts').getAll({}, requestOptions)
+      Buttress.getCollection('posts').getAll(requestOptions)
         .then(function(posts) {
           posts.should.be.instanceof(Array);
           done();
