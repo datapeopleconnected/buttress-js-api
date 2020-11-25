@@ -11,7 +11,8 @@
       "GET": "allow",
       "PUT": "deny",
       "POST": "deny",
-      "DELETE": "deny"
+      "DELETE": "deny",
+      "SEARCH": "allow"
     },
     "dataDisposition": {
       "READ": "deny",
