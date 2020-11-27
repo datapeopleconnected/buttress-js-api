@@ -77,13 +77,14 @@ describe('@data-filter', function() {
 
     const addTestPosts = () => {
       return _testBoards.reduce((arr, board) => {
-        const posts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(() => {
+        const posts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => {
           return Buttress.getCollection('posts').save({
             content: "Hello world",
             memberSecretContent: "",
             adminSecretContent: "",
             boardId: board.id,
             parentPostId: null,
+            kudos: i,
             userId: board.subscribed[0]
           });
         });
@@ -117,7 +118,7 @@ describe('@data-filter', function() {
 
   describe('Token', function() {
     it('should respond 401 with invalid_token', function(done) {
-      Buttress.getCollection('boards').getAll({}, {
+      Buttress.getCollection('boards').getAll({
         params: {
           token: `RANDOMTOKEN`
         }
@@ -135,7 +136,7 @@ describe('@data-filter', function() {
       const publicUser = _testUsers.find((u) => u.tokens.some(t => t.role === 'public'));
       const token = publicUser.tokens.find(t => t.role === 'public');
 
-      Buttress.getCollection('boards').getAll({}, {
+      Buttress.getCollection('boards').getAll({
         params: {
           token: token.value
         }
@@ -160,7 +161,7 @@ describe('@data-filter', function() {
       const token = publicUser.tokens.find(t => t.role === 'public');
       const publicBoard = _testBoards.find(board => board.name === 'public');
 
-      Buttress.getCollection('posts').getAll({}, {
+      Buttress.getCollection('posts').getAll({
         params: {
           token: token.value
         }
@@ -173,6 +174,33 @@ describe('@data-filter', function() {
             if (!posts.hasOwnProperty(idx)) continue;
             posts[idx].boardId.should.equal(publicBoard.id);
           }
+
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+  });
+
+  describe('Posts', function() {
+    it('should return posts that are part of the public board with more than 5 kudos', function(done) {
+      const publicUser = _testUsers.find(u => u.tokens.some(t => t.role === 'public'));
+      const token = publicUser.tokens.find(t => t.role === 'public');
+
+      Buttress.getCollection('posts').search({
+        kudos: {
+          gt: 5,
+        },
+      }, {
+        params: {
+          token: token.value,
+        },
+      })
+        .then(function(posts) {
+          posts.should.be.instanceof(Array);
+          posts.should.not.be.empty();
+          posts.should.be.lengthOf(5);
 
           done();
         })
