@@ -11,7 +11,8 @@
       "GET": "allow",
       "PUT": "deny",
       "POST": "deny",
-      "DELETE": "deny"
+      "DELETE": "deny",
+      "SEARCH": "allow"
     },
     "dataDisposition": {
       "READ": "deny",
@@ -37,7 +38,8 @@
       "GET": "allow",
       "PUT": "allow",
       "POST": "allow",
-      "DELETE": "deny"
+      "DELETE": "deny",
+      "SEARCH": "allow"
     },
     "dataDisposition": {
       "READ": "allow",
@@ -49,7 +51,8 @@
       "GET": "allow",
       "PUT": "allow",
       "POST": "allow",
-      "DELETE": "allow"
+      "DELETE": "allow",
+      "SEARCH": "allow"
     },
     "dataDisposition": {
       "READ": "allow",
