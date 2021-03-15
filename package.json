@@ -1,7 +1,7 @@
 {
   "name": "buttress-js-api",
   "description": "ButtressJS API for Node.js",
-  "version": "2.3.6",
+  "version": "2.4.0",
   "author": "Lighten",
   "contributors": [
     "Chris Bates-Keegan <chris@wearelighten.co.uk>"
@@ -33,7 +33,7 @@
   },
   "main": "./lib/buttressjs",
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "mongodb": "^3.6.2",
     "sugar": "^2.0.6"
   },
