@@ -1,5 +1,10 @@
 # buttress-api-js
-### Latest: 2.3.5
+
+### Latest: 2.4.1
+- ADDED: Added count api to each schema
+### 2.4.0
+- TODO: Write some notes
+### 2.3.5
 - ADDED: Generate a id locally when creating collection documents
 - BUMP: dependencies (mongodb), devDependencies (eslint, mocha)
 ### 2.3.4
