@@ -181,9 +181,7 @@ describe('@data-filter', function() {
           done(err);
         });
     });
-  });
 
-  describe('Posts', function() {
     it('should return posts that are part of the public board with more than 5 kudos', function(done) {
       const publicUser = _testUsers.find(u => u.tokens.some(t => t.role === 'public'));
       const token = publicUser.tokens.find(t => t.role === 'public');
@@ -202,6 +200,60 @@ describe('@data-filter', function() {
           posts.should.not.be.empty();
           posts.should.be.lengthOf(5);
 
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should return a total count of posts', function(done) {
+      Buttress.getCollection('posts').count()
+        .then((count) => {
+          count.should.be.instanceof(Number);
+          count.should.equal(30);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should return a count of posts that are part of the public board', function(done) {
+      const publicUser = _testUsers.find((u) => u.tokens.some(t => t.role === 'public'));
+      const token = publicUser.tokens.find((t) => t.role === 'public');
+
+      Buttress.getCollection('posts').count({}, {
+        params: {
+          token: token.value,
+        },
+      })
+        .then((count) => {
+          count.should.be.instanceof(Number);
+          count.should.equal(10);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should return a count of posts that are part of the public board with more than 5 kudos', function(done) {
+      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.role === 'public'));
+      const token = publicUser.tokens.find((t) => t.role === 'public');
+
+      Buttress.getCollection('posts').count({
+        kudos: {
+          gt: 5,
+        },
+      }, {
+        params: {
+          token: token.value,
+        },
+      })
+        .then((count) => {
+          count.should.be.instanceof(Number);
+          count.should.equal(5);
           done();
         })
         .catch(function(err) {
