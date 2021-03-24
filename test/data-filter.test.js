@@ -192,7 +192,7 @@ describe('@data-filter', function() {
         kudos: {
           gt: 5,
         },
-      }, {
+      }, 0, 0, {
         params: {
           token: token.value,
         },
