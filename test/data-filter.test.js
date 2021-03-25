@@ -190,7 +190,7 @@ describe('@data-filter', function() {
         kudos: {
           gt: 5,
         },
-      }, 0, 0, {
+      }, 0, 0, null, {
         params: {
           token: token.value,
         },
@@ -223,7 +223,7 @@ describe('@data-filter', function() {
       const publicUser = _testUsers.find((u) => u.tokens.some(t => t.role === 'public'));
       const token = publicUser.tokens.find((t) => t.role === 'public');
 
-      Buttress.getCollection('posts').count({}, {
+      Buttress.getCollection('posts').count({}, null, {
         params: {
           token: token.value,
         },
@@ -246,7 +246,7 @@ describe('@data-filter', function() {
         kudos: {
           gt: 5,
         },
-      }, {
+      }, null, {
         params: {
           token: token.value,
         },
