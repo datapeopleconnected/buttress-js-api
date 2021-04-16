@@ -1,6 +1,8 @@
 # buttress-api-js
 
-### Latest: 2.4.1
+### Latest: 2.5.0
+- ADDED: Query, Limit, Skip, Sort to search & count APIs
+### 2.4.1
 - ADDED: Added count api to each schema
 ### 2.4.0
 - TODO: Write some notes
