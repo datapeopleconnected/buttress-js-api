@@ -207,6 +207,32 @@ describe('@data-filter', function() {
         });
     });
 
+    it('should return posts ids that are part of the public board with more than 5 kudos', function(done) {
+      const publicUser = _testUsers.find(u => u.tokens.some(t => t.role === 'public'));
+      const token = publicUser.tokens.find(t => t.role === 'public');
+
+      Buttress.getCollection('posts').search({
+        kudos: {
+          gt: 5,
+        },
+      }, 0, 0, null, {
+        project: {content: 1},
+        params: {
+          token: token.value,
+        },
+      })
+        .then(function(posts) {
+          posts.should.be.instanceof(Array);
+          posts.should.not.be.empty();
+          posts.should.be.lengthOf(5);
+
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
     it('should return a total count of posts', function(done) {
       Buttress.getCollection('posts').count()
         .then((count) => {
