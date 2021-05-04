@@ -1,6 +1,8 @@
 # buttress-api-js
 
-### Latest: 2.5.0
+### Latest: 2.5.1
+- ADDED: mongo project to filter returned results (#7)
+### 2.5.0
 - ADDED: Query, Limit, Skip, Sort to search & count APIs
 ### 2.4.1
 - ADDED: Added count api to each schema
