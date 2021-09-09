@@ -32,6 +32,7 @@ class Config {
       Buttress.init({
         buttressUrl: process.env.BUTTRESS_TEST_API_URL,
         appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY,
+        allowUnauthorized: true,
         schema: TestSchema,
         roles: TestAppRoles,
         apiPath: 'bjs',
