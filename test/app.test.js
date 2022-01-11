@@ -16,7 +16,7 @@ const Schemas = require('./data/schema');
 
 Config.init();
 
-describe('@app-basics', function() {
+describe('@app-schema', function() {
   this.timeout(2000);
 
   before(function(done) {
@@ -32,7 +32,7 @@ describe('@app-basics', function() {
       });
   });
 
-  describe('Schema', function() {
+  describe('Basic', function() {
     it('should return the app schema', function(done) {
       Buttress.App
         .getSchema()
@@ -103,7 +103,96 @@ describe('@app-basics', function() {
           done(err);
         });
     });
+  });
+});
 
+describe('@app-relationship', function() {
+  this.timeout(90000);
+  const testApps = [];
 
+  const testAppRelationships = [];
+
+  before(async function() {
+    testApps.push(await Buttress.App.save({
+      name: 'Test App 1',
+      type: 'server',
+      authLevel: 2
+    }));
+    testApps.push(await Buttress.App.save({
+      name: 'Test App 2',
+      type: 'server',
+      authLevel: 2
+    }));
+  });
+
+  after(async function() {
+    Buttress.App.remove(testApps[0].id);
+    Buttress.App.remove(testApps[1].id);
+  });
+
+  describe('Basic', function() {
+    it('should create a source relationship', function(done) {
+      Buttress.App
+        .addAppRelationship({
+          type: 'source',
+          source: {
+            appId: testApps[0].id,
+            endpoint: Config.endpoint,
+            policy: '{}',
+          },
+          destination: {
+            appId: testApps[1].id,
+            endpoint: Config.endpoint,
+            sourceToken: null,
+          }
+        })
+        .then(function(res) {
+          res.type.should.equal('source');
+          res.source.appId.should.equal(testApps[0].id);
+          res.source.endpoint.should.equal(Config.endpoint);
+          res.destination.appId.should.equal(testApps[1].id);
+          res.destination.endpoint.should.equal(Config.endpoint);
+          res.destination.sourceToken.should.not.equal(null);
+          testAppRelationships.push(res);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should create a destination relationship', function(done) {
+      Buttress.App
+        .addAppRelationship({
+          type: 'destination',
+          source: {
+            appId: testApps[0].id,
+            endpoint: Config.endpoint,
+            policy: '{}',
+          },
+          destination: {
+            appId: testApps[1].id,
+            endpoint: Config.endpoint,
+            sourceToken: testAppRelationships[0].destination.sourceToken,
+          }
+        })
+        .then(function(res) {
+          res.type.should.equal('destination');
+          res.source.appId.should.equal(testApps[0].id);
+          res.source.endpoint.should.equal(Config.endpoint);
+          res.destination.appId.should.equal(testApps[1].id);
+          res.destination.endpoint.should.equal(Config.endpoint);
+          res.destination.sourceToken.should.not.equal(null);
+          testAppRelationships.push(res);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
+    });
+
+    it('should update the policy for the source relationship', function(done) {
+      
+    });
   });
 });
