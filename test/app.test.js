@@ -224,6 +224,38 @@ describe('@app-relationship', function() {
   });
 
   describe('Basic', function() {
+    it('should create a destination relationship', async function() {
+      Buttress.setAuthToken(Config.token);
+
+      const res = await Buttress.App.registerDataSharing({
+        name: 'test-app1',
+        localAppId: testApps[0].id,
+
+        remoteApp: {
+          endpoint: Config.endpoint,
+          apiPath: testApps[1].apiPath,
+          token: 'OAKSDOKASOD',
+        },
+
+        dataSharing: {
+          localApp: "",
+          remoteApp: {
+            cars: [
+              "READ"
+            ]
+          }
+        }
+      });
+
+      res.type.should.equal('destination');
+      res.source.appId.should.equal(testApps[0].id);
+      res.source.endpoint.should.equal(Config.endpoint);
+      res.destination.appId.should.equal(testApps[1].id);
+      res.destination.endpoint.should.equal(Config.endpoint);
+      res.destination.sourceToken.should.not.equal(null);
+      testAppRelationships.push(res);
+    });
+
     it('should create a source relationship', async function() {
       Buttress.setAuthToken(Config.token);
 
@@ -253,35 +285,6 @@ describe('@app-relationship', function() {
       testAppRelationships.push(res);
     });
 
-    it('should create a destination relationship', async function() {
-      Buttress.setAuthToken(Config.token);
-
-      const res = await Buttress.App.addRelationship({
-        name: 'tap1-tap2',
-        type: 'destination',
-        source: {
-          appId: testApps[0].id,
-          endpoint: Config.endpoint,
-          apiPath: testApps[0].apiPath,
-          policy: '{}',
-        },
-        destination: {
-          appId: testApps[1].id,
-          endpoint: Config.endpoint,
-          apiPath: testApps[1].apiPath,
-          sourceToken: testAppRelationships[0].destination.sourceToken,
-        }
-      });
-
-      res.type.should.equal('destination');
-      res.source.appId.should.equal(testApps[0].id);
-      res.source.endpoint.should.equal(Config.endpoint);
-      res.destination.appId.should.equal(testApps[1].id);
-      res.destination.endpoint.should.equal(Config.endpoint);
-      res.destination.sourceToken.should.not.equal(null);
-      testAppRelationships.push(res);
-    });
-
     it('should update the policy for the source relationship', async function() {
       Buttress.setAuthToken(testApps[0].token);
 
@@ -300,7 +303,7 @@ describe('@app-relationship', function() {
         "name": "car",
         "type": "collection",
         "collection": "cars",
-        "$relationship": "tap1-tap2.cars",
+        "remote": "tap1-tap2.cars",
       });
 
       await Buttress.setSchema(testApp2Schema);
