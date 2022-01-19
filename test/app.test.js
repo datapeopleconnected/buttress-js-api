@@ -224,71 +224,77 @@ describe('@app-relationship', function() {
   });
 
   describe('Basic', function() {
-    it('should create a destination relationship', async function() {
+    it('should register a data share for app2 to connect to app1', async function() {
       Buttress.setAuthToken(Config.token);
 
       const res = await Buttress.App.registerDataSharing({
-        name: 'test-app1',
-        localAppId: testApps[0].id,
+        name: 'test-app2',
 
         remoteApp: {
           endpoint: Config.endpoint,
           apiPath: testApps[1].apiPath,
-          token: 'OAKSDOKASOD',
+          token: null,
         },
 
         dataSharing: {
           localApp: "",
-          remoteApp: {
+          remoteApp: JSON.stringify({
             cars: [
               "READ"
             ]
-          }
-        }
+          }),
+        },
+
+        _appId: testApps[0].id,
       });
 
-      res.type.should.equal('destination');
-      res.source.appId.should.equal(testApps[0].id);
-      res.source.endpoint.should.equal(Config.endpoint);
-      res.destination.appId.should.equal(testApps[1].id);
-      res.destination.endpoint.should.equal(Config.endpoint);
-      res.destination.sourceToken.should.not.equal(null);
+      res.name.should.equal('test-app2');
+      res.remoteApp.endpoint.should.equal(Config.endpoint);
+      res.remoteApp.apiPath.should.equal(testApps[1].apiPath);
       testAppRelationships.push(res);
     });
 
-    it('should create a source relationship', async function() {
+    it('should register a data share for app1 to connect to app2', async function() {
       Buttress.setAuthToken(Config.token);
 
-      const res = await Buttress.App.addRelationship({
-        name: 'tap1-tap2',
-        type: 'source',
-        source: {
-          appId: testApps[0].id,
+      const res = await Buttress.App.registerDataSharing({
+        name: 'test-app1',
+
+        remoteApp: {
           endpoint: Config.endpoint,
           apiPath: testApps[0].apiPath,
-          policy: '{}',
+          token: testAppRelationships[0].remoteAppToken,
         },
-        destination: {
-          appId: testApps[1].id,
-          endpoint: Config.endpoint,
-          apiPath: testApps[1].apiPath,
-          sourceToken: null,
-        }
+
+        dataSharing: {
+          localApp: JSON.stringify({
+            cars: [
+              "READ"
+            ]
+          }),
+          remoteApp: null,
+        },
+
+        _appId: testApps[1].id,
       });
 
-      res.type.should.equal('source');
-      res.source.appId.should.equal(testApps[0].id);
-      res.source.endpoint.should.equal(Config.endpoint);
-      res.destination.appId.should.equal(testApps[1].id);
-      res.destination.endpoint.should.equal(Config.endpoint);
-      res.destination.sourceToken.should.not.equal(null);
+      res.name.should.equal('test-app1');
+      res.active.should.equal(true);
+      res.remoteApp.endpoint.should.equal(Config.endpoint);
+      res.remoteApp.apiPath.should.equal(testApps[0].apiPath);
+      res.remoteApp.token.should.equal(testAppRelationships[0].remoteAppToken);
       testAppRelationships.push(res);
     });
+
+    // TODO: Add test to fetch app relationships
+    // it('should have active data sharing agreements', () => {
+
+    // });
 
     it('should update the policy for the source relationship', async function() {
       Buttress.setAuthToken(testApps[0].token);
 
-      const res = await Buttress.App.updateRelationshipPolicy(testAppRelationships[0].id, {
+      const res = await Buttress.App.updateDataSharingPolicy(testAppRelationships[0].id, {
         "collections": [
           "cars"
         ]
@@ -303,7 +309,7 @@ describe('@app-relationship', function() {
         "name": "car",
         "type": "collection",
         "collection": "cars",
-        "remote": "tap1-tap2.cars",
+        "remote": "test-app1.cars",
       });
 
       await Buttress.setSchema(testApp2Schema);
