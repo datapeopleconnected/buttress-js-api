@@ -14,30 +14,41 @@ const TestSchema = require('./data/schema');
 const TestAppRoles = require('./data/appRoles.json');
 const ObjectId = require('mongodb').ObjectId;
 
+/**
+ * @class Config
+ */
 class Config {
+  /**
+   * Creates an instance of Config.
+   */
   constructor() {
     this._initialised = false;
+
+    this.endpoint = process.env.BUTTRESS_TEST_API_URL;
+    this.token = process.env.BUTTRESS_TEST_SUPER_APP_KEY;
   }
 
+  /**
+   */
   init() {
     if (this._initialised === true) {
       return;
     }
     this._initialised = true;
 
-    console.log(`BUTTRESS_TEST_API_URL: `, process.env.BUTTRESS_TEST_API_URL);
-    console.log(`BUTTRESS_TEST_SUPER_APP_KEY: `, process.env.BUTTRESS_TEST_SUPER_APP_KEY);
+    console.log(`BUTTRESS_TEST_API_URL: `, this.endpoint);
+    console.log(`BUTTRESS_TEST_SUPER_APP_KEY: `, this.token);
 
-    before(function(done) {
+    before((done) => {
       Buttress.init({
-        buttressUrl: process.env.BUTTRESS_TEST_API_URL,
-        appToken: process.env.BUTTRESS_TEST_SUPER_APP_KEY,
+        buttressUrl: this.endpoint,
+        appToken: this.token,
         allowUnauthorized: true,
         schema: TestSchema,
         roles: TestAppRoles,
         apiPath: 'bjs',
         version: 1,
-        update: true
+        update: true,
       })
         .then(() => {
           return Promise.all([
@@ -46,11 +57,11 @@ class Config {
             Buttress.getCollection('services').removeAll(),
             Buttress.getCollection('companies').removeAll(),
             Buttress.getCollection('boards').removeAll(),
-            Buttress.getCollection('posts').removeAll()
+            Buttress.getCollection('posts').removeAll(),
           ]);
         })
         .then(() => done())
-        .catch(err => {
+        .catch((err) => {
           if (err.statusCode) {
             console.error(`${err.statusCode}: ${err.statusMessage}`);
             return;
