@@ -331,5 +331,14 @@ describe('@app-relationship', function() {
       cars.length.should.equal(1, 'Car count doesn\'t match whats expected');
       cars[0].id.should.equal(people[0].carId);
     });
+
+    it('should be able to add a new car and see activity on both apps', async function() {
+      Buttress.setAuthToken(testApps[0].token);
+      Buttress.setAPIPath('test-app1');
+
+      // await sleep(1000);
+
+      await Buttress.getCollection('cars').save({name: 'A red car'});
+    });
   });
 });
