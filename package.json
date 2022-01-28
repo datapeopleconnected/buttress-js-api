@@ -1,5 +1,5 @@
 {
-  "name": "buttress-js-api",
+  "name": "@buttress/api",
   "description": "ButtressJS API for Node.js",
   "version": "2.5.1",
   "author": "Lighten",
