@@ -11,7 +11,7 @@
 
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
-const ObjectId = require('mongodb').ObjectId;
+const ObjectId = require('bson-objectid');
 
 Config.init();
 

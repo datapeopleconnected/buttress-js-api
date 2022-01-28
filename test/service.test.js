@@ -10,7 +10,7 @@
  */
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
-const ObjectId = require('mongodb').ObjectId;
+const ObjectId = require('bson-objectid');
 const should = require('should');
 
 Config.init();
