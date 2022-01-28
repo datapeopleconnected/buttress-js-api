@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Buttress API -
@@ -59,17 +59,17 @@ describe('@company-basics', function() {
           primaryContact: _contactId,
           locations: [{
             id: _locationId,
-            name: "Headquarters",
-            address: "124 Bonsall Street, Mill Hill",
-            city: "Blackburn",
-            postCode: "BB2 5DS",
-            phoneNumber: "01254 123123"
+            name: 'Headquarters',
+            address: '124 Bonsall Street, Mill Hill',
+            city: 'Blackburn',
+            postCode: 'BB2 5DS',
+            phoneNumber: '01254 123123',
           }],
           contacts: [{
             id: _contactId,
             name: 'Robert McBobson',
-            role: 'Managing Director'
-          }]
+            role: 'Managing Director',
+          }],
         })
         .then(function(company) {
           company.id.should.equal(_companyId);
@@ -86,13 +86,13 @@ describe('@company-basics', function() {
           company.primaryLocation.should.equal(_locationId);
           company.primaryContact.should.equal(_contactId);
 
-          const location = company.locations.find(l => l.id === company.primaryLocation);
+          const location = company.locations.find((l) => l.id === company.primaryLocation);
           location.address.should.equal('124 Bonsall Street, Mill Hill');
           location.city.should.equal('Blackburn');
           location.postCode.should.equal('BB2 5DS');
           location.phoneNumber.should.equal('01254 123123');
 
-          const contact = company.contacts.find(c => c.id === company.primaryContact);
+          const contact = company.contacts.find((c) => c.id === company.primaryContact);
           contact.name.should.equal('Robert McBobson');
           contact.role.should.equal('Managing Director');
           done();
@@ -103,47 +103,47 @@ describe('@company-basics', function() {
     });
     it('should return 1 company', function(done) {
       Buttress.getCollection('companies')
-      .getAll()
-      .then(function(companies) {
-        companies.should.have.length(1);
-        should.exist(companies[0].locations[0].id);
-        companies[0].locations[0].id.should.equal(_locationId);
+        .getAll()
+        .then(function(companies) {
+          companies.should.have.length(1);
+          should.exist(companies[0].locations[0].id);
+          companies[0].locations[0].id.should.equal(_locationId);
 
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
     });
     it('should reject string update to none string property', function(done) {
       Buttress.getCollection('companies')
-      .update(_company.id, {
-        path: 'siccode',
-        value: "Not a String"
-      })
-      .then(function(results) {
-        done(new Error('Should not succeed'));
-      })
-      .catch(function(err) {
-        err.statusCode.should.equal(400);
-        done();
-      });
+        .update(_company.id, {
+          path: 'siccode',
+          value: 'Not a String',
+        })
+        .then(function(results) {
+          done(new Error('Should not succeed'));
+        })
+        .catch(function(err) {
+          err.statusCode.should.equal(400);
+          done();
+        });
     });
     it('should update the company property', function(done) {
       Buttress.getCollection('companies')
-      .update(_company.id, {
-        path: 'siccode',
-        value: 123456
-      })
-      .then(function(results) {
-        results.length.should.equal(1);
-        done();
-      })
-      .catch(done);
+        .update(_company.id, {
+          path: 'siccode',
+          value: 123456,
+        })
+        .then(function(results) {
+          results.length.should.equal(1);
+          done();
+        })
+        .catch(done);
     });
     it('should remove a company', function(done) {
       if (!_company) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
       Buttress.getCollection('companies')
         .remove(_company.id)
@@ -167,8 +167,8 @@ describe('@company-basics', function() {
           contacts: [{
             id: _contactId,
             name: 'Robert McBobson',
-            role: 'Managing Director'
-          }]
+            role: 'Managing Director',
+          }],
         })
         .then(function(company) {
           // console.log(companyId === _companyId);
@@ -179,22 +179,22 @@ describe('@company-basics', function() {
     });
 
     it('should add several companies (bulk)', function(done) {
-      const __gen = num => {
-        let arr = [];
+      const __gen = (num) => {
+        const arr = [];
         for (let x = 0; x < num; x++) {
           const company = Buttress.getCollection('companies').createObject();
           company.name = `Blackburn Widget Company ${x + 1}`;
           company.companyType = 'prospect';
 
           const location = Buttress.getCollection('companies').createObject('locations');
-          location.name = "Headquarters";
-          location.address = "124 Bonsall Street, Mill Hill";
-          location.city = "Blackburn";
-          location.postCode = "BB2 5DS";
-          location.phoneNumber = "01254 123123";
+          location.name = 'Headquarters';
+          location.address = '124 Bonsall Street, Mill Hill';
+          location.city = 'Blackburn';
+          location.postCode = 'BB2 5DS';
+          location.phoneNumber = '01254 123123';
 
           const contact = Buttress.getCollection('companies').createObject('contacts');
-          contact.name = "Robert McBobson";
+          contact.name = 'Robert McBobson';
           contact.role = 'Managing Director';
 
           arr.push(company);
@@ -215,22 +215,22 @@ describe('@company-basics', function() {
     });
 
     it('should add several companies (per company)', function(done) {
-      const __gen = num => {
-        let arr = [];
+      const __gen = (num) => {
+        const arr = [];
         for (let x = 0; x < num; x++) {
           const company = Buttress.getCollection('companies').createObject();
           company.name = `Blackburn Widget Company ${x + 1}`;
           company.companyType = 'prospect';
 
           const location = Buttress.getCollection('companies').createObject('locations');
-          location.name = "Headquarters";
-          location.address = "124 Bonsall Street, Mill Hill";
-          location.city = "Blackburn";
-          location.postCode = "BB2 5DS";
-          location.phoneNumber = "01254 123123";
+          location.name = 'Headquarters';
+          location.address = '124 Bonsall Street, Mill Hill';
+          location.city = 'Blackburn';
+          location.postCode = 'BB2 5DS';
+          location.phoneNumber = '01254 123123';
 
           const contact = Buttress.getCollection('companies').createObject('contacts');
-          contact.name = "Robert McBobson";
+          contact.name = 'Robert McBobson';
           contact.role = 'Managing Director';
 
           arr.push(company);
@@ -269,17 +269,17 @@ describe('@company-contacts', function() {
         companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
-          name: "Headquarters",
-          address: "124 Bonsall Street, Mill Hill",
-          city: "Blackburn",
-          postCode: "BB2 5DS",
-          phoneNumber: "01254 123123"
+          name: 'Headquarters',
+          address: '124 Bonsall Street, Mill Hill',
+          city: 'Blackburn',
+          postCode: 'BB2 5DS',
+          phoneNumber: '01254 123123',
         }],
         contacts: [{
           id: (new ObjectId()).toHexString(),
-          name: "Robert McBobson",
-          role: 'Managing Director'
-        }]
+          name: 'Robert McBobson',
+          role: 'Managing Director',
+        }],
       })
       .then(function(company) {
         _companyId = company.id;
@@ -289,25 +289,23 @@ describe('@company-contacts', function() {
   });
 
   after(function(done) {
-    let companies = [
-      Buttress.getCollection('companies').remove(_companyId)
-    ];
-
-    Promise.all(companies).then(() => done()).catch(done);
+    Promise.all([
+      Buttress.getCollection('companies').remove(_companyId),
+    ]).then(() => done()).catch(done);
   });
 
   describe('Contacts', function() {
     it('should add a contact', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
       Buttress.getCollection('companies').update(_companyId, {
         path: 'contacts',
         value: {
           id: new ObjectId(),
           name: 'Han Solo',
-          role: 'Sales Director'
-        }
+          role: 'Sales Director',
+        },
       })
         .then(function(updates) {
           updates.length.should.equal(1);
@@ -322,7 +320,7 @@ describe('@company-contacts', function() {
     });
     it('should return the company with 2 contacts', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
@@ -337,13 +335,13 @@ describe('@company-contacts', function() {
     });
     it('should update the email address of a contact', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
         .update(_companyId, {
           path: 'contacts.1.email',
-          value: 'han.solo@starwars.com'
+          value: 'han.solo@starwars.com',
         })
         .then(function(cr) {
           cr[0].type.should.equal('scalar');
@@ -357,7 +355,7 @@ describe('@company-contacts', function() {
     });
     it('should return the company with an updated contact', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
@@ -373,11 +371,11 @@ describe('@company-contacts', function() {
     });
     it('should remove a contact', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
       Buttress.getCollection('companies').update(_companyId, {
         path: 'contacts.1.__remove__',
-        value: ''
+        value: '',
       })
         .then(function(updates) {
           updates.length.should.equal(1);
@@ -392,7 +390,7 @@ describe('@company-contacts', function() {
     });
     it('should return the company with 1 contact', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
@@ -412,7 +410,7 @@ describe('@company-locations', function() {
   let _companyId = '';
   const _locationIds = [
     (new ObjectId()).toHexString(),
-    (new ObjectId()).toHexString()
+    (new ObjectId()).toHexString(),
   ];
 
   before(function(done) {
@@ -422,17 +420,17 @@ describe('@company-locations', function() {
         companyType: 'prospect',
         locations: [{
           id: _locationIds[0],
-          name: "Headquarters",
-          address: "124 Bonsall Street, Mill Hill",
-          city: "Blackburn",
-          postCode: "BB2 5DS",
-          phoneNumber: "01254 123123"
+          name: 'Headquarters',
+          address: '124 Bonsall Street, Mill Hill',
+          city: 'Blackburn',
+          postCode: 'BB2 5DS',
+          phoneNumber: '01254 123123',
         }],
         contacts: [{
           id: (new ObjectId()).toHexString(),
-          name: "Robert McBobson",
-          role: 'Managing Director'
-        }]
+          name: 'Robert McBobson',
+          role: 'Managing Director',
+        }],
       })
       .then(function(company) {
         _companyId = company.id;
@@ -443,17 +441,15 @@ describe('@company-locations', function() {
   });
 
   after(function(done) {
-    let companies = [
-      Buttress.getCollection('companies').remove(_companyId)
-    ];
-
-    Promise.all(companies).then(() => done()).catch(done);
+    Promise.all([
+      Buttress.getCollection('companies').remove(_companyId),
+    ]).then(() => done()).catch(done);
   });
 
   describe('Locations', function() {
     it('should add a location', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
       Buttress.getCollection('companies').update(_companyId, {
         path: 'locations',
@@ -461,10 +457,10 @@ describe('@company-locations', function() {
           id: _locationIds[1],
           name: 'Distribution Depot',
           address: '25 East Street, Feniscowles',
-          city: "Blackburn",
-          postCode: "BB1 5ET",
-          phoneNumber: '01254 654321'
-        }
+          city: 'Blackburn',
+          postCode: 'BB1 5ET',
+          phoneNumber: '01254 654321',
+        },
       })
         .then(function(updates) {
           updates.length.should.equal(1);
@@ -486,7 +482,7 @@ describe('@company-locations', function() {
     });
     it('should return the company with 2 locations', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
@@ -504,13 +500,13 @@ describe('@company-locations', function() {
     });
     it('should update the phoneNumber of a location', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
         .update(_companyId, {
           path: 'locations.1.phoneNumber',
-          value: '01772 123456'
+          value: '01772 123456',
         })
         .then(function(cr) {
           cr[0].type.should.equal('scalar');
@@ -524,7 +520,7 @@ describe('@company-locations', function() {
     });
     it('should return the company with an updated location', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
@@ -540,7 +536,7 @@ describe('@company-locations', function() {
     });
     it('should update a location with an object', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
@@ -549,10 +545,10 @@ describe('@company-locations', function() {
           value: {
             name: 'Distribution Depot',
             address: '24 East Street, Feniscowles',
-            city: "Whiteburn",
-            postCode: "BB1 5ET",
-            phoneNumber: '01254 654321'
-          }
+            city: 'Whiteburn',
+            postCode: 'BB1 5ET',
+            phoneNumber: '01254 654321',
+          },
         })
         .then(function(cr) {
           cr[0].type.should.equal('scalar');
@@ -567,7 +563,7 @@ describe('@company-locations', function() {
     });
     it('should return the company with a further updated location', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
@@ -583,11 +579,11 @@ describe('@company-locations', function() {
     });
     it('should remove a location', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
       Buttress.getCollection('companies').update(_companyId, {
         path: 'locations.1.__remove__',
-        value: ''
+        value: '',
       })
         .then(function(updates) {
           updates.length.should.equal(1);
@@ -602,7 +598,7 @@ describe('@company-locations', function() {
     });
     it('should return the company with 1 location', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
@@ -628,17 +624,17 @@ describe('@company-notes', function() {
         companyType: 'prospect',
         locations: [{
           id: (new ObjectId()).toHexString(),
-          name: "Headquarters",
-          address: "124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS",
-          city: "Blackburn",
-          postCode: "BB2 5DS",
-          phoneNumber: "01254 123123"
+          name: 'Headquarters',
+          address: '124 Bonsall Street, Mill Hill, Blackburn, BB2 5DS',
+          city: 'Blackburn',
+          postCode: 'BB2 5DS',
+          phoneNumber: '01254 123123',
         }],
         contacts: [{
           id: (new ObjectId()).toHexString(),
-          name: "Robert McBobson",
-          role: 'Managing Director'
-        }]
+          name: 'Robert McBobson',
+          role: 'Managing Director',
+        }],
       })
       .then(function(company) {
         _companyId = company.id;
@@ -648,24 +644,22 @@ describe('@company-notes', function() {
   });
 
   after(function(done) {
-    let companies = [
-      Buttress.getCollection('companies').remove(_companyId)
-    ];
-
-    Promise.all(companies).then(() => done()).catch(done);
+    Promise.all([
+      Buttress.getCollection('companies').remove(_companyId),
+    ]).then(() => done()).catch(done);
   });
 
   describe('Notes', function() {
     it('should add a note', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
       Buttress.getCollection('companies').update(_companyId, {
         path: 'notes',
         value: {
           id: (new ObjectId()).toHexString(),
-          text: 'This is an important note'
-        }
+          text: 'This is an important note',
+        },
       })
         .then(function(updates) {
           updates.length.should.equal(1);
@@ -680,14 +674,14 @@ describe('@company-notes', function() {
     });
     it('should add a second note', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
       Buttress.getCollection('companies').update(_companyId, {
         path: 'notes',
         value: {
           id: (new ObjectId()).toHexString(),
-          text: 'This is another important note'
-        }
+          text: 'This is another important note',
+        },
       })
         .then(function(updates) {
           updates.length.should.equal(1);
@@ -702,7 +696,7 @@ describe('@company-notes', function() {
     });
     it('should return the company with 2 notes', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
@@ -717,11 +711,11 @@ describe('@company-notes', function() {
     });
     it('should remove a note', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
       Buttress.getCollection('companies').update(_companyId, {
         path: 'notes.0.__remove__',
-        value: ''
+        value: '',
       })
         .then(function(updates) {
           updates.length.should.equal(1);
@@ -736,7 +730,7 @@ describe('@company-notes', function() {
     });
     it('should return the company with 1 notes', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
@@ -751,13 +745,13 @@ describe('@company-notes', function() {
     });
     it('should update the text of a note', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
         .update(_companyId, {
           path: 'notes.0.text',
-          value: 'This is some updated text'
+          value: 'This is some updated text',
         })
         .then(function(cr) {
           cr[0].type.should.equal('scalar');
@@ -771,7 +765,7 @@ describe('@company-notes', function() {
     });
     it('should return the company with an updated note', function(done) {
       if (!_companyId) {
-        return done(new Error("No Company!"));
+        return done(new Error('No Company!'));
       }
 
       Buttress.getCollection('companies')
