@@ -94,7 +94,6 @@ describe('@data-filter', function() {
       .then(() => Promise.all(addPostBoards()))
       .then((res) => _testBoards = res) // eslint-disable-line no-return-assign
       .then(() => Promise.all(addTestPosts()))
-      .then((res) => _testPosts = res) // eslint-disable-line no-return-assign
       .then(() => done())
       .catch(done);
   });
