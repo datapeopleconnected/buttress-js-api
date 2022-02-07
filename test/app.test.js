@@ -218,6 +218,7 @@ describe('@app-relationship', function() {
 
   after(async function() {
     Buttress.setAuthToken(Config.token);
+    Buttress.setAPIPath('bjs');
 
     await Buttress.App.remove(testApps[0].id);
     await Buttress.App.remove(testApps[1].id);
@@ -310,6 +311,13 @@ describe('@app-relationship', function() {
         "type": "collection",
         "collection": "cars",
         "remote": "test-app1.cars",
+        "properties": {
+          "price": {
+            "__type": "string",
+            "__required": true,
+            "__allowUpdate": true,
+          },
+        }
       });
 
       await Buttress.setSchema(testApp2Schema);
@@ -327,6 +335,8 @@ describe('@app-relationship', function() {
       people[0].name.should.equal('Jeff');
 
       const cars = await Buttress.getCollection('cars').getAll();
+
+      console.log(cars);
 
       cars.length.should.equal(1, 'Car count doesn\'t match whats expected');
       cars[0].id.should.equal(people[0].carId);
