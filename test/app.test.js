@@ -336,8 +336,6 @@ describe('@app-relationship', function() {
 
       const cars = await Buttress.getCollection('cars').getAll();
 
-      console.log(cars);
-
       cars.length.should.equal(1, 'Car count doesn\'t match whats expected');
       cars[0].id.should.equal(people[0].carId);
     });
