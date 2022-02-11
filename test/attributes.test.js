@@ -42,12 +42,21 @@ const users = [{
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
   profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['working-location'],
+  attributes: ['companies-a'],
+}, {
+  app: 'google',
+  id: '98765432109876543214',
+  username: 'User 4',
+  token: 'testisathistestisathistestisathistestisathistestisathis',
+  email: 'test@test.com',
+  profileUrl: 'http://test.com/thisisatest',
+  profileImgUrl: 'http://test.com/thisisatest.png',
+  attributes: ['companies-name'],
 }];
 
 const authentication = {
-  authLevel: 1,
-  domains: ['test.buttress.com'],
+  authLevel: 2,
+  domains: ['test.buttressjs.com'],
   role: 'public',
   permissions: [
     {route: '*', permission: '*'},
@@ -56,13 +65,7 @@ const authentication = {
 
 const attributes = [{
   name: 'working-date',
-  disposition: {
-    GET: 'deny',
-    PUT: 'deny',
-    POST: 'deny',
-    DELETE: 'deny',
-    SEARCH: 'deny',
-  },
+  disposition: {GET: 'deny', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   env: {
     'startDate': {
       '@date': '01/01/2022',
@@ -88,14 +91,25 @@ const attributes = [{
   },
 }, {
   name: 'working-hours',
-  targettedSchema: ['task'],
-  disposition: {
-    GET: 'deny',
-    PUT: 'deny',
-    POST: 'deny',
-    DELETE: 'deny',
-    SEARCH: 'deny',
+  disposition: {GET: 'allow', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
+  conditions: {
+    '@and': [{
+      time: {
+        '@time': {
+          '@gtDate': '09:00',
+        },
+      },
+    }, {
+      time: {
+        '@time': {
+          '@ltDate': '11:00',
+        },
+      },
+    }],
   },
+}, {
+  name: 'active-working-hours',
+  disposition: {GET: 'allow', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   conditions: {
     '@and': [{
       time: {
@@ -112,35 +126,50 @@ const attributes = [{
     }],
   },
 }, {
-  name: 'working-location',
-  disposition: {
-    GET: 'deny',
-    PUT: 'deny',
-    POST: 'deny',
-    DELETE: 'deny',
-    SEARCH: 'deny',
+  name: 'active-companies',
+  extends: ['active-working-hours'],
+  targettedSchema: ['organisation'],
+  disposition: {GET: 'deny', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
+  query: {
+    status: {
+      '@eq': 'ACTIVE',
+    },
   },
-  conditions: {
-    '@and': [{
-      location: {
-        '@location': {
-          '@in': ['217.114.52.106'],
-        },
+}, {
+  name: 'companies-a',
+  extends: ['active-companies'],
+  targettedSchema: ['organisation'],
+  disposition: {GET: 'deny', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
+  query: {
+    '@or': [{
+      name: {
+        '@rexi': `^a`,
+      },
+    }, {
+      name: {
+        '@rexi': '^b',
       },
     }],
   },
+}, {
+  name: 'companies-name',
+  targettedSchema: ['organisation'],
+  disposition: {GET: 'allow', PUT: 'deny', POST: 'allow', DELETE: 'deny', SEARCH: 'allow'},
+  properties: {
+    name: ['READ', 'WRITE'],
+  }
 }];
 
 const organisations = [{
-  name: 'Company A',
+  name: 'A&A CLEANING LTD LTD',
   number: '1',
   status: 'ACTIVE',
 }, {
-  name: 'Company B',
+  name: 'A&ESM VISION LTD LTD',
   number: '2',
   status: 'DISSOLVED',
 }, {
-  name: 'Company C',
+  name: 'A&H CARE SOLUTIONS LTD',
   number: '3',
   status: 'LIQUIDATION',
 }];
@@ -207,13 +236,12 @@ describe('@app-attributes', function() {
 
     await users.reduce(async (prev, user) => {
       await prev;
-      const createdUser = await Buttress.Auth.findOrCreateUser(user, authentication);
-      testUsers.push(createdUser);
+      testUsers.push(await Buttress.Auth.findOrCreateUser(user, authentication));
     }, Promise.resolve());
 
     await organisations.reduce(async (prev, next) => {
       await prev;
-      await Buttress.getCollection('organisations').save(next);
+      testCompanies.push(await Buttress.getCollection('organisations').save(next));
     }, Promise.resolve());
   });
 
@@ -227,10 +255,10 @@ describe('@app-attributes', function() {
       await Buttress.Attribute.remove(next.id);
     }, Promise.resolve());
 
-    // await testUsers.reduce(async (prev, next) => {
-    //   await prev;
-    //   await Buttress.User.remove(next.id);
-    // }, Promise.resolve());
+    await testUsers.reduce(async (prev, next) => {
+      await prev;
+      await Buttress.User.remove(next.id);
+    }, Promise.resolve());
   });
 
   describe('Basic', function() {
@@ -241,7 +269,62 @@ describe('@app-attributes', function() {
       }, Promise.resolve());
 
       testAttributes[0].name.should.equal('working-date');
-      testAttributes.length.should.equal(3);
+      testAttributes.length.should.equal(6);
+    });
+
+    it ('should fail when reading data with deny disposition', async function() {
+      const userA = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 1'));
+      Buttress.setAuthToken(userA.tokens[0].value);
+
+      try {
+        await Buttress.getCollection('organisations').getAll();
+        throw new Error('it did not fail');
+      } catch (err) {
+        // needs to change the error to an instance of an error
+        err.message.should.equal('Access control policy disposition not allowed');
+        err.statusCode.should.equal(401);
+      }
+    });
+
+    it('should fail when accessing data outside working hours', async function() {
+      const userB = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 2'));
+      Buttress.setAuthToken(userB.tokens[0].value);
+
+      try {
+        await Buttress.getCollection('organisations').getAll();
+        throw new Error('it did not fail');
+      } catch (err) {
+        // needs to change the error to an instance of an error
+        err.message.should.equal('Access control policy conditions are not fulfilled');
+        err.statusCode.should.equal(401);
+      }
+    });
+
+    it('should only return active companies', async function() {
+      const userC = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 3'));
+      Buttress.setAuthToken(userC.tokens[0].value);
+
+      const res = await Buttress.getCollection('organisations').getAll();
+
+      const activeCompanies = res.every((c) => c.status === 'ACTIVE');
+      res.length.should.equal(1);
+      activeCompanies.should.equal(true);
+    });
+
+    it('should only return companies name', async function() {
+      const userD = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 4'));
+      Buttress.setAuthToken(userD.tokens[0].value);
+      const ids = testCompanies.map((c) => c.id);
+
+      const res = await Buttress.getCollection('organisations').bulkGet(ids);
+      const companiesStatus = res.map((company) => company.status).filter((v) => v);
+      const companiesName = res.map((company) => company.name).filter((v) => v);
+      const companiesNumber = res.map((company) => company.number).filter((v) => v);
+
+      res.length.should.equal(3);
+      companiesStatus.length.should.equal(0);
+      companiesName.length.should.equal(3);
+      companiesNumber.length.should.equal(0);
     });
   });
 });
