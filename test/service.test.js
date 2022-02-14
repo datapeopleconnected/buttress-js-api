@@ -343,7 +343,6 @@ describe('@service-basics', function() {
         .bulkSave(__gen(300))
         .then(function(services) {
           services.length.should.equal(300);
-          _services = services;
           done();
         })
         .catch(function(err) {

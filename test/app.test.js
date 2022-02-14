@@ -218,6 +218,7 @@ describe('@app-relationship', function() {
 
   after(async function() {
     Buttress.setAuthToken(Config.token);
+    Buttress.setAPIPath('bjs');
 
     await Buttress.App.remove(testApps[0].id);
     await Buttress.App.remove(testApps[1].id);
@@ -310,6 +311,13 @@ describe('@app-relationship', function() {
         "type": "collection",
         "collection": "cars",
         "remote": "test-app1.cars",
+        "properties": {
+          "price": {
+            "__type": "string",
+            "__required": true,
+            "__allowUpdate": true,
+          },
+        }
       });
 
       await Buttress.setSchema(testApp2Schema);
