@@ -52,6 +52,15 @@ const users = [{
   profileUrl: 'http://test.com/thisisatest',
   profileImgUrl: 'http://test.com/thisisatest.png',
   attributes: ['companies-name'],
+}, {
+  app: 'google',
+  id: '98765432109876543216',
+  username: 'User 5',
+  token: 'testisathistestisathistestisathistestisathistestisathis',
+  email: 'test@test.com',
+  profileUrl: 'http://test.com/thisisatest',
+  profileImgUrl: 'http://test.com/thisisatest.png',
+  attributes: ['companies-status'],
 }];
 
 const authentication = {
@@ -67,24 +76,20 @@ const attributes = [{
   name: 'working-date',
   disposition: {GET: 'deny', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   env: {
-    'startDate': {
-      '@date': '01/01/2022',
-    },
-    'endDate': {
-      '@date': '31/01/2022',
-    },
+    'startDate': '01/01/2022',
+    'endDate': '31/01/2023',
   },
   conditions: {
     '@and': [{
       date: {
         '@date': {
-          '@gtDate': '17-01-2022',
+          '@gtDate': 'env.startDate',
         },
       },
     }, {
       date: {
         '@date': {
-          '@ltDate': '31-01-2022',
+          '@ltDate': 'env.endDate',
         },
       },
     }],
@@ -154,9 +159,18 @@ const attributes = [{
 }, {
   name: 'companies-name',
   targettedSchema: ['organisation'],
-  disposition: {GET: 'allow', PUT: 'deny', POST: 'allow', DELETE: 'deny', SEARCH: 'allow'},
+  disposition: {GET: 'allow', PUT: 'allow', POST: 'allow', DELETE: 'deny', SEARCH: 'allow'},
   properties: {
     name: ['READ', 'WRITE'],
+  }
+}, {
+  name: 'companies-status',
+  targettedSchema: ['organisation'],
+  disposition: {GET: 'allow', PUT: 'allow', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
+  properties: {
+    name: ['READ', 'WRITE'],
+    status: ['READ'],
+    number: ['READ', 'WRITE'],
   }
 }];
 
@@ -269,7 +283,7 @@ describe('@app-attributes', function() {
       }, Promise.resolve());
 
       testAttributes[0].name.should.equal('working-date');
-      testAttributes.length.should.equal(6);
+      testAttributes.length.should.equal(7);
     });
 
     it ('should fail when reading data with deny disposition', async function() {
@@ -325,6 +339,26 @@ describe('@app-attributes', function() {
       companiesStatus.length.should.equal(0);
       companiesName.length.should.equal(3);
       companiesNumber.length.should.equal(0);
+    });
+
+    it ('should fail writing to properties and it only has read access to properties', async function() {
+      const userE = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 5'));
+      Buttress.setAuthToken(userE.tokens[0].value);
+
+      try {
+        await Buttress.getCollection('organisations').update(testCompanies[0].id, [{
+          path: 'status',
+          value: 'LIQUIDATION',
+        }]);
+        throw new Error('it did not fail');
+      } catch (err) {
+        // needs to change the error to an instance of an error
+        const company = await Buttress.getCollection('organisations').get(testCompanies[0].id);
+
+        company.status.should.equal('ACTIVE');
+        err.message.should.equal('Can not edit properties without privileged access');
+        err.statusCode.should.equal(401);
+      }
     });
   });
 });
