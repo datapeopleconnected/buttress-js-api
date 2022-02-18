@@ -62,10 +62,6 @@ class Config {
         })
         .then(() => done())
         .catch((err) => {
-          if (err.statusCode) {
-            console.error(`${err.statusCode}: ${err.statusMessage}`);
-            return;
-          }
           console.error(err);
         });
     });
