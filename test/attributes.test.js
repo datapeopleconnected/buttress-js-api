@@ -60,7 +60,7 @@ const users = [{
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
   profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['companies-status'],
+  attributes: ['companies-info'],
 }];
 
 const authentication = {
@@ -78,17 +78,18 @@ const attributes = [{
   env: {
     'startDate': '01/01/2022',
     'endDate': '31/01/2023',
+    'date': 'now',
   },
   conditions: {
     '@and': [{
       date: {
-        '@date': {
+        '@env.date': {
           '@gtDate': 'env.startDate',
         },
       },
     }, {
       date: {
-        '@date': {
+        '@env.date': {
           '@ltDate': 'env.endDate',
         },
       },
@@ -97,42 +98,44 @@ const attributes = [{
 }, {
   name: 'working-hours',
   disposition: {GET: 'allow', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
+  env: {
+    'startTime': '09:00',
+    'endTime': '10:00',
+    'time': 'now',
+  },
   conditions: {
     '@and': [{
       time: {
-        '@time': {
-          '@gtDate': '09:00',
+        '@env.time': {
+          '@gtDate': 'env.startTime',
         },
       },
     }, {
       time: {
-        '@time': {
-          '@ltDate': '11:00',
+        '@env.time': {
+          '@ltDate': 'env.endTime',
         },
       },
     }],
   },
 }, {
-  name: 'active-working-hours',
+  name: 'working-location',
   disposition: {GET: 'allow', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
+  env: {
+    'location': '127.0.0.1',
+  },
   conditions: {
     '@and': [{
-      time: {
-        '@time': {
-          '@gtDate': '09:00',
-        },
-      },
-    }, {
-      time: {
-        '@time': {
-          '@ltDate': '17:00',
+      location: {
+        '@env.location': {
+          '@eq': 'env.location',
         },
       },
     }],
   },
 }, {
   name: 'active-companies',
-  extends: ['active-working-hours'],
+  extends: ['working-location'],
   targettedSchema: ['organisation'],
   disposition: {GET: 'deny', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   query: {
@@ -161,16 +164,16 @@ const attributes = [{
   targettedSchema: ['organisation'],
   disposition: {GET: 'allow', PUT: 'allow', POST: 'allow', DELETE: 'deny', SEARCH: 'allow'},
   properties: {
-    name: ['READ', 'WRITE'],
+    name: ['GET', 'PUT', 'POST'],
   }
 }, {
-  name: 'companies-status',
+  name: 'companies-info',
   targettedSchema: ['organisation'],
-  disposition: {GET: 'allow', PUT: 'allow', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
+  disposition: {GET: 'allow', PUT: 'allow', POST: 'allow', DELETE: 'allow', SEARCH: 'deny'},
   properties: {
-    name: ['READ', 'WRITE'],
-    status: ['READ'],
-    number: ['READ', 'WRITE'],
+    name: ['GET', 'PUT', 'POST'],
+    status: ['GET'],
+    number: ['GET', 'PUT', 'POST'],
   }
 }];
 
@@ -359,6 +362,29 @@ describe('@app-attributes', function() {
         err.message.should.equal('Can not edit properties without privileged access');
         err.statusCode.should.equal(401);
       }
+    });
+
+    it ('should partially add a company to the database', async function() {
+      const userE = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 5'));
+      Buttress.setAuthToken(userE.tokens[0].value);
+
+      const res = await Buttress.getCollection('organisations').save({
+        name: 'DPC ltd',
+        number: '100',
+        status: 'ACTIVE',
+      });
+
+      (res.status === null).should.be.true;
+    });
+
+    it ('should delete a company from the database', async function() {
+      const userE = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 5'));
+      Buttress.setAuthToken(userE.tokens[0].value);
+
+      const res = await Buttress.getCollection('organisations').remove(testCompanies[0].id);
+      const companies = await Buttress.getCollection('organisations').getAll();
+
+      companies.length.should.equal(3);
     });
   });
 });
