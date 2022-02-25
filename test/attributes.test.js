@@ -164,16 +164,16 @@ const attributes = [{
   targettedSchema: ['organisation'],
   disposition: {GET: 'allow', PUT: 'allow', POST: 'allow', DELETE: 'deny', SEARCH: 'allow'},
   properties: {
-    name: ['GET', 'PUT', 'POST'],
+    name: ['READ', 'WRITE'],
   }
 }, {
   name: 'companies-info',
   targettedSchema: ['organisation'],
   disposition: {GET: 'allow', PUT: 'allow', POST: 'allow', DELETE: 'allow', SEARCH: 'deny'},
   properties: {
-    name: ['GET', 'PUT', 'POST'],
-    status: ['GET'],
-    number: ['GET', 'PUT', 'POST'],
+    name: ['READ', 'WRITE'],
+    status: ['READ'],
+    number: ['READ', 'WRITE'],
   }
 }];
 
