@@ -115,19 +115,15 @@ describe('@company-basics', function() {
           done(err);
         });
     });
-    it('should reject string update to none string property', function(done) {
-      Buttress.getCollection('companies')
-        .update(_company.id, {
+    it('should reject string update to none string property', async function() {
+      try {
+        await Buttress.getCollection('companies').update(_company.id, {
           path: 'siccode',
           value: 'Not a String',
-        })
-        .then(function(results) {
-          done(new Error('Should not succeed'));
-        })
-        .catch(function(err) {
-          err.statusCode.should.equal(400);
-          done();
         });
+      } catch (err) {
+        err.statusCode.should.equal(400);
+      }
     });
     it('should update the company property', function(done) {
       Buttress.getCollection('companies')
