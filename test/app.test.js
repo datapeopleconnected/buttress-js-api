@@ -11,7 +11,6 @@
 
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
-const TestSchema = require('./data/schema');
 const Schemas = require('./data/schema');
 
 Config.init();
@@ -26,12 +25,13 @@ describe('@app-schema', function() {
   });
 
   after(function(done) {
-    Buttress.options.schema = TestSchema;
-    Buttress.initSchema()
-      .then(() => done())
-      .catch(function(err) {
-        done(err);
-      });
+    // Buttress.options.schema = Schemas;
+    // Buttress.initSchema()
+    //   .then(() => done())
+    //   .catch(function(err) {
+    //     done(err);
+    //   });
+    done();
   });
 
   describe('Basic', function() {

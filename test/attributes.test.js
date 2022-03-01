@@ -65,7 +65,7 @@ const users = [{
 
 const authentication = {
   authLevel: 2,
-  domains: ['test.buttressjs.com'],
+  domains: [Config.endpoint],
   role: 'public',
   permissions: [
     {route: '*', permission: '*'},
@@ -99,8 +99,8 @@ const attributes = [{
   name: 'working-hours',
   disposition: {GET: 'allow', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   env: {
-    'startTime': '09:00',
-    'endTime': '10:00',
+    'startTime': '01:00',
+    'endTime': '01:01',
     'time': 'now',
   },
   conditions: {

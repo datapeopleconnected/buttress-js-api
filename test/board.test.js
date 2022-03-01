@@ -12,13 +12,17 @@
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 
+const Schemas = require('./data/schema');
+
 Config.init();
 
 describe('@boards', function() {
   this.timeout(2000);
 
-  before(function(done) {
-    done();
+  before(async function() {
+    Buttress.setAuthToken(Config.token);
+    Buttress.setAPIPath('bjs');
+    await Buttress.setSchema(Schemas);
   });
 
   after(function(done) {
