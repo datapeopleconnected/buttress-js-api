@@ -191,7 +191,7 @@ const organisations = [{
   status: 'LIQUIDATION',
 }];
 
-describe('@app-attributes', function() {
+describe('@attributes', function() {
   this.timeout(90000);
 
   const testUsers = [];
