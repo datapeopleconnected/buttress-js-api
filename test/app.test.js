@@ -19,19 +19,23 @@ const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
 describe('@app-schema', function() {
   this.timeout(2000);
+  const testApps = [];
 
   before(function(done) {
     done();
   });
 
-  after(function(done) {
+  after(async function() {
+    Buttress.setAuthToken(Config.token);
     // Buttress.options.schema = Schemas;
     // Buttress.initSchema()
     //   .then(() => done())
     //   .catch(function(err) {
     //     done(err);
     //   });
-    done();
+    for await (const testApp of testApps) {
+      await Buttress.App.remove(testApp.id);
+    }
   });
 
   describe('Basic', function() {
@@ -106,6 +110,77 @@ describe('@app-schema', function() {
         });
     });
   });
+
+  // describe('Datastore', function() {
+  //   it('should create an app with an external datastore', async function() {
+  //     Buttress.setAuthToken(Config.token);
+
+  //     const testData = {
+  //       name: 'Test App Datastore',
+  //       type: 'server',
+  //       authLevel: 2,
+  //       apiPath: 'test-other-datastore',
+  //       datastore: {
+  //         connectionString: 'mysql://root:langdale@127.0.0.1'
+  //       }
+  //     };
+
+  //     const res = await Buttress.App.save(testData);
+
+  //     res.name.should.equal(testData.name);
+  //     res.apiPath.should.equal(testData.apiPath);
+  //     res.datastore.connectionString.should.equal(testData.datastore.connectionString);
+
+  //     testApps.push(res);
+  //   });
+
+  //   it('should update the schema for the external datastore app', async function() {
+  //     const testApp = testApps[testApps.length - 1];
+  //     Buttress.setAuthToken(testApp.token);
+  //     Buttress.setAPIPath(testApp.apiPath);
+
+  //     await Buttress.setSchema([{
+  //       "name": "car",
+  //       "type": "collection",
+  //       "collection": "cars",
+  //       "properties": {
+  //         "name": {
+  //           "__type": "string",
+  //           "__default": null,
+  //           "__required": true,
+  //           "__allowUpdate": true
+  //         },
+  //       }
+  //     }]);
+  //   });
+
+  //   it('should add a two items to the external datastore app', async function() {
+  //     const testApp = testApps[testApps.length - 1];
+  //     Buttress.setAuthToken(testApp.token);
+  //     Buttress.setAPIPath(testApp.apiPath);
+
+  //     // Wait a little
+  //     await sleep(500);
+
+  //     const testData = {name: 'A red car'};
+
+  //     const res = await Buttress.getCollection('cars').save(testData);
+
+  //     await Buttress.getCollection('cars').save({name: 'A blue car'});
+
+  //     res.name.should.equal(testData.name);
+  //   });
+
+  //   it('should get items from the  external datastore app', async function() {
+  //     const testApp = testApps[testApps.length - 1];
+  //     Buttress.setAuthToken(testApp.token);
+  //     Buttress.setAPIPath(testApp.apiPath);
+
+  //     const res = await Buttress.getCollection('cars').getAll();
+
+  //     res.length.should.equal(2);
+  //   });
+  // });
 });
 
 describe('@app-relationship', function() {
@@ -137,6 +212,8 @@ describe('@app-relationship', function() {
   let testApp2User = null;
 
   before(async function() {
+    Buttress.setAuthToken(Config.token);
+
     testApps.push(await Buttress.App.save({
       name: 'Test App 1',
       type: 'server',
@@ -220,8 +297,9 @@ describe('@app-relationship', function() {
     Buttress.setAuthToken(Config.token);
     Buttress.setAPIPath('bjs');
 
-    await Buttress.App.remove(testApps[0].id);
-    await Buttress.App.remove(testApps[1].id);
+    for await (const testApp of testApps) {
+      await Buttress.App.remove(testApp.id);
+    }
   });
 
   describe('Basic', function() {

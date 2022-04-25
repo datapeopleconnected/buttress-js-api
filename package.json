@@ -20,7 +20,7 @@
   },
   "scripts": {
     "lint": "eslint 'lib/**/*.js'",
-    "test": "mocha --require should --reporter spec",
+    "test": "mocha --require should --reporter spec --bail",
     "test-app": "mocha --require should --reporter spec -g @app",
     "test-company": "mocha --require should --reporter spec -g company",
     "test-service": "mocha --require should --reporter spec -g service",
