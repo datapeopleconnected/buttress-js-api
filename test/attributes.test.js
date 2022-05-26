@@ -137,7 +137,7 @@ const attributes = [{
   name: 'active-companies',
   extends: ['working-location'],
   targettedSchema: ['organisation'],
-  disposition: {GET: 'deny', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
+  disposition: {GET: 'allow', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   query: {
     status: {
       '@eq': 'ACTIVE',
@@ -147,7 +147,7 @@ const attributes = [{
   name: 'companies-a',
   extends: ['active-companies'],
   targettedSchema: ['organisation'],
-  disposition: {GET: 'deny', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
+  disposition: {GET: 'allow', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   query: {
     '@or': [{
       name: {
@@ -276,6 +276,8 @@ describe('@attributes', function() {
       await prev;
       await Buttress.User.remove(next.id);
     }, Promise.resolve());
+
+    await Buttress.Token.removeAllUserTokens();
   });
 
   describe('Basic', function() {
@@ -287,6 +289,30 @@ describe('@attributes', function() {
 
       testAttributes[0].name.should.equal('working-date');
       testAttributes.length.should.equal(7);
+    });
+
+    it (`should assign attributes to the user's token`, async function() {
+      let tokens = await Buttress.Token.getAllTokens();
+      tokens = tokens.reduce((arr, t) => {
+        const userDB = testUsers.find((u) => u.id === t._user);
+        if (!userDB) return arr;
+        const testUser = users.find((u) => userDB.auth.some((a) => u.username === a.username));
+        if (!testUser) return arr;
+        arr.push({
+          id: t._id,
+          attributes: testUser.attributes,
+        });
+
+        return arr;
+      }, []);
+
+      await tokens.reduce(async (prev, next) => {
+        await prev;
+        await Buttress.Token.updateAttribute({
+          tokenId: next.id,
+          attributes: next.attributes
+        });
+      }, Promise.resolve());
     });
 
     it ('should fail when reading data with deny disposition', async function() {
