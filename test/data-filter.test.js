@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Buttress API -
@@ -11,7 +11,6 @@
 
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
-const ObjectId = require('mongodb').ObjectId;
 const TestAppRoles = require('./data/appRoles.json');
 
 Config.init();
@@ -34,43 +33,41 @@ const _mapUserRoles = (data, path) => {
 };
 
 describe('@data-filter', function() {
-
   const TestUsersRoles = _mapUserRoles(TestAppRoles);
 
   let _testUsers = [];
   let _testBoards = [];
-  let _testPosts = [];
 
   before(function(done) {
     const addUserRoles = () => {
-      return TestUsersRoles.map(user => {
+      return TestUsersRoles.map((user) => {
         return Buttress.Auth
           .findOrCreateUser({
             app: 'google',
-            id:  `${Math.floor(Math.random() * Math.floor(9999999999))}`,
+            id: `${Math.floor(Math.random() * Math.floor(9999999999))}`,
             name: user.name,
             token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
             email: 'test@test.com',
             profileUrl: 'http://test.com/thisisatest',
-            profileImgUrl: 'http://test.com/thisisatest.png'
+            profileImgUrl: 'http://test.com/thisisatest.png',
           }, {
             authLevel: Buttress.Token.AuthLevel.USER,
             permissions: [{
-              route: "*",
-              permission: "*"
+              route: '*',
+              permission: '*',
             }],
             role: user.name,
-            domains: [Buttress.options.url.host]
+            domains: [Buttress.options.url.host],
           });
       });
     };
 
     const addPostBoards = () => {
-      return _testUsers.map(user => {
+      return _testUsers.map((user) => {
         const token = user.tokens[0];
         return Buttress.getCollection('boards').save({
           name: token.role,
-          subscribed: [user.id]
+          subscribed: [user.id],
         });
       });
     };
@@ -79,13 +76,13 @@ describe('@data-filter', function() {
       return _testBoards.reduce((arr, board) => {
         const posts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => {
           return Buttress.getCollection('posts').save({
-            content: "Hello world",
-            memberSecretContent: "",
-            adminSecretContent: "",
+            content: 'Hello world',
+            memberSecretContent: '',
+            adminSecretContent: '',
             boardId: board.id,
             parentPostId: null,
             kudos: i,
-            userId: board.subscribed[0]
+            userId: board.subscribed[0],
           });
         });
         return arr.concat(posts);
@@ -93,11 +90,10 @@ describe('@data-filter', function() {
     };
 
     Promise.all(addUserRoles())
-      .then(res => _testUsers = res) // eslint-disable-line no-return-assign
+      .then((res) => _testUsers = res) // eslint-disable-line no-return-assign
       .then(() => Promise.all(addPostBoards()))
-      .then(res => _testBoards = res) // eslint-disable-line no-return-assign
+      .then((res) => _testBoards = res) // eslint-disable-line no-return-assign
       .then(() => Promise.all(addTestPosts()))
-      .then(res => _testPosts = res) // eslint-disable-line no-return-assign
       .then(() => done())
       .catch(done);
   });
@@ -120,8 +116,8 @@ describe('@data-filter', function() {
     it('should respond 401 with invalid_token', function(done) {
       Buttress.getCollection('boards').getAll({
         params: {
-          token: `RANDOMTOKEN`
-        }
+          token: `RANDOMTOKEN`,
+        },
       })
         .catch(function(err) {
           err.statusCode.should.equal(401);
@@ -133,13 +129,13 @@ describe('@data-filter', function() {
 
   describe('Boards', function() {
     it('should only return boards user is subscribed to', function(done) {
-      const publicUser = _testUsers.find((u) => u.tokens.some(t => t.role === 'public'));
-      const token = publicUser.tokens.find(t => t.role === 'public');
+      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.role === 'public'));
+      const token = publicUser.tokens.find((t) => t.role === 'public');
 
       Buttress.getCollection('boards').getAll({
         params: {
-          token: token.value
-        }
+          token: token.value,
+        },
       })
         .then(function(boards) {
           boards.should.be.instanceof(Array);
@@ -157,14 +153,14 @@ describe('@data-filter', function() {
 
   describe('Posts', function() {
     it('should return posts that are part of the public board', function(done) {
-      const publicUser = _testUsers.find(u => u.tokens.some(t => t.role === 'public'));
-      const token = publicUser.tokens.find(t => t.role === 'public');
-      const publicBoard = _testBoards.find(board => board.name === 'public');
+      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.role === 'public'));
+      const token = publicUser.tokens.find((t) => t.role === 'public');
+      const publicBoard = _testBoards.find((board) => board.name === 'public');
 
       Buttress.getCollection('posts').getAll({
         params: {
-          token: token.value
-        }
+          token: token.value,
+        },
       })
         .then(function(posts) {
           posts.should.be.instanceof(Array);
@@ -183,8 +179,8 @@ describe('@data-filter', function() {
     });
 
     it('should return posts that are part of the public board with more than 5 kudos', function(done) {
-      const publicUser = _testUsers.find(u => u.tokens.some(t => t.role === 'public'));
-      const token = publicUser.tokens.find(t => t.role === 'public');
+      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.role === 'public'));
+      const token = publicUser.tokens.find((t) => t.role === 'public');
 
       Buttress.getCollection('posts').search({
         kudos: {
@@ -208,8 +204,8 @@ describe('@data-filter', function() {
     });
 
     it('should return posts ids that are part of the public board with more than 5 kudos', function(done) {
-      const publicUser = _testUsers.find(u => u.tokens.some(t => t.role === 'public'));
-      const token = publicUser.tokens.find(t => t.role === 'public');
+      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.role === 'public'));
+      const token = publicUser.tokens.find((t) => t.role === 'public');
 
       Buttress.getCollection('posts').search({
         kudos: {
@@ -246,7 +242,7 @@ describe('@data-filter', function() {
     });
 
     it('should return a count of posts that are part of the public board', function(done) {
-      const publicUser = _testUsers.find((u) => u.tokens.some(t => t.role === 'public'));
+      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.role === 'public'));
       const token = publicUser.tokens.find((t) => t.role === 'public');
 
       Buttress.getCollection('posts').count({}, null, {

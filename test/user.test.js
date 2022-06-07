@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Buttress API -
@@ -33,7 +33,7 @@ const USERS = [{
   token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
-  profileImgUrl: 'http://test.com/thisisatest.png'
+  profileImgUrl: 'http://test.com/thisisatest.png',
 }, {
   app: 'google',
   id: '98765432109876543210',
@@ -41,14 +41,14 @@ const USERS = [{
   token: 'testisathistestisathistestisathistestisathistestisathis',
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
-  profileImgUrl: 'http://test.com/thisisatest.png'
+  profileImgUrl: 'http://test.com/thisisatest.png',
 }];
 
 describe('@users', function() {
   before(function(done) {
     Promise.all([
       Buttress.User.removeAll(),
-      Buttress.Token.removeAllUserTokens()
+      Buttress.Token.removeAllUserTokens(),
     ])
       .then(() => done());
   });
@@ -58,7 +58,7 @@ describe('@users', function() {
   });
 
   describe('User Basics', function() {
-    let _users = [null, null];
+    const _users = [null, null];
     let _userId = false;
 
     it('should return no users', function(done) {
@@ -78,11 +78,11 @@ describe('@users', function() {
         .findOrCreateUser(USERS[0], {
           authLevel: Buttress.Token.AuthLevel.USER,
           permissions: [{
-            route: "*",
-            permission: "*"
+            route: '*',
+            permission: '*',
           }],
           role: 'public',
-          domains: [Buttress.options.url.host]
+          domains: [Buttress.options.url.host],
         })
         .then(function(user) {
           user.should.not.equal(false);
@@ -119,10 +119,10 @@ describe('@users', function() {
         .findOrCreateUser(USERS[0], {
           authLevel: Buttress.Token.AuthLevel.USER,
           permissions: [{
-            route: "*",
-            permission: "*"
+            route: '*',
+            permission: '*',
           }],
-          domains: [Buttress.options.url.host]
+          domains: [Buttress.options.url.host],
         })
         .then(function(user) {
           user.should.not.equal(false);
@@ -145,10 +145,10 @@ describe('@users', function() {
         .findOrCreateUser(USERS[1], {
           authLevel: Buttress.Token.AuthLevel.SUPER,
           permissions: [{
-            route: "*",
-            permission: "*"
+            route: '*',
+            permission: '*',
           }],
-          domains: [Buttress.options.url.host]
+          domains: [Buttress.options.url.host],
         })
         .then(function(user) {
           user.should.not.equal(false);
@@ -174,11 +174,11 @@ describe('@users', function() {
         .createToken(user.id, {
           authLevel: Buttress.Token.AuthLevel.USER,
           permissions: [{
-            route: "*",
-            permission: "*"
+            route: '*',
+            permission: '*',
           }],
           role: 'user.member',
-          domains: [Buttress.options.url.host]
+          domains: [Buttress.options.url.host],
         })
         .then(function(token) {
           token.should.not.equal(false);
@@ -195,7 +195,7 @@ describe('@users', function() {
 
       Buttress.User
         .findUser(userData.app, userData.id)
-        .then(u => {
+        .then((u) => {
           u.tokens.should.have.length(2);
           done();
         })
@@ -206,18 +206,18 @@ describe('@users', function() {
 
     it('should remove a user', function(done) {
       if (!_users[0]) {
-        return done(new Error("No User!"));
+        return done(new Error('No User!'));
       }
       Buttress.User
-      .remove(_users[0].id)
-      .then(function(res) {
-        res.should.equal(true);
-        _users[0] = null;
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
+        .remove(_users[0].id)
+        .then(function(res) {
+          res.should.equal(true);
+          _users[0] = null;
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
     });
   });
 });

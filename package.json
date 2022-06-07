@@ -1,7 +1,7 @@
 {
-  "name": "buttress-js-api",
+  "name": "@buttress/api",
   "description": "ButtressJS API for Node.js",
-  "version": "2.5.1",
+  "version": "3.0.0-2",
   "author": "Lighten",
   "contributors": [
     "Chris Bates-Keegan <chris@wearelighten.co.uk>"
@@ -16,16 +16,17 @@
     "url": "https://github.com/wearelighten/buttress-js-api/issues"
   },
   "engines": {
-    "node": "^10.15.0"
+    "node": ">=14.x.x"
   },
   "scripts": {
     "lint": "eslint 'lib/**/*.js'",
-    "test": "mocha --require should --reporter spec",
-    "test-app": "mocha --require should --reporter spec -g app-basics",
+    "test": "mocha --require should --reporter spec --bail",
+    "test-app": "mocha --require should --reporter spec -g @app",
     "test-company": "mocha --require should --reporter spec -g company",
     "test-service": "mocha --require should --reporter spec -g service",
     "test-posts": "mocha --require should --reporter spec -g @posts",
     "test-users": "mocha --require should --reporter spec -g @users",
+    "test-attributes": "mocha --require should --reporter spec -g @attributes",
     "test-roles": "mocha --require should --reporter spec -g @roles",
     "test-boards": "mocha --require should --reporter spec -g @boards",
     "test-data-filter": "mocha --require should --reporter spec -g @data-filter",
@@ -33,14 +34,14 @@
   },
   "main": "./lib/buttressjs",
   "dependencies": {
-    "axios": "^0.21.1",
-    "mongodb": "^3.6.6",
+    "bson-objectid": "^2.0.2",
+    "cross-fetch": "^3.1.5",
     "sugar": "^2.0.6"
   },
   "devDependencies": {
-    "eslint": "^7.24.0",
+    "eslint": "^8.7.0",
     "eslint-config-google": "^0.14.0",
-    "mocha": "^8.3.2",
+    "mocha": "^9.2.0",
     "should": "^13.2.3"
   }
 }

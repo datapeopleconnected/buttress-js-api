@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Buttress API -
@@ -11,7 +11,6 @@
 
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
-const ObjectId = require('mongodb').ObjectId;
 const TestAppRoles = require('./data/appRoles.json');
 
 Config.init();
@@ -43,8 +42,8 @@ describe('@roles', function() {
   before(function(done) {
     // NOTE: Why not use bulk add instead?
     // Setup promise queue for adding test users
-    const addUserTasks = TestUsersRoles.map(user => {
-      return new Promise(resolve => {
+    const addUserTasks = TestUsersRoles.map((user) => {
+      return new Promise((resolve) => {
         const appId = Math.floor(Math.random() * Math.floor(200)) + 1;
         return Buttress.Auth
           .findOrCreateUser({
@@ -54,17 +53,17 @@ describe('@roles', function() {
             token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
             email: `test${appId}@example.com`,
             profileUrl: 'http://test.com/thisisatest',
-            profileImgUrl: 'http://test.com/thisisatest.png'
+            profileImgUrl: 'http://test.com/thisisatest.png',
           }, {
             authLevel: Buttress.Token.AuthLevel.USER,
             permissions: [{
-              route: "*",
-              permission: "*"
+              route: '*',
+              permission: '*',
             }],
             role: user.name,
-            domains: [Buttress.options.url.host]
+            domains: [Buttress.options.url.host],
           })
-          .then(res => resolve(res))
+          .then((res) => resolve(res))
           .catch(function(err) {
             throw err;
           });
@@ -72,27 +71,27 @@ describe('@roles', function() {
     });
 
     const addTestPosts = [1].map(() => {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         return Buttress.getCollection('posts').save({
-          content: "Hello world",
-          memberSecretContent: "",
-          adminSecretContent: "",
+          content: 'Hello world',
+          memberSecretContent: '',
+          adminSecretContent: '',
           parentPostId: null,
-          userId: null
+          userId: null,
         })
-        .then(res => resolve(res))
-        .catch(function(err) {
-          throw err;
-        });
+          .then((res) => resolve(res))
+          .catch(function(err) {
+            throw err;
+          });
       });
     });
 
     Promise.all(addUserTasks)
-    .then(res => {
-      _testUsers = res;
-    })
-    .then(() => Promise.all(addTestPosts))
-    .then(() => done());
+      .then((res) => {
+        _testUsers = res;
+      })
+      .then(() => Promise.all(addTestPosts))
+      .then(() => done());
   });
 
   after(function(done) {
@@ -110,16 +109,16 @@ describe('@roles', function() {
   describe('Role public', function() {
     const roleName = 'public';
     let _user = null;
-    let requestOptions = {
+    const requestOptions = {
       params: {
-        token: null
-      }
+        token: null,
+      },
     };
 
     it(`should have a ${roleName} test user`, function(done) {
-      _user = _testUsers.find(u => u.tokens.some(t => t.role === roleName));
+      _user = _testUsers.find((u) => u.tokens.some((t) => t.role === roleName));
       if (_user) {
-        requestOptions.params.token = _user.tokens.find(t => t.role === roleName).value;
+        requestOptions.params.token = _user.tokens.find((t) => t.role === roleName).value;
         done();
       } else {
         done(new Error(`a user with the role ${roleName} doesn't exist`));
@@ -140,9 +139,9 @@ describe('@roles', function() {
     it('should make get a 403 responce', function(done) {
       // TODO: Remove required non-user fields
       Buttress.getCollection('posts').save({
-        content: "Hello world",
+        content: 'Hello world',
         parentPostId: null,
-        userId: _user.id
+        userId: _user.id,
       }, requestOptions)
         .then(function() {
           done(new Error('Should not succeed'));
@@ -161,16 +160,16 @@ describe('@roles', function() {
   describe('Role user.member', function() {
     const roleName = 'user.member';
     let _user = null;
-    let requestOptions = {
+    const requestOptions = {
       params: {
-        token: null
-      }
+        token: null,
+      },
     };
 
     it(`should have a ${roleName} test user`, function(done) {
-      _user = _testUsers.find(u => u.tokens.some(t => t.role === roleName));
+      _user = _testUsers.find((u) => u.tokens.some((t) => t.role === roleName));
       if (_user) {
-        requestOptions.params.token = _user.tokens.find(t => t.role === roleName).value;
+        requestOptions.params.token = _user.tokens.find((t) => t.role === roleName).value;
         done();
       } else {
         done(new Error(`a user with the role ${roleName} doesn't exist`));
@@ -178,12 +177,12 @@ describe('@roles', function() {
     });
 
     it('should successfully post some data', function(done) {
-      let _postData = {
-        content: "Hello world",
-        memberSecretContent: "superMemberSecret",
-        adminSecretContent: "test",
+      const _postData = {
+        content: 'Hello world',
+        memberSecretContent: 'superMemberSecret',
+        adminSecretContent: 'test',
         parentPostId: null,
-        userId: _user.id
+        userId: _user.id,
       };
 
       Buttress.getCollection('posts').save(_postData, requestOptions)
@@ -203,10 +202,10 @@ describe('@roles', function() {
       Buttress.getCollection('posts').getAll(requestOptions)
         .then(function(posts) {
           posts.should.be.instanceof(Array);
-          const userPosts = posts.filter(p => p.userId === _user.id);
+          const userPosts = posts.filter((p) => p.userId === _user.id);
           const userPost = userPosts.pop();
 
-          userPost.memberSecretContent.should.equal("superMemberSecret");
+          userPost.memberSecretContent.should.equal('superMemberSecret');
 
           done();
         })
@@ -219,16 +218,16 @@ describe('@roles', function() {
   describe('Role admin.super', function() {
     const roleName = 'admin.super';
     let _user = null;
-    let requestOptions = {
+    const requestOptions = {
       params: {
-        token: null
-      }
+        token: null,
+      },
     };
 
     it(`should have a ${roleName} test user`, function(done) {
-      _user = _testUsers.find(u => u.tokens.some(t => t.role === roleName));
+      _user = _testUsers.find((u) => u.tokens.some((t) => t.role === roleName));
       if (_user) {
-        requestOptions.params.token = _user.tokens.find(t => t.role === roleName).value;
+        requestOptions.params.token = _user.tokens.find((t) => t.role === roleName).value;
         done();
       } else {
         done(new Error(`a user with the role ${roleName} doesn't exist`));

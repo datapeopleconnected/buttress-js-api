@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Buttress API -
@@ -11,7 +11,7 @@
 
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
-const ObjectId = require('mongodb').ObjectId;
+const ObjectId = require('bson-objectid');
 
 Config.init();
 
@@ -31,11 +31,11 @@ describe('@posts', function() {
   describe('Post Basics', function() {
     const _savePostData = {
       id: (new ObjectId()).toHexString(),
-      content: "Hello world",
-      memberSecretContent: "Secret Hello world",
-      adminSecretContent: "Secret Admin Hello world",
+      content: 'Hello world',
+      memberSecretContent: 'Secret Hello world',
+      adminSecretContent: 'Secret Admin Hello world',
       parentPostId: (new ObjectId()).toHexString(),
-      userId: (new ObjectId()).toHexString()
+      userId: (new ObjectId()).toHexString(),
     };
 
     it('should return no posts', function(done) {
@@ -71,43 +71,43 @@ describe('@posts', function() {
 
     it('should return 1 post', function(done) {
       Buttress.getCollection('posts').getAll()
-      .then(function(posts) {
-        posts.should.have.length(1);
-        posts[0].id.should.equal(_savePostData.id);
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
+        .then(function(posts) {
+          posts.should.have.length(1);
+          posts[0].id.should.equal(_savePostData.id);
+          done();
+        })
+        .catch(function(err) {
+          done(err);
+        });
     });
 
     it('should not accept invalid value', function(done) {
       Buttress.getCollection('posts').update(_savePostData.id, {
         path: 'kudos',
-        value: "EDITED: Hello world"
+        value: 'EDITED: Hello world',
       })
-      .then(function(results) {
-        done(new Error('Should not succeed'));
-      })
-      .catch(function(err) {
-        err.statusCode.should.equal(400);
-        done();
-      });
+        .then(function(results) {
+          done(new Error('Should not succeed'));
+        })
+        .catch(function(err) {
+          err.statusCode.should.equal(400);
+          done();
+        });
     });
 
     it('should update the post', function(done) {
       Buttress.getCollection('posts').update(_savePostData.id, {
         path: 'kudos',
-        value: 1
+        value: 1,
       })
-      .then(function(results) {
-        results.length.should.equal(2);
-        results[0].path.should.equal('kudos');
-        results[0].value.should.equal(1);
-        results[1].path.should.equal('updatedAt');
-        done();
-      })
-      .catch(done);
+        .then(function(results) {
+          results.length.should.equal(2);
+          results[0].path.should.equal('kudos');
+          results[0].value.should.equal(1);
+          results[1].path.should.equal('updatedAt');
+          done();
+        })
+        .catch(done);
     });
 
     it('should increment the view count by 12', function(done) {
@@ -178,7 +178,7 @@ describe('@posts', function() {
     });
 
     it('should respond 400 passing a string', function(done) {
-      const increment = "string";
+      const increment = 'string';
 
       Buttress.getCollection('posts').update(_savePostData.id, {path: 'views.__increment__', value: increment})
         .catch((err) => {
@@ -199,16 +199,16 @@ describe('@posts', function() {
     });
 
     it('should add several posts', function(done) {
-      const __gen = num => {
-        let arr = [];
+      const __gen = (num) => {
+        const arr = [];
         for (let x = 0; x < num; x++) {
           arr.push({
             content: `Hello ${x}`,
-            memberSecretContent: "Secret Hello world",
-            adminSecretContent: "Secret Admin Hello world",
+            memberSecretContent: 'Secret Hello world',
+            adminSecretContent: 'Secret Admin Hello world',
             kudos: x,
             parentPostId: (new ObjectId()).toHexString(),
-            userId: (new ObjectId()).toHexString()
+            userId: (new ObjectId()).toHexString(),
           });
         }
 
