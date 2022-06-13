@@ -17,6 +17,9 @@ Config.init();
 const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
 const users = [{
+  policyProperties: {
+    grade: 1,
+  },
   app: 'google',
   id: '12345678987654321',
   username: 'User 1',
@@ -24,8 +27,10 @@ const users = [{
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
   profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['working-date'],
 }, {
+  policyProperties: {
+    grade: 2,
+  },
   app: 'google',
   id: '98765432109876543210',
   username: 'User 2',
@@ -33,8 +38,10 @@ const users = [{
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
   profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['working-hours'],
 }, {
+  policyProperties: {
+    grade: 3,
+  },
   app: 'google',
   id: '98765432109876543212',
   username: 'User 3',
@@ -42,8 +49,10 @@ const users = [{
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
   profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['companies-a'],
 }, {
+  policyProperties: {
+    grade: 4,
+  },
   app: 'google',
   id: '98765432109876543214',
   username: 'User 4',
@@ -51,8 +60,10 @@ const users = [{
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
   profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['companies-name'],
 }, {
+  policyProperties: {
+    grade: 5,
+  },
   app: 'google',
   id: '98765432109876543216',
   username: 'User 5',
@@ -60,7 +71,17 @@ const users = [{
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
   profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['companies-info'],
+}, {
+  policyProperties: {
+    grade: 6,
+  },
+  app: 'google',
+  id: '987654321098767889',
+  username: 'User 6',
+  token: 'testisathistestisathistestisathistestisathistestisathis',
+  email: 'test@test.com',
+  profileUrl: 'http://test.com/thisisatest',
+  profileImgUrl: 'http://test.com/thisisatest.png',
 }];
 
 const authentication = {
@@ -76,9 +97,9 @@ const attributes = [{
   name: 'working-date',
   disposition: {GET: 'deny', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   env: {
-    'startDate': '01/01/2022',
-    'endDate': '31/01/2023',
-    'date': 'now',
+    startDate: '01/01/2022',
+    endDate: '31/01/2023',
+    date: 'now',
   },
   conditions: {
     '@and': [{
@@ -119,23 +140,7 @@ const attributes = [{
     }],
   },
 }, {
-  name: 'working-location',
-  disposition: {GET: 'allow', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
-  env: {
-    'location': '127.0.0.1',
-  },
-  conditions: {
-    '@and': [{
-      location: {
-        '@env.location': {
-          '@eq': 'env.location',
-        },
-      },
-    }],
-  },
-}, {
   name: 'active-companies',
-  extends: ['working-location'],
   targettedSchema: ['organisation'],
   disposition: {GET: 'allow', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   query: {
@@ -145,7 +150,6 @@ const attributes = [{
   },
 }, {
   name: 'companies-a',
-  extends: ['active-companies'],
   targettedSchema: ['organisation'],
   disposition: {GET: 'allow', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   query: {
@@ -177,6 +181,50 @@ const attributes = [{
   }
 }];
 
+const policies = [{
+  selection: {
+    grade: {
+      '@eq': 1,
+    },
+  },
+  attributes: ['working-date'],
+}, {
+  selection: {
+    grade: {
+      '@eq': 2,
+    },
+  },
+  attributes: ['working-hours'],
+}, {
+  selection: {
+    grade: {
+      '@eq': 3,
+    },
+  },
+  attributes: ['active-companies'],
+}, {
+  selection: {
+    grade: {
+      '@eq': 4,
+    },
+  },
+  attributes: ['companies-a'],
+}, {
+  selection: {
+    grade: {
+      '@eq': 5,
+    },
+  },
+  attributes: ['companies-name'],
+}, {
+  selection: {
+    grade: {
+      '@eq': 6,
+    },
+  },
+  attributes: ['companies-info'],
+}];
+
 const organisations = [{
   name: 'A&A CLEANING LTD LTD',
   number: '1',
@@ -197,6 +245,7 @@ describe('@attributes', function() {
   const testUsers = [];
   const testAttributes = [];
   const testCompanies = [];
+  const testPolicies = [];
   let testApp = null;
 
   const organisationSchema = {
@@ -277,6 +326,11 @@ describe('@attributes', function() {
       await Buttress.User.remove(next.id);
     }, Promise.resolve());
 
+    await testPolicies.reduce(async (prev, next) => {
+      await prev;
+      await Buttress.Policy.remove(next.id);
+    }, Promise.resolve());
+
     await Buttress.Token.removeAllUserTokens();
   });
 
@@ -288,31 +342,16 @@ describe('@attributes', function() {
       }, Promise.resolve());
 
       testAttributes[0].name.should.equal('working-date');
-      testAttributes.length.should.equal(7);
+      testAttributes.length.should.equal(6);
     });
 
-    it (`should assign attributes to the user's token`, async function() {
-      let tokens = await Buttress.Token.getAllTokens();
-      tokens = tokens.reduce((arr, t) => {
-        const userDB = testUsers.find((u) => u.id === t._user);
-        if (!userDB) return arr;
-        const testUser = users.find((u) => userDB.auth.some((a) => u.username === a.username));
-        if (!testUser) return arr;
-        arr.push({
-          id: t._id,
-          attributes: testUser.attributes,
-        });
-
-        return arr;
-      }, []);
-
-      await tokens.reduce(async (prev, next) => {
+    it('should create policies on the app', async function() {
+      await policies.reduce(async (prev, next) => {
         await prev;
-        await Buttress.Token.updateAttribute({
-          tokenId: next.id,
-          attributes: next.attributes
-        });
+        testPolicies.push(await Buttress.Policy.createPolicy(next));
       }, Promise.resolve());
+
+      testPolicies.length.should.equal(6);
     });
 
     it ('should fail when reading data with deny disposition', async function() {
