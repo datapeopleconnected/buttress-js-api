@@ -16,52 +16,19 @@ Config.init();
 
 const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
-const users = [{
+const user = {
+  policyProperties: {
+    grade: 1,
+    securityClearnce: 1,
+  },
   app: 'google',
   id: '12345678987654321',
-  username: 'User 1',
+  username: 'Test User',
   token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
   profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['working-date'],
-}, {
-  app: 'google',
-  id: '98765432109876543210',
-  username: 'User 2',
-  token: 'testisathistestisathistestisathistestisathistestisathis',
-  email: 'test@test.com',
-  profileUrl: 'http://test.com/thisisatest',
-  profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['working-hours'],
-}, {
-  app: 'google',
-  id: '98765432109876543212',
-  username: 'User 3',
-  token: 'testisathistestisathistestisathistestisathistestisathis',
-  email: 'test@test.com',
-  profileUrl: 'http://test.com/thisisatest',
-  profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['companies-a'],
-}, {
-  app: 'google',
-  id: '98765432109876543214',
-  username: 'User 4',
-  token: 'testisathistestisathistestisathistestisathistestisathis',
-  email: 'test@test.com',
-  profileUrl: 'http://test.com/thisisatest',
-  profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['companies-name'],
-}, {
-  app: 'google',
-  id: '98765432109876543216',
-  username: 'User 5',
-  token: 'testisathistestisathistestisathistestisathistestisathis',
-  email: 'test@test.com',
-  profileUrl: 'http://test.com/thisisatest',
-  profileImgUrl: 'http://test.com/thisisatest.png',
-  attributes: ['companies-info'],
-}];
+};
 
 const authentication = {
   authLevel: 2,
@@ -76,9 +43,9 @@ const attributes = [{
   name: 'working-date',
   disposition: {GET: 'deny', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   env: {
-    'startDate': '01/01/2022',
-    'endDate': '31/01/2023',
-    'date': 'now',
+    startDate: '01/01/2022',
+    endDate: '31/01/2023',
+    date: 'now',
   },
   conditions: {
     '@and': [{
@@ -97,7 +64,7 @@ const attributes = [{
   },
 }, {
   name: 'working-hours',
-  disposition: {GET: 'allow', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
+  disposition: {GET: 'allow', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   env: {
     'startTime': '01:00',
     'endTime': '01:01',
@@ -119,23 +86,7 @@ const attributes = [{
     }],
   },
 }, {
-  name: 'working-location',
-  disposition: {GET: 'allow', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
-  env: {
-    'location': '127.0.0.1',
-  },
-  conditions: {
-    '@and': [{
-      location: {
-        '@env.location': {
-          '@eq': 'env.location',
-        },
-      },
-    }],
-  },
-}, {
   name: 'active-companies',
-  extends: ['working-location'],
   targettedSchema: ['organisation'],
   disposition: {GET: 'allow', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   query: {
@@ -144,8 +95,7 @@ const attributes = [{
     },
   },
 }, {
-  name: 'companies-a',
-  extends: ['active-companies'],
+  name: 'companies-a-b',
   targettedSchema: ['organisation'],
   disposition: {GET: 'allow', PUT: 'deny', POST: 'deny', DELETE: 'deny', SEARCH: 'deny'},
   query: {
@@ -169,7 +119,7 @@ const attributes = [{
 }, {
   name: 'companies-info',
   targettedSchema: ['organisation'],
-  disposition: {GET: 'allow', PUT: 'allow', POST: 'allow', DELETE: 'allow', SEARCH: 'deny'},
+  disposition: {GET: 'allow', PUT: 'allow', POST: 'allow', DELETE: 'allow', SEARCH: 'allow'},
   properties: {
     name: ['READ', 'WRITE'],
     status: ['READ'],
@@ -177,16 +127,78 @@ const attributes = [{
   }
 }];
 
+const policies = [{
+  selection: {
+    grade: {
+      '@eq': 1,
+    },
+    securityClearnce: {
+      '@eq': 1,
+    }
+  },
+  attributes: ['working-date'],
+}, {
+  selection: {
+    grade: {
+      '@eq': 2,
+    },
+    securityClearnce: {
+      '@eq': 2,
+    }
+  },
+  attributes: ['working-hours'],
+}, {
+  selection: {
+    grade: {
+      '@eq': 3,
+    },
+    securityClearnce: {
+      '@eq': 3,
+    }
+  },
+  attributes: ['active-companies'],
+}, {
+  selection: {
+    grade: {
+      '@eq': 4,
+    },
+    securityClearnce: {
+      '@eq': 4,
+    }
+  },
+  attributes: ['companies-name'],
+}, {
+  selection: {
+    grade: {
+      '@eq': 5,
+    },
+    securityClearnce: {
+      '@eq': 5,
+    }
+  },
+  attributes: ['companies-a-b'],
+}, {
+  selection: {
+    grade: {
+      '@eq': 6,
+    },
+    securityClearnce: {
+      '@eq': 6,
+    }
+  },
+  attributes: ['companies-info'],
+}];
+
 const organisations = [{
   name: 'A&A CLEANING LTD LTD',
   number: '1',
   status: 'ACTIVE',
 }, {
-  name: 'A&ESM VISION LTD LTD',
+  name: 'B&ESM VISION LTD LTD',
   number: '2',
   status: 'DISSOLVED',
 }, {
-  name: 'A&H CARE SOLUTIONS LTD',
+  name: 'C&H CARE SOLUTIONS LTD',
   number: '3',
   status: 'LIQUIDATION',
 }];
@@ -194,9 +206,10 @@ const organisations = [{
 describe('@attributes', function() {
   this.timeout(90000);
 
-  const testUsers = [];
   const testAttributes = [];
   const testCompanies = [];
+  const testPolicies = [];
+  let testUser = null;
   let testApp = null;
 
   const organisationSchema = {
@@ -251,10 +264,7 @@ describe('@attributes', function() {
 
     await sleep(100);
 
-    await users.reduce(async (prev, user) => {
-      await prev;
-      testUsers.push(await Buttress.Auth.findOrCreateUser(user, authentication));
-    }, Promise.resolve());
+    testUser = await Buttress.Auth.findOrCreateUser(user, authentication);
 
     await organisations.reduce(async (prev, next) => {
       await prev;
@@ -272,9 +282,11 @@ describe('@attributes', function() {
       await Buttress.Attribute.remove(next.id);
     }, Promise.resolve());
 
-    await testUsers.reduce(async (prev, next) => {
+    await Buttress.User.remove(testUser.id);
+
+    await testPolicies.reduce(async (prev, next) => {
       await prev;
-      await Buttress.User.remove(next.id);
+      await Buttress.Policy.remove(next.id);
     }, Promise.resolve());
 
     await Buttress.Token.removeAllUserTokens();
@@ -288,36 +300,20 @@ describe('@attributes', function() {
       }, Promise.resolve());
 
       testAttributes[0].name.should.equal('working-date');
-      testAttributes.length.should.equal(7);
+      testAttributes.length.should.equal(6);
     });
 
-    it (`should assign attributes to the user's token`, async function() {
-      let tokens = await Buttress.Token.getAllTokens();
-      tokens = tokens.reduce((arr, t) => {
-        const userDB = testUsers.find((u) => u.id === t._user);
-        if (!userDB) return arr;
-        const testUser = users.find((u) => userDB.auth.some((a) => u.username === a.username));
-        if (!testUser) return arr;
-        arr.push({
-          id: t._id,
-          attributes: testUser.attributes,
-        });
-
-        return arr;
-      }, []);
-
-      await tokens.reduce(async (prev, next) => {
+    it('should create policies on the app', async function() {
+      await policies.reduce(async (prev, next) => {
         await prev;
-        await Buttress.Token.updateAttribute({
-          tokenId: next.id,
-          attributes: next.attributes
-        });
+        testPolicies.push(await Buttress.Policy.createPolicy(next));
       }, Promise.resolve());
+
+      testPolicies.length.should.equal(6);
     });
 
-    it ('should fail when reading data with deny disposition', async function() {
-      const userA = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 1'));
-      Buttress.setAuthToken(userA.tokens[0].value);
+    it('should fail when reading data with deny disposition', async function() {
+      Buttress.setAuthToken(testUser.tokens[0].value);
 
       try {
         await Buttress.getCollection('organisations').getAll();
@@ -330,8 +326,17 @@ describe('@attributes', function() {
     });
 
     it('should fail when accessing data outside working hours', async function() {
-      const userB = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 2'));
-      Buttress.setAuthToken(userB.tokens[0].value);
+      // update user policy proerty to change the user's policy
+      Buttress.setAuthToken(testApp.token);
+
+      await Buttress.User.setPolicyProperty(testUser.id, {
+        policyProperties: {
+          grade: 2,
+          securityClearnce: 2,
+        },
+      });
+
+      Buttress.setAuthToken(testUser.tokens[0].value);
 
       try {
         await Buttress.getCollection('organisations').getAll();
@@ -344,8 +349,16 @@ describe('@attributes', function() {
     });
 
     it('should only return active companies', async function() {
-      const userC = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 3'));
-      Buttress.setAuthToken(userC.tokens[0].value);
+      // update user policy proerty to change the user's policy
+      Buttress.setAuthToken(testApp.token);
+
+      await Buttress.User.setPolicyProperty(testUser.id, {
+        policyProperties: {
+          grade: 3,
+          securityClearnce: 3,
+        },
+      });
+      Buttress.setAuthToken(testUser.tokens[0].value);
 
       const res = await Buttress.getCollection('organisations').getAll();
 
@@ -355,8 +368,17 @@ describe('@attributes', function() {
     });
 
     it('should only return companies name', async function() {
-      const userD = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 4'));
-      Buttress.setAuthToken(userD.tokens[0].value);
+      // update user policy proerty to change the user's policy
+      Buttress.setAuthToken(testApp.token);
+
+      await Buttress.User.setPolicyProperty(testUser.id, {
+        policyProperties: {
+          grade: 4,
+          securityClearnce: 4,
+        },
+      });
+
+      Buttress.setAuthToken(testUser.tokens[0].value);
       const ids = testCompanies.map((c) => c.id);
 
       const res = await Buttress.getCollection('organisations').bulkGet(ids);
@@ -370,9 +392,37 @@ describe('@attributes', function() {
       companiesNumber.length.should.equal(0);
     });
 
+    it ('should only returns companies starts with letter A or letter B', async function() {
+      // update user policy proerty to change the user's policy
+      Buttress.setAuthToken(testApp.token);
+
+      await Buttress.User.setPolicyProperty(testUser.id, {
+        policyProperties: {
+          grade: 5,
+          securityClearnce: 5,
+        },
+      });
+
+      Buttress.setAuthToken(testUser.tokens[0].value);
+
+      const companies = await Buttress.getCollection('organisations').getAll();
+
+      // we know there are only two companies start with A and B
+      companies.length.should.equal(2);
+    });
+
     it ('should fail writing to properties and it only has read access to properties', async function() {
-      const userE = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 5'));
-      Buttress.setAuthToken(userE.tokens[0].value);
+      // update user policy proerty to change the user's policy
+      Buttress.setAuthToken(testApp.token);
+
+      await Buttress.User.setPolicyProperty(testUser.id, {
+        policyProperties: {
+          grade: 6,
+          securityClearnce: 6,
+        },
+      });
+
+      Buttress.setAuthToken(testUser.tokens[0].value);
 
       try {
         await Buttress.getCollection('organisations').update(testCompanies[0].id, [{
@@ -391,8 +441,17 @@ describe('@attributes', function() {
     });
 
     it ('should partially add a company to the database', async function() {
-      const userE = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 5'));
-      Buttress.setAuthToken(userE.tokens[0].value);
+      // update user policy proerty to change the user's policy
+      Buttress.setAuthToken(testApp.token);
+
+      await Buttress.User.setPolicyProperty(testUser.id, {
+        policyProperties: {
+          grade: 6,
+          securityClearnce: 6,
+        },
+      });
+
+      Buttress.setAuthToken(testUser.tokens[0].value);
 
       const res = await Buttress.getCollection('organisations').save({
         name: 'DPC ltd',
@@ -404,10 +463,19 @@ describe('@attributes', function() {
     });
 
     it ('should delete a company from the database', async function() {
-      const userE = testUsers.find((user) => user.auth.some((authentication) => authentication.username === 'User 5'));
-      Buttress.setAuthToken(userE.tokens[0].value);
+      // update user policy proerty to change the user's policy
+      Buttress.setAuthToken(testApp.token);
 
-      const res = await Buttress.getCollection('organisations').remove(testCompanies[0].id);
+      await Buttress.User.setPolicyProperty(testUser.id, {
+        policyProperties: {
+          grade: 6,
+          securityClearnce: 6,
+        },
+      });
+
+      Buttress.setAuthToken(testUser.tokens[0].value);
+
+      await Buttress.getCollection('organisations').remove(testCompanies[0].id);
       const companies = await Buttress.getCollection('organisations').getAll();
 
       companies.length.should.equal(3);
