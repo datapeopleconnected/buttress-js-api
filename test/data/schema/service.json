@@ -1,7 +1,6 @@
 {
   "name": "service",
   "type": "collection",
-  "collection": "services",
   "properties": {
     "name": {
       "__type": "string",
