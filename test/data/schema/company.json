@@ -1,7 +1,6 @@
 {
   "name": "company",
   "type": "collection",
-  "collection": "companies",
   "properties": {
     "name": {
       "__type": "string",

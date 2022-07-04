@@ -1,7 +1,6 @@
 {
   "name": "board",
   "type": "collection",
-  "collection": "boards",
   "extends": [
     "timestamps"
   ],

@@ -1,7 +1,6 @@
 {
   "name": "post",
   "type": "collection",
-  "collection": "posts",
   "extends": [
     "timestamps"
   ],
