@@ -54,10 +54,10 @@ class Config {
           return Promise.all([
             Buttress.User.removeAll(),
             Buttress.Token.removeAllUserTokens(),
-            Buttress.getCollection('services').removeAll(),
-            Buttress.getCollection('companies').removeAll(),
-            Buttress.getCollection('boards').removeAll(),
-            Buttress.getCollection('posts').removeAll(),
+            Buttress.getCollection('service').removeAll(),
+            Buttress.getCollection('company').removeAll(),
+            Buttress.getCollection('board').removeAll(),
+            Buttress.getCollection('post').removeAll(),
           ]);
         })
         .then(() => done())
