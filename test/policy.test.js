@@ -270,6 +270,12 @@ const policies = [{
       schema: ['organisation'],
       keys: ['number']
     }],
+  }, {
+    endpoints: ['GET'],
+    projection: [{
+      schema: ['organisation'],
+      keys: ['status']
+    }],
   }],
 }, {
   name: 'query-1',
@@ -634,9 +640,9 @@ describe('@policy', function() {
       const companiesNumber = res.map((company) => company.number).filter((v) => v);
 
       res.length.should.equal(3);
-      companiesStatus.length.should.equal(0);
+      companiesStatus.length.should.equal(2);
       companiesName.length.should.equal(3);
-      companiesNumber.length.should.equal(3);
+      companiesNumber.length.should.equal(0);
     });
 
     it ('should override policies query', async function() {
