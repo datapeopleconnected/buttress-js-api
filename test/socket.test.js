@@ -10,7 +10,6 @@
  */
 
 const io = require('socket.io-client');
-const socketUrl = 'http://localhost:6073';
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
 
@@ -54,11 +53,22 @@ const users = [{
 }, {
   policyProperties: {
     grade: 3,
-    securityClearance: 1,
   },
   app: 'google',
   id: '12345678987654324',
   username: 'Test User 4',
+  token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
+  email: 'test@test.com',
+  profileUrl: 'http://test.com/thisisatest',
+  profileImgUrl: 'http://test.com/thisisatest.png',
+}, {
+  policyProperties: {
+    grade: 4,
+    securityClearance: 1,
+  },
+  app: 'google',
+  id: '12345678987654325',
+  username: 'Test User 5',
   token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
@@ -83,6 +93,10 @@ const policies = [{
   },
   config: [{
     endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+    query: [{
+      schema: ['ALL'],
+      access: 'FULL_ACCESS',
+    }],
   }],
 }, {
   name: 'working-date',
@@ -114,6 +128,10 @@ const policies = [{
         },
       }],
     }],
+    query: [{
+      schema: ['organisation'],
+      access: 'FULL_ACCESS',
+    }],
   }],
 }, {
   name: 'active-organisations',
@@ -127,15 +145,29 @@ const policies = [{
     query: [{
       schema: ['organisation'],
       status: {
-        '@eq': 'ACTIVE',
+        '@eq': 'LIQUIDATION',
       },
+    }],
+  }],
+}, {
+  name: 'organisations-name',
+  selection: {
+    grade: {
+      '@eq': 3,
+    },
+  },
+  config: [{
+    endpoints: ['GET'],
+    projection: [{
+      schema: ['organisation'],
+      keys: ['id', 'name'],
     }],
   }],
 }, {
   name: 'box-height',
   selection: {
     grade: {
-      '@eq': 3,
+      '@eq': 4,
     },
   },
   config: [{
@@ -163,6 +195,8 @@ const policies = [{
 describe('@socket', function() {
   this.timeout(90000);
 
+  // TODO move the url to the config
+  const socketUrl = 'http://localhost:6073';
   const testPolicies = [];
   const testUsers = [];
   let testApp = null;
@@ -317,13 +351,15 @@ describe('@socket', function() {
     socket.disconnect();
   });
 
-  it('should create a socket room for a policy that gives full access to organisation', async() => {
+  it('should create a socket room for a policy that gives full access to organisation', async () => {
     const user2 = testUsers.find((u) => u.auth[0].username === 'Test User 2');
     const userToken = user2.tokens[0].value;
     const socket = io.connect(`${socketUrl}/socket-test-app`, {query: `token=${userToken}`});
     // add a promise to resolve with socket is connected
     await new Promise((resolve) => {
-      socket.on('connect', () => {
+      socket.on('connect', async () => {
+        Buttress.setAuthToken(userToken);
+        const companies = await Buttress.getCollection('organisation').getAll();
         resolve();
       });
     });
@@ -345,13 +381,42 @@ describe('@socket', function() {
     socket.disconnect();
   });
 
-  it(`should create a socket room for a policy that gives access to box's height`, async() => {
+  it(`should create a socket room for a policy that gives access to organisations' name`, async() => {
     const user4 = testUsers.find((u) => u.auth[0].username === 'Test User 4');
     const userToken = user4.tokens[0].value;
     const socket = io.connect(`${socketUrl}/socket-test-app`, {query: `token=${userToken}`});
     // add a promise to resolve with socket is connected
     await new Promise((resolve) => {
       socket.on('connect', () => {
+        resolve();
+      });
+    });
+
+    socket.disconnect();
+  });
+
+  it(`should create a socket room for a policy that gives access to box's height`, async() => {
+    const user5 = testUsers.find((u) => u.auth[0].username === 'Test User 5');
+    const userToken = user5.tokens[0].value;
+    const socket = io.connect(`${socketUrl}/socket-test-app`, {query: `token=${userToken}`});
+    // add a promise to resolve with socket is connected
+    await new Promise((resolve) => {
+      socket.on('connect', async () => {
+        const user1 = testUsers.find((u) => u.auth[0].username === 'Test User 1');
+        Buttress.setAuthToken(user1.tokens[0].value);
+        const company = await Buttress.getCollection('organisation').save({
+          name: 'DPC ltd',
+          number: '100',
+          status: 'ACTIVE',
+        });
+
+        await Buttress.getCollection('organisation').update(company.id, {
+          path: 'status',
+          value: 'LIQUIDATION',
+        });
+
+        await Buttress.getCollection('organisation').remove(company.id);
+
         resolve();
       });
     });

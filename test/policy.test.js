@@ -52,7 +52,6 @@ const policies = [{
       access: 'FULL_ACCESS',
     }],
   }],
-  
 }, {
   name: 'working-date',
   selection: {
