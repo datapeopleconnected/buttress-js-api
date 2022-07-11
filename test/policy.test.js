@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Buttress API -
@@ -243,6 +243,35 @@ const policies = [{
     }],
   }],
 }, {
+  name: 'override-access',
+  selection: {
+    securityClearance: {
+      '@eq': 100,
+    },
+  },
+  config: [{
+    endpoints: ['GET'],
+    env: {
+      'switch' : {
+        'id': '62b09ee325c88db16d9da6ca',
+        'state': 'ON'
+      },
+    },
+    conditions: [{
+      'schema': ['organisation'],
+      '@and': [{
+          'query.switch': {
+            'switch.id': {
+              '@eq': 'env.switch.id'
+            },
+            'switch.state': {
+              '@eq': 'env.switch.state'
+            }
+          }
+        }],
+    }],
+  }],
+}, {
   name: 'projection-1',
   selection: {
     policyProjection: {
@@ -326,64 +355,104 @@ const organisations = [{
   status: 'LIQUIDATION',
 }];
 
+const overrideSwitch = {
+  id: '62b09ee325c88db16d9da6ca',
+  state: 'OFF',
+  name: 'Override Switch',
+};
+
 describe('@policy', function() {
   this.timeout(90000);
 
   const testCompanies = [];
   const testPolicies = [];
+  let testSwitch = null;
   let testUser = null;
   let testApp = null;
 
-  const organisationSchema = {
-    "name": "organisation",
-    "type": "collection",
-    "properties": {
-      "name": {
-        "__type": "string",
-        "__default": null,
-        "__required": true,
-        "__allowUpdate": true
+  const schemas = [{
+    'name': 'organisation',
+    'type': 'collection',
+    'properties': {
+      'name': {
+        '__type': 'string',
+        '__default': null,
+        '__required': true,
+        '__allowUpdate': true
       },
-      "number": {
-        "__type": "string",
-        "__default": null,
-        "__required": true,
-        "__allowUpdate": true
+      'number': {
+        '__type': 'string',
+        '__default': null,
+        '__required': true,
+        '__allowUpdate': true
       },
-      "status": {
-        "__type": "string",
-        "__default": null,
-        "__required": true,
-        "__allowUpdate": true
+      'status': {
+        '__type': 'string',
+        '__default': null,
+        '__required': true,
+        '__allowUpdate': true
       }
     }
-  }
+  }, {
+    'name': 'switch',
+    'type': 'collection',
+    'properties': {
+      'name': {
+        '__type': 'string',
+        '__default': null,
+        '__required': true,
+        '__allowUpdate': true
+      },
+      'state': {
+        '__type': 'string',
+        '__default': null,
+        '__required': true,
+        '__allowUpdate': true,
+        '__enum': [
+          'ON',
+          'OFF'
+        ]
+      }
+    }
+  }]
 
   before(async function() {
-    testApp = await Buttress.App.save({
-      name: 'Policy Test App',
-      type: 'server',
-      authLevel: 3,
-      apiPath: 'policy-test-app',
-    });
+    Buttress.setAuthToken(Config.token);
+
+    const existingApps = await Buttress.App.getAll();
+    testApp = existingApps.find((a) => a.name === 'Socket Test App');
+    if (!testApp) {
+      testApp = await Buttress.App.save({
+        name: 'Policy Test App',
+        type: 'server',
+        authLevel: 3,
+        apiPath: 'policy-test-app',
+      });
+    } else {
+      // Fetch token and attach
+      const tokens = await Buttress.Token.getAll();
+      const appToken = tokens.find((t) => t.type === 'app' && t._app === testApp.id);
+      if (!appToken) throw new Error('Found app but unable to find app token');
+      testApp.token = appToken.value;
+    }
 
     Buttress.setAuthToken(testApp.token);
     Buttress.setAPIPath('policy-test-app');
 
     await Buttress.setRoles({
-      "default": "public",
-      "roles": [
+      'default': 'public',
+      'roles': [
         {
-          "name": "public",
-          "endpointDisposition": "allowAll",
-          "dataDisposition": "allowAll"
+          'name': 'public',
+          'endpointDisposition': 'allowAll',
+          'dataDisposition': 'allowAll'
         }
       ]
     });
 
-    await Buttress.setSchema([organisationSchema]);
+    await Buttress.setSchema(schemas);
 
-    await sleep(100);
+    await sleep(1000);
 
     testUser = await Buttress.Auth.findOrCreateUser(user, authentication);
 
@@ -391,12 +460,12 @@ describe('@policy', function() {
       await prev;
       testCompanies.push(await Buttress.getCollection('organisation').save(next));
     }, Promise.resolve());
+
+    testSwitch = await Buttress.getCollection('switch').save(overrideSwitch);
   });
 
   after(async function() {
     Buttress.setAuthToken(Config.token);
-
-    await Buttress.App.remove(testApp.id);
 
     await Buttress.User.remove(testUser.id);
 
@@ -404,6 +473,8 @@ describe('@policy', function() {
       await prev;
       await Buttress.Policy.remove(next.id);
     }, Promise.resolve());
+
+    await Buttress.getCollection('switch').remove(testSwitch.id);
 
     await Buttress.Token.removeAllUserTokens();
   });
@@ -415,7 +486,7 @@ describe('@policy', function() {
         testPolicies.push(await Buttress.Policy.createPolicy(next));
       }, Promise.resolve());
 
-      testPolicies.length.should.equal(12);
+      testPolicies.length.should.equal(13);
     });
 
     it('Should access app companies using admin access policy', async function() {
@@ -621,6 +692,41 @@ describe('@policy', function() {
       companiesStatus.length.should.equal(2);
       companiesName.length.should.equal(3);
       companiesNumber.length.should.equal(3);
+    });
+
+    it ('should fail override-access policy as the override switch is off', async function() {
+      // update user policy proerty to change the user's policy
+      Buttress.setAuthToken(testApp.token);
+
+      await Buttress.User.setPolicyProperty(testUser.id, {
+        securityClearance: 100,
+      });
+
+      Buttress.setAuthToken(testUser.tokens[0].value);
+
+      try {
+        await Buttress.getCollection('organisation').getAll();
+        throw new Error('it did not fail');
+      } catch (err) {
+        // needs to change the error to an instance of an error
+        err.message.should.equal('Access control policy conditions are not fulfilled');
+        err.statusCode.should.equal(401);
+      }
+    });
+
+    it ('should access data after admin turns on the override switch', async function() {
+      // update user policy proerty to change the user's policy
+      Buttress.setAuthToken(testApp.token);
+
+      await Buttress.getCollection('switch').update(testSwitch.id, {
+        path: 'state',
+        value: 'ON',
+      });
+
+      Buttress.setAuthToken(testUser.tokens[0].value);
+
+      const res = await Buttress.getCollection('organisation').getAll();
+      res.length.should.equal(3);
     });
 
     it ('should merge policies projection', async function() {
