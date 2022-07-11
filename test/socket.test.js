@@ -190,15 +190,51 @@ const policies = [{
       schema: ['client'],
     }],
   }],
+}, {
+  name: 'override-access',
+  selection: {
+    securityClearance: {
+      '@eq': 100,
+    },
+  },
+  config: [{
+    endpoints: ['GET'],
+    env: {
+      'switch' : {
+        'id': '62b09ee325c88db16d9da6ca',
+        'state': 'ON'
+      },
+    },
+    conditions: [{
+      'schema': ['organisation'],
+      '@and': [{
+          'query.switch': {
+            'switch.id': {
+              '@eq': 'env.switch.id'
+            },
+            'switch.state': {
+              '@eq': 'env.switch.state'
+            }
+          }
+        }],
+    }],
+  }],
 }];
+
+const overrideSwitch = {
+  id: '62b09ee325c88db16d9da6ca',
+  state: 'OFF',
+  name: 'Override Switch',
+};
 
 describe('@socket', function() {
   this.timeout(90000);
 
   // TODO move the url to the config
-  const socketUrl = 'http://localhost:6073';
+  const socketUrl = 'http://localhost:9002';
   const testPolicies = [];
   const testUsers = [];
+  let testSwitch = null;
   let testApp = null;
 
   const schemas = [{
@@ -222,6 +258,27 @@ describe('@socket', function() {
         '__default': null,
         '__required': true,
         '__allowUpdate': true
+      }
+    }
+  }, {
+    'name': 'switch',
+    'type': 'collection',
+    'properties': {
+      'name': {
+        '__type': 'string',
+        '__default': null,
+        '__required': true,
+        '__allowUpdate': true
+      },
+      'state': {
+        '__type': 'string',
+        '__default': null,
+        '__required': true,
+        '__allowUpdate': true,
+        '__enum': [
+          'ON',
+          'OFF'
+        ]
       }
     }
   }, {
@@ -319,6 +376,8 @@ describe('@socket', function() {
       await prev;
       testUsers.push(await Buttress.Auth.findOrCreateUser(user, authentication));
     }, Promise.resolve());
+
+    testSwitch = await Buttress.getCollection('switch').save(overrideSwitch);
   });
 
   after(async function() {
@@ -335,6 +394,8 @@ describe('@socket', function() {
     }, Promise.resolve());
 
     await Buttress.Token.removeAllUserTokens();
+
+    await Buttress.getCollection('switch').remove(testSwitch.id);
   });
 
   it('should create a socket room for admin policy', async() => {
