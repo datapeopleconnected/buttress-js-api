@@ -255,16 +255,6 @@ describe('@app-relationship', function() {
     Buttress.setAPIPath('test-app2');
 
     await Buttress.setSchema(testApp2Schema);
-    await Buttress.setRoles({
-      "default": "public",
-      "roles": [
-        {
-          "name": "public",
-          "endpointDisposition": "allowAll",
-          "dataDisposition": "allowAll"
-        }
-      ]
-    });
 
     await sleep(100); // Give it chance for the URL's to be regenerated
 
