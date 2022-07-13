@@ -439,17 +439,6 @@ describe('@policy', function() {
     Buttress.setAuthToken(testApp.token);
     Buttress.setAPIPath('policy-test-app');
 
-    await Buttress.setRoles({
-      'default': 'public',
-      'roles': [
-        {
-          'name': 'public',
-          'endpointDisposition': 'allowAll',
-          'dataDisposition': 'allowAll'
-        }
-      ]
-    });
-
     await Buttress.setSchema(schemas);
 
     await sleep(1000);

@@ -73,6 +73,17 @@ const users = [{
   email: 'test@test.com',
   profileUrl: 'http://test.com/thisisatest',
   profileImgUrl: 'http://test.com/thisisatest.png',
+},  {
+  policyProperties: {
+    securityClearance: 100,
+  },
+  app: 'google',
+  id: '12345678987654326',
+  username: 'Test User 6',
+  token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
+  email: 'test@test.com',
+  profileUrl: 'http://test.com/thisisatest',
+  profileImgUrl: 'http://test.com/thisisatest.png',
 }];
 
 const authentication = {
@@ -223,7 +234,7 @@ const policies = [{
 
 const overrideSwitch = {
   id: '62b09ee325c88db16d9da6ca',
-  state: 'OFF',
+  state: 'ON',
   name: 'Override Switch',
 };
 
@@ -231,7 +242,7 @@ describe('@socket', function() {
   this.timeout(90000);
 
   // TODO move the url to the config
-  const socketUrl = 'http://localhost:9002';
+  const socketUrl = 'http://localhost:6073';
   const testPolicies = [];
   const testUsers = [];
   let testSwitch = null;
@@ -352,17 +363,6 @@ describe('@socket', function() {
     Buttress.setAuthToken(testApp.token);
     Buttress.setAPIPath('socket-test-app');
 
-    await Buttress.setRoles({
-      'default': 'public',
-      'roles': [
-        {
-          'name': 'public',
-          'endpointDisposition': 'allowAll',
-          'dataDisposition': 'allowAll'
-        }
-      ]
-    });
-
     await Buttress.setSchema(schemas);
 
     await sleep(100);
@@ -477,6 +477,30 @@ describe('@socket', function() {
         });
 
         await Buttress.getCollection('organisation').remove(company.id);
+
+        resolve();
+      });
+    });
+
+    socket.disconnect();
+  });
+
+  it(`should create a socket room for a policy that gives based on override switch and then close it`, async() => {
+    const user6 = testUsers.find((u) => u.auth[0].username === 'Test User 6');
+    const userToken = user6.tokens[0].value;
+    const socket = io.connect(`${socketUrl}/socket-test-app`, {query: `token=${userToken}`});
+    // add a promise to resolve with socket is connected
+    await new Promise((resolve) => {
+      socket.on('connect', async () => {
+        Buttress.setAuthToken(userToken);
+        await Buttress.getCollection('organisation').getAll();
+
+        const user1 = testUsers.find((u) => u.auth[0].username === 'Test User 1');
+        Buttress.setAuthToken(user1.tokens[0].value);
+        await Buttress.getCollection('switch').update(testSwitch.id, {
+          path: 'state',
+          value: 'OFF',
+        });
 
         resolve();
       });
