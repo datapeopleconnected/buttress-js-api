@@ -174,6 +174,8 @@ const policies = [{
   }],
 }, {
   name: 'summer-working-date',
+  priority: 1,
+  merge: true,
   selection: {
     grade: {
       '@eq': 6,
@@ -209,6 +211,8 @@ const policies = [{
   }],
 }, {
   name: 'summer-working-hours',
+  priority: 2,
+  merge: true,
   selection: {
     securityClearance: {
       '@eq': 1,
@@ -273,6 +277,8 @@ const policies = [{
   }],
 }, {
   name: 'projection-1',
+  priority: 1,
+  merge: true,
   selection: {
     policyProjection: {
       '@gte': 1,
@@ -287,6 +293,8 @@ const policies = [{
   }],
 }, {
   name: 'projection-2',
+  priority: 2,
+  merge: true,
   selection: {
     policyProjection: {
       '@gte': 2,
@@ -308,6 +316,7 @@ const policies = [{
 }, {
   name: 'query-1',
   priority: 1,
+  merge: true,
   selection: {
     policyMergeQuery: {
       '@gte': 1,
@@ -325,6 +334,7 @@ const policies = [{
 }, {
   name: 'query-2',
   priority: 2,
+  merge: true,
   selection: {
     policyMergeQuery: {
       '@gte': 2,
