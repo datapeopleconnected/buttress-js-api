@@ -17,6 +17,43 @@ Config.init();
 
 const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
+describe('@app', function() {
+  this.timeout(2000);
+  const testApps = [];
+
+  before(async function() {
+    Buttress.setAuthToken(Config.token);
+  });
+
+  after(async function() {
+    Buttress.setAuthToken(Config.token);
+    for await (const testApp of testApps) {
+      await Buttress.App.remove(testApp.id);
+    }
+  });
+
+  describe('Basic', function() {
+    it('should create an app', async function() {
+      const testAppData = {
+        name: 'Test App',
+        type: 'server',
+        version: '1.0.0',
+        authLevel: 2,
+        apiPath: 'test-app',
+      };
+
+      const testApp = await Buttress.App.save(testAppData);
+
+      testApp.name.should.equal(testAppData.name);
+      testApp.version.should.equal(testAppData.version);
+      testApp.apiPath.should.equal(testAppData.apiPath);
+
+      testApps.push(testApp);
+    });
+  });
+
+});
+
 describe('@app-schema', function() {
   this.timeout(2000);
   const testApps = [];
