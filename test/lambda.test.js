@@ -39,6 +39,20 @@ const authentication = {
   ],
 };
 
+const organisations = [{
+  name: 'A&A CLEANING LTD LTD',
+  number: '1',
+  status: 'ACTIVE',
+}, {
+  name: 'B&ESM VISION LTD LTD',
+  number: '2',
+  status: 'DISSOLVED',
+}, {
+  name: 'C&H CARE SOLUTIONS LTD',
+  number: '3',
+  status: 'LIQUIDATION',
+}];
+
 describe('@lambda', function() {
   this.timeout(90000);
   let testUser = null;
@@ -64,8 +78,40 @@ describe('@lambda', function() {
       testApp.token = appToken.value;
     }
 
+    const schemas = [{
+      'name': 'organisation',
+      'type': 'collection',
+      'properties': {
+        'name': {
+          '__type': 'string',
+          '__default': null,
+          '__required': true,
+          '__allowUpdate': true
+        },
+        'number': {
+          '__type': 'string',
+          '__default': null,
+          '__required': true,
+          '__allowUpdate': true
+        },
+        'status': {
+          '__type': 'string',
+          '__default': null,
+          '__required': true,
+          '__allowUpdate': true
+        }
+      }
+    }];
+
     Buttress.setAuthToken(testApp.token);
     Buttress.setAPIPath('lambda-test-app');
+
+    await Buttress.setSchema(schemas);
+
+    await organisations.reduce(async (prev, next) => {
+      await prev;
+      await Buttress.getCollection('organisation').save(next);
+    }, Promise.resolve());
 
     await sleep(1000);
 
@@ -86,7 +132,7 @@ describe('@lambda', function() {
         name: 'hello-world-lambda',
         git: {
           url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/hello-world.git',
-          commitHash: '17629611ab1f812fff60eaad8c3bbf77adf0ebef',
+          commitHash: 'dc5a5d18240a1c8633fe58c0f98351de7a7f1c67',
           rootPath: 'cron',
           projectPath: 'hello-world',
           codePath: 'hello-world.js',
@@ -95,7 +141,7 @@ describe('@lambda', function() {
         trigger: [{
           type: 'CRON',
           status: 'PENDING',
-          periodicExecution: 'in 1 mins',
+          periodicExecution: 'in 1 minutes',
           executionTime: Sugar.Date.create(),
         }],
         buttressConnection: {
@@ -108,6 +154,34 @@ describe('@lambda', function() {
 
       const lambdaDB = await Buttress.Lambda.createLambda(lambda);
       lambdaDB.name.should.equal('hello-world-lambda');
+    });
+
+    it('Should create an edit organisation lambda on the app', async function() {
+      const lambda = {
+        name: 'organisation-edit-lambda',
+        git: {
+          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/organisation-edit.git',
+          commitHash: '3277e48dd71181b61f752492ab20ce0a159b4d21',
+          rootPath: 'cron',
+          projectPath: 'organisation-edit',
+          codePath: 'organisation-edit.js',
+        },
+        trigger: [{
+          type: 'CRON',
+          status: 'PENDING',
+          periodicExecution: 'in 1 day',
+          executionTime: Sugar.Date.create(),
+        }],
+        buttressConnection: {
+          url: Config.endpoint,
+          token: testApp.token,
+          apiPath: testApp.apiPath,
+          apiVersion: 1,
+        }
+      };
+
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda);
+      lambdaDB.name.should.equal('organisation-edit-lambda');
     });
   });
 });
