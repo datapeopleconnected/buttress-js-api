@@ -8,6 +8,7 @@
  * @author Chris Bates-Keegan
  *
  */
+const Sugar = require('sugar');
 
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
@@ -83,12 +84,26 @@ describe('@lambda', function() {
     it('Should create a hello world lambda on the app', async function() {
       const lambda = {
         name: 'hello-world-lambda',
-        code: 'console.log(hello world)',
+        git: {
+          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/hello-world.git',
+          commitHash: '17629611ab1f812fff60eaad8c3bbf77adf0ebef',
+          rootPath: 'cron',
+          projectPath: 'hello-world',
+          codePath: 'hello-world.js',
+          packagePath: 'package.json',
+        },
         trigger: [{
           type: 'CRON',
           status: 'PENDING',
-          periodicExecution: 'in 5 mins',
-        }]
+          periodicExecution: 'in 1 mins',
+          executionTime: Sugar.Date.create(),
+        }],
+        buttressConnection: {
+          url: Config.endpoint,
+          token: testApp.token,
+          apiPath: testApp.apiPath,
+          apiVersion: 1,
+        }
       };
 
       const lambdaDB = await Buttress.Lambda.createLambda(lambda);
