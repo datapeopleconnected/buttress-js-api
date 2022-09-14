@@ -161,10 +161,11 @@ describe('@lambda', function() {
         name: 'organisation-edit-lambda',
         git: {
           url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/organisation-edit.git',
-          commitHash: '3277e48dd71181b61f752492ab20ce0a159b4d21',
+          commitHash: 'b2b1185ad03bc98004a30e3b73d8b0facdcb67bf',
           rootPath: 'cron',
           projectPath: 'organisation-edit',
           codePath: 'organisation-edit.js',
+          packagePath: 'package.json',
         },
         trigger: [{
           type: 'CRON',
@@ -182,6 +183,34 @@ describe('@lambda', function() {
 
       const lambdaDB = await Buttress.Lambda.createLambda(lambda);
       lambdaDB.name.should.equal('organisation-edit-lambda');
+    });
+
+    it('Should create a get api endpoint lambda to get all organisation', async function() {
+      const lambda = {
+        name: 'api-get-organisation-lambda',
+        git: {
+          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/api-get-organisation.git',
+          commitHash: '102a18861f5b92013bc57d2c9beb092bebd078e4',
+          rootPath: 'routes',
+          projectPath: 'api-get-organisation',
+          codePath: 'index.js',
+          packagePath: 'package.json',
+        },
+        trigger: [{
+          type: 'API_ENDPOINT',
+          status: 'PENDING',
+          method: 'GET',
+        }],
+        buttressConnection: {
+          url: Config.endpoint,
+          token: testApp.token,
+          apiPath: testApp.apiPath,
+          apiVersion: 1,
+        }
+      };
+
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda);
+      lambdaDB.name.should.equal('api-get-organisation-lambda');
     });
   });
 });
