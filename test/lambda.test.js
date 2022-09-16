@@ -39,6 +39,14 @@ const authentication = {
   ],
 };
 
+const allowList = [{
+  packageName: '@buttress/api',
+  packageVersion: '^3.0.0-12',
+}, {
+  packageName: 'passport',
+  packageVersion: '^0.6.0',
+}];
+
 const organisations = [{
   name: 'A&A CLEANING LTD LTD',
   number: '1',
@@ -107,6 +115,11 @@ describe('@lambda', function() {
     Buttress.setAPIPath('lambda-test-app');
 
     await Buttress.setSchema(schemas);
+    await Buttress.App.setAllowList(allowList);
+    await Buttress.App.updateAllowList([{
+      packageName: 'passport-google-oauth20',
+      packageVersion: '^2.0.0',
+    }]);
 
     await organisations.reduce(async (prev, next) => {
       await prev;
@@ -131,7 +144,8 @@ describe('@lambda', function() {
       const lambda = {
         name: 'hello-world-lambda',
         git: {
-          url: 'mahmoud@workstation-2:/home/mahmoud/local-git/crons/hello-world.git',
+          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/hello-world.git',
+          branch: 'master',
           currentDeployment: '5f5f6fa4178eaf8740cfe924c8423c59a881adb6',
           rootPath: 'cron',
           projectPath: 'hello-world',
@@ -159,11 +173,12 @@ describe('@lambda', function() {
       const lambda = {
         name: 'organisation-edit-lambda',
         git: {
-          url: 'mahmoud@workstation-2:/home/mahmoud/local-git/crons/edit-organisation.git',
-          currentDeployment : '87ae18757ec222a25a1feeac630d451b2e3c9455',
+          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/organisation-edit.git',
+          currentDeployment : '6708191a7fa86e2c73b5aa8229032f24bac37223',
+          branch: 'master',
           rootPath: 'cron',
-          projectPath: 'edit-organisation',
-          entryPoint: 'edit-organisation.js',
+          projectPath: 'organisation-edit',
+          entryPoint: 'organisation-edit.js',
           packagePath: 'package.json',
         },
         buttressConnection: {
@@ -197,7 +212,8 @@ describe('@lambda', function() {
     //     name: 'api-get-organisation-lambda',
     //     git: {
     //       url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/api-get-organisation.git',
-    //       commitHash: '102a18861f5b92013bc57d2c9beb092bebd078e4',
+    //       branch: 'master',
+    //       currentDeployment: '102a18861f5b92013bc57d2c9beb092bebd078e4',
     //       rootPath: 'routes',
     //       projectPath: 'api-get-organisation',
     //       entryPoint: 'index.js',
