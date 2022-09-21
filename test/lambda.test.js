@@ -146,9 +146,7 @@ describe('@lambda', function() {
         git: {
           url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/hello-world.git',
           branch: 'master',
-          currentDeployment: '5f5f6fa4178eaf8740cfe924c8423c59a881adb6',
-          rootPath: 'cron',
-          projectPath: 'hello-world',
+          currentDeployment: 'dc5a5d18240a1c8633fe58c0f98351de7a7f1c67',
           entryPoint: 'hello-world.js',
         },
         buttressConnection: {
@@ -166,37 +164,39 @@ describe('@lambda', function() {
       };
 
       const lambdaDB = await Buttress.Lambda.createLambda(lambda);
+      await Buttress.Lambda.editLambdaDeployment(lambdaDB.id, {
+        hash: '17629611ab1f812fff60eaad8c3bbf77adf0ebef',
+        branch: 'develop'
+      });
+
       lambdaDB.name.should.equal('hello-world-lambda');
     });
 
-    it('Should create an edit organisation lambda on the app', async function() {
-      const lambda = {
-        name: 'organisation-edit-lambda',
-        git: {
-          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/organisation-edit.git',
-          currentDeployment : '6708191a7fa86e2c73b5aa8229032f24bac37223',
-          branch: 'master',
-          rootPath: 'cron',
-          projectPath: 'organisation-edit',
-          entryPoint: 'organisation-edit.js',
-          packagePath: 'package.json',
-        },
-        buttressConnection: {
-          url: Config.endpoint,
-          token: testApp.token,
-          apiPath: testApp.apiPath,
-          apiVersion: 1,
-        },
-        trigger: [{
-          type: 'CRON',
-          status: 'PENDING',
-          periodicExecution: 'in 1 day',
-          executionTime: Sugar.Date.create(),
-        }],
-      };
+    // it('Should create an edit organisation lambda on the app', async function() {
+    //   const lambda = {
+    //     name: 'organisation-edit-lambda',
+    //     git: {
+    //       url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/organisation-edit.git',
+    //       currentDeployment : '6708191a7fa86e2c73b5aa8229032f24bac37223',
+    //       branch: 'master',
+    //       entryPoint: 'organisation-edit.js',
+    //     },
+    //     buttressConnection: {
+    //       url: Config.endpoint,
+    //       token: testApp.token,
+    //       apiPath: testApp.apiPath,
+    //       apiVersion: 1,
+    //     },
+    //     trigger: [{
+    //       type: 'CRON',
+    //       status: 'PENDING',
+    //       periodicExecution: 'in 1 day',
+    //       executionTime: Sugar.Date.create(),
+    //     }],
+    //   };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda);
-      lambdaDB.name.should.equal('organisation-edit-lambda');
+    //   const lambdaDB = await Buttress.Lambda.createLambda(lambda);
+    //   lambdaDB.name.should.equal('organisation-edit-lambda');
 
       // await sleep(5000);
       // const res = Buttress.getCollection('organisations').search({
@@ -205,7 +205,7 @@ describe('@lambda', function() {
       //   }
       // });
       // res.length.should.equal(2);
-    });
+    // });
 
     // it('Should create a get api endpoint lambda to get all organisation', async function() {
     //   const lambda = {
@@ -214,10 +214,7 @@ describe('@lambda', function() {
     //       url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/api-get-organisation.git',
     //       branch: 'master',
     //       currentDeployment: '102a18861f5b92013bc57d2c9beb092bebd078e4',
-    //       rootPath: 'routes',
-    //       projectPath: 'api-get-organisation',
     //       entryPoint: 'index.js',
-    //       packagePath: 'package.json',
     //     },
     //     trigger: [{
     //       type: 'API_ENDPOINT',
