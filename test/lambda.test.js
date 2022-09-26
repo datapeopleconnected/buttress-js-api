@@ -9,6 +9,7 @@
  *
  */
 const Sugar = require('sugar');
+const fetch = require('cross-fetch');
 
 const Buttress = require('../lib/buttressjs');
 const Config = require('./config');
@@ -164,73 +165,126 @@ describe('@lambda', function() {
       };
 
       const lambdaDB = await Buttress.Lambda.createLambda(lambda);
-      await Buttress.Lambda.editLambdaDeployment(lambdaDB.id, {
-        hash: '17629611ab1f812fff60eaad8c3bbf77adf0ebef',
-        branch: 'develop'
-      });
 
       lambdaDB.name.should.equal('hello-world-lambda');
     });
 
-    // it('Should create an edit organisation lambda on the app', async function() {
-    //   const lambda = {
-    //     name: 'organisation-edit-lambda',
-    //     git: {
-    //       url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/organisation-edit.git',
-    //       currentDeployment : '6708191a7fa86e2c73b5aa8229032f24bac37223',
-    //       branch: 'master',
-    //       entryPoint: 'organisation-edit.js',
-    //     },
-    //     buttressConnection: {
-    //       url: Config.endpoint,
-    //       token: testApp.token,
-    //       apiPath: testApp.apiPath,
-    //       apiVersion: 1,
-    //     },
-    //     trigger: [{
-    //       type: 'CRON',
-    //       status: 'PENDING',
-    //       periodicExecution: 'in 1 day',
-    //       executionTime: Sugar.Date.create(),
-    //     }],
-    //   };
+    it('Should fail to create a deployment hash that does not exist on develop branch', async function() {
 
-    //   const lambdaDB = await Buttress.Lambda.createLambda(lambda);
-    //   lambdaDB.name.should.equal('organisation-edit-lambda');
+      const [lambda] = await Buttress.Lambda.search({
+        name: {
+          $eq: 'hello-world-lambda',
+        }
+      });
 
-      // await sleep(5000);
-      // const res = Buttress.getCollection('organisations').search({
-      //   status: {
-      //     $eq: 'ACTIVE',
-      //   }
+      try {
+        await Buttress.Lambda.editLambdaDeployment(lambda.id, {
+          hash: '17629611ab1f812fff60eaad8c3bbf77adf0ebef',
+          branch: 'develop'
+        });
+      } catch (err) {
+        err.statusCode.should.equal(400);
+        return;
+      }
+
+      throw new Error('it did not fail');
+    });
+
+    it('Should create an edit organisation lambda on the app', async function() {
+      const lambda = {
+        name: 'organisation-edit-lambda',
+        git: {
+          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/organisation-edit.git',
+          currentDeployment : '6708191a7fa86e2c73b5aa8229032f24bac37223',
+          branch: 'master',
+          entryPoint: 'organisation-edit.js',
+        },
+        buttressConnection: {
+          url: Config.endpoint,
+          token: testApp.token,
+          apiPath: testApp.apiPath,
+          apiVersion: 1,
+        },
+        trigger: [{
+          type: 'CRON',
+          status: 'PENDING',
+          periodicExecution: 'in 1 day',
+          executionTime: Sugar.Date.create(),
+        }],
+      };
+
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda);
+      lambdaDB.name.should.equal('organisation-edit-lambda');
+    });
+
+    it('Should create a get api endpoint lambda to print hello world', async function() {
+      const lambda = {
+        name: 'api-hello-world-lambda',
+        git: {
+          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/api-hello-world.git',
+          branch: 'master',
+          currentDeployment: '94160cc9b9ff1cc55bd41c91029bb7c82ce3baf2',
+          entryPoint: 'index.js',
+        },
+        trigger: [{
+          type: 'API_ENDPOINT',
+          status: 'API_CALL',
+          method: 'GET',
+        }],
+        buttressConnection: {
+          url: Config.endpoint,
+          token: testApp.token,
+          apiPath: testApp.apiPath,
+          apiVersion: 1,
+        }
+      };
+
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda);
+      lambdaDB.name.should.equal('api-hello-world-lambda');
+
+      // await fetch(`${Config.endpoint}/api/v1/lambda/${lambdaDB.id}`, {
+      //   method: 'GET',
       // });
-      // res.length.should.equal(2);
-    // });
+    });
 
-    // it('Should create a get api endpoint lambda to get all organisation', async function() {
-    //   const lambda = {
-    //     name: 'api-get-organisation-lambda',
-    //     git: {
-    //       url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/api-get-organisation.git',
-    //       branch: 'master',
-    //       currentDeployment: '102a18861f5b92013bc57d2c9beb092bebd078e4',
-    //       entryPoint: 'index.js',
-    //     },
-    //     trigger: [{
-    //       type: 'API_ENDPOINT',
-    //       status: 'PENDING',
-    //       method: 'GET',
-    //     }],
-    //     buttressConnection: {
-    //       url: Config.endpoint,
-    //       token: testApp.token,
-    //       apiPath: testApp.apiPath,
-    //       apiVersion: 1,
-    //     }
-    //   };
+    it('Should create a get api endpoint lambda to edit all dissolved organisation to active', async function() {
+      const lambda = {
+        name: 'api-edit-organisation-lambda',
+        git: {
+          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/api-edit-organisation.git',
+          branch: 'master',
+          currentDeployment: '866f98267125ad79c1dbe46495a8fdeca94ced03',
+          entryPoint: 'index.js',
+        },
+        trigger: [{
+          type: 'API_ENDPOINT',
+          status: 'API_CALL',
+          method: 'GET',
+        }],
+        buttressConnection: {
+          url: Config.endpoint,
+          token: testApp.token,
+          apiPath: testApp.apiPath,
+          apiVersion: 1,
+        }
+      };
 
-    //   const lambdaDB = await Buttress.Lambda.createLambda(lambda);
-    //   lambdaDB.name.should.equal('api-get-organisation-lambda');
-    // });
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda);
+      lambdaDB.name.should.equal('api-edit-organisation-lambda');
+
+      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambdaDB.id}`, {
+        method: 'GET',
+      });
+      const executionId = await res.json();
+
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
+        method: 'GET',
+      });
+      const resJson = await statusRes.json();
+      const status = resJson?.status;
+      const outcome = status === 'PENDING' || status === 'RUNNING' || status === 'COMPLETE';
+
+      outcome.should.equal(true);
+    });
   });
 });
