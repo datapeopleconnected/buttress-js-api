@@ -145,16 +145,10 @@ describe('@lambda', function() {
       const lambda = {
         name: 'hello-world-lambda',
         git: {
-          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/hello-world.git',
-          branch: 'master',
-          currentDeployment: 'dc5a5d18240a1c8633fe58c0f98351de7a7f1c67',
+          url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/hello-world.git',
+          branch: 'main',
+          currentDeployment: '54f2fd5f0c0e889881f0a2af40f9d69240b47b6b',
           entryPoint: 'hello-world.js',
-        },
-        buttressConnection: {
-          url: Config.endpoint,
-          token: testApp.token,
-          apiPath: testApp.apiPath,
-          apiVersion: 1,
         },
         trigger: [{
           type: 'CRON',
@@ -170,7 +164,6 @@ describe('@lambda', function() {
     });
 
     it('Should fail to create a deployment hash that does not exist on develop branch', async function() {
-
       const [lambda] = await Buttress.Lambda.search({
         name: {
           $eq: 'hello-world-lambda',
@@ -179,7 +172,7 @@ describe('@lambda', function() {
 
       try {
         await Buttress.Lambda.editLambdaDeployment(lambda.id, {
-          hash: '17629611ab1f812fff60eaad8c3bbf77adf0ebef',
+          hash: '54f2fd5f0c0e889881f0a2af40f9d69240b47b6b',
           branch: 'develop'
         });
       } catch (err) {
@@ -199,12 +192,6 @@ describe('@lambda', function() {
           branch: 'master',
           entryPoint: 'organisation-edit.js',
         },
-        buttressConnection: {
-          url: Config.endpoint,
-          token: testApp.token,
-          apiPath: testApp.apiPath,
-          apiVersion: 1,
-        },
         trigger: [{
           type: 'CRON',
           status: 'PENDING',
@@ -221,9 +208,9 @@ describe('@lambda', function() {
       const lambda = {
         name: 'api-hello-world-lambda',
         git: {
-          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/api-hello-world.git',
-          branch: 'master',
-          currentDeployment: '94160cc9b9ff1cc55bd41c91029bb7c82ce3baf2',
+          url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-hello-world.git',
+          branch: 'main',
+          currentDeployment: 'e3470ca8155baa51583f4b55ae27b6e209efbebd',
           entryPoint: 'index.js',
         },
         trigger: [{
@@ -231,18 +218,12 @@ describe('@lambda', function() {
           status: 'API_CALL',
           method: 'GET',
         }],
-        buttressConnection: {
-          url: Config.endpoint,
-          token: testApp.token,
-          apiPath: testApp.apiPath,
-          apiVersion: 1,
-        }
       };
 
       const lambdaDB = await Buttress.Lambda.createLambda(lambda);
       lambdaDB.name.should.equal('api-hello-world-lambda');
 
-      // await fetch(`${Config.endpoint}/api/v1/lambda/${lambdaDB.id}`, {
+      // await fetch(`${Config.endpoint}/api/v1/lambda/6335c632c9485079247b5217`, {
       //   method: 'GET',
       // });
     });
@@ -261,12 +242,6 @@ describe('@lambda', function() {
           status: 'API_CALL',
           method: 'GET',
         }],
-        buttressConnection: {
-          url: Config.endpoint,
-          token: testApp.token,
-          apiPath: testApp.apiPath,
-          apiVersion: 1,
-        }
       };
 
       const lambdaDB = await Buttress.Lambda.createLambda(lambda);
