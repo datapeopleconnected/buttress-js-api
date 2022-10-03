@@ -187,9 +187,9 @@ describe('@lambda', function() {
       const lambda = {
         name: 'organisation-edit-lambda',
         git: {
-          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/organisation-edit.git',
-          currentDeployment : '6708191a7fa86e2c73b5aa8229032f24bac37223',
-          branch: 'master',
+          url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/edit-data.git',
+          currentDeployment : 'b2f6d22287e05e2ac5a63d591cd6b88aa0ee1ce5',
+          branch: 'main',
           entryPoint: 'organisation-edit.js',
         },
         trigger: [{
@@ -232,9 +232,9 @@ describe('@lambda', function() {
       const lambda = {
         name: 'api-edit-organisation-lambda',
         git: {
-          url: 'git@mahmoud-Aspire-XC-885:/home/mahmoud/git-server/api-edit-organisation.git',
-          branch: 'master',
-          currentDeployment: '866f98267125ad79c1dbe46495a8fdeca94ced03',
+          url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-edit-data.git',
+          branch: 'main',
+          currentDeployment: '5809366f4d5e9922474b639b7961087e10283649',
           entryPoint: 'index.js',
         },
         trigger: [{
