@@ -40,6 +40,46 @@ const authentication = {
   ],
 };
 
+const lambdaAuth = {
+  authLevel: 2,
+  domains: [Config.endpoint],
+  permissions: [
+    {route: '*', permission: '*'},
+  ],
+}
+
+const policies = [{
+  name: 'admin-lambda',
+  selection: {
+    adminAccess: {
+      '@eq': true,
+    },
+  },
+  config: [{
+    endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+    query: [{
+      schema: ['ALL'],
+      access: 'FULL_ACCESS',
+    }],
+  }],
+}, {
+  name: 'active-org-lambda',
+  selection: {
+    grade: {
+      '@eq': 1,
+    },
+  },
+  config: [{
+    endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+    query: [{
+      schema: ['organisation'],
+      status: {
+        '@eq': 'ACTIVE',
+      },
+    }],
+  }],
+}];
+
 const allowList = [{
   packageName: '@buttress/api',
   packageVersion: '^3.0.0-12',
@@ -141,6 +181,16 @@ describe('@lambda', function() {
   });
 
   describe('Basic', function() {
+    it('Should create policies on the app', async function() {
+      const appPolicies = [];
+      await policies.reduce(async (prev, next) => {
+        await prev;
+        appPolicies.push(await Buttress.Policy.createPolicy(next));
+      }, Promise.resolve());
+
+      appPolicies.length.should.equal(2);
+    });
+
     it('Should create a hello world lambda on the app', async function() {
       const lambda = {
         name: 'hello-world-lambda',
@@ -152,13 +202,18 @@ describe('@lambda', function() {
         },
         trigger: [{
           type: 'CRON',
-          status: 'PENDING',
-          periodicExecution: 'in 1 minutes',
-          executionTime: Sugar.Date.create(),
+          cron: {
+            status: 'PENDING',
+            periodicExecution: 'in 1 minutes',
+            executionTime: Sugar.Date.create(),
+          }
         }],
+        policyProperties: {
+          adminAccess: true,
+        }
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);
 
       lambdaDB.name.should.equal('hello-world-lambda');
     });
@@ -172,7 +227,7 @@ describe('@lambda', function() {
 
       try {
         await Buttress.Lambda.editLambdaDeployment(lambda.id, {
-          hash: '54f2fd5f0c0e889881f0a2af40f9d69240b47b6b',
+          hash: '554148cea01ed2517a3302b806202f23ce10dc17',
           branch: 'develop'
         });
       } catch (err) {
@@ -194,13 +249,18 @@ describe('@lambda', function() {
         },
         trigger: [{
           type: 'CRON',
-          status: 'PENDING',
-          periodicExecution: 'in 1 day',
-          executionTime: Sugar.Date.create(),
+          cron: {
+            status: 'PENDING',
+            periodicExecution: 'in 1 day',
+            executionTime: Sugar.Date.create(),
+          }
         }],
+        policyProperties: {
+          adminAccess: true,
+        }
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);
       lambdaDB.name.should.equal('organisation-edit-lambda');
     });
 
@@ -215,17 +275,21 @@ describe('@lambda', function() {
         },
         trigger: [{
           type: 'API_ENDPOINT',
-          status: 'API_CALL',
-          method: 'GET',
+          api: {
+            method: 'GET',
+          }
         }],
+        policyProperties: {
+          adminAccess: true,
+        }
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);
       lambdaDB.name.should.equal('api-hello-world-lambda');
 
-      // await fetch(`${Config.endpoint}/api/v1/lambda/6335c632c9485079247b5217`, {
-      //   method: 'GET',
-      // });
+      await fetch(`${Config.endpoint}/api/v1/lambda/${lambdaDB.id}`, {
+        method: 'GET',
+      });
     });
 
     it('Should create a get api endpoint lambda to edit all dissolved organisation to active', async function() {
@@ -239,27 +303,152 @@ describe('@lambda', function() {
         },
         trigger: [{
           type: 'API_ENDPOINT',
-          status: 'API_CALL',
-          method: 'GET',
+          api: {
+            method: 'GET',
+          }
         }],
+        policyProperties: {
+          adminAccess: true,
+        }
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);  
       lambdaDB.name.should.equal('api-edit-organisation-lambda');
+    });
 
-      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambdaDB.id}`, {
-        method: 'GET',
+    it('Should create a post api endpoint lambda for adding organisations', async function() {
+      const lambda = {
+        name: 'api-add-organisation-lambda',
+        git: {
+          url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-add-data.git',
+          branch: 'main',
+          currentDeployment: 'c98f5aa377d5540673ea47598267f97b9fda28cb',
+          entryPoint: 'index.js',
+        },
+        trigger: [{
+          type: 'API_ENDPOINT',
+          api: {
+            method: 'POST',
+          }
+        }],
+        policyProperties: {
+          adminAccess: true,
+        }
+      };
+
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);
+      lambdaDB.name.should.equal('api-add-organisation-lambda');
+    });
+
+    it('Should call API add organisation lambda to add an organisation', async function() {
+      const organisation = {
+        status: 'ACTIVE',
+        name: 'DPC',
+        number: 10,
+      }
+      const [lambda] = await Buttress.Lambda.search({
+        name: {
+          $eq: 'api-add-organisation-lambda',
+        }
+      });
+      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambda.id}`, {
+        method: 'POST',
+        body: organisation,
       });
       const executionId = await res.json();
+      await sleep(5000);
 
       const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
         method: 'GET',
       });
       const resJson = await statusRes.json();
       const status = resJson?.status;
-      const outcome = status === 'PENDING' || status === 'RUNNING' || status === 'COMPLETE';
 
-      outcome.should.equal(true);
+      const companies = await Buttress.getCollection('organisation').search({
+        name: {
+          $eq: 'DPC',
+        },
+      });
+
+      companies.length.should.equal(1);
+      status.should.equal('COMPLETE');
+    });
+
+    it('Should create a name path mutation lambda', async function() {
+      const lambda = {
+        name: 'name-path-lambda',
+        git: {
+          url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/name-path-mutation.git',
+          currentDeployment : '26d70c08c065b34cccf2cf275c5aaefd5e2d3dbe',
+          branch: 'main',
+          entryPoint: 'index.js',
+        },
+        trigger: [{
+          type: 'PATH_MUTATION',
+          pathMutation: {
+            paths: ['organisation.name'],
+          }
+        }],
+        policyProperties: {
+          adminAccess: true,
+        }
+      };
+
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);
+      lambdaDB.name.should.equal('name-path-lambda');
+    });
+
+    it('Should call the previously created lambda to execute editing a liquidation organisation name to Test Lambda API', async function() {
+      const [lambda] = await Buttress.Lambda.search({
+        name: {
+          $eq: 'api-edit-organisation-lambda',
+        }
+      });
+      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambda.id}`, {
+        method: 'GET',
+      });
+      const executionId = await res.json();
+      await sleep(5000);
+
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
+        method: 'GET',
+      });
+      const resJson = await statusRes.json();
+      const status = resJson?.status;
+
+      const [company] = await Buttress.getCollection('organisation').search({
+        status: {
+          $eq: 'LIQUIDATION',
+        },
+      });
+
+      company.name.should.equal('Test Lambda API');
+      status.should.equal('COMPLETE');
+    });
+
+    it('Should fail executing a lambda that does not have the required access control policy', async function() {
+      const [lambda] = await Buttress.Lambda.search({
+        name: {
+          $eq: 'api-edit-organisation-lambda',
+        }
+      });
+
+      await Buttress.Lambda.setPolicyProperty(lambda.id, {
+        grade: 1,
+      });
+
+      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambda.id}`, {
+        method: 'GET',
+      });
+      const executionId = await res.json();
+      await sleep(2000);
+
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
+        method: 'GET',
+      });
+      const resJson = await statusRes.json();
+      const status = resJson?.status;
+      status.should.equal('ERROR');
     });
   });
 });
