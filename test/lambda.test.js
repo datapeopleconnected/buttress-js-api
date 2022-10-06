@@ -18,35 +18,13 @@ Config.init();
 
 const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
-const user = {
-  policyProperties: {
-    adminAccess: true,
-  },
-  app: 'google',
-  id: '12345678987654321',
-  username: 'Test User',
-  token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-  email: 'test@test.com',
-  profileUrl: 'http://test.com/thisisatest',
-  profileImgUrl: 'http://test.com/thisisatest.png',
-};
-
 const authentication = {
   authLevel: 2,
   domains: [Config.endpoint],
-  role: 'public',
   permissions: [
     {route: '*', permission: '*'},
   ],
 };
-
-const lambdaAuth = {
-  authLevel: 2,
-  domains: [Config.endpoint],
-  permissions: [
-    {route: '*', permission: '*'},
-  ],
-}
 
 const policies = [{
   name: 'admin-lambda',
@@ -104,7 +82,6 @@ const organisations = [{
 
 describe('@lambda', function() {
   this.timeout(90000);
-  let testUser = null;
   let testApp = null;
 
   before(async function() {
@@ -168,14 +145,10 @@ describe('@lambda', function() {
     }, Promise.resolve());
 
     await sleep(1000);
-
-    testUser = await Buttress.Auth.findOrCreateUser(user, authentication);
   });
 
   after(async function() {
     Buttress.setAuthToken(Config.token);
-
-    await Buttress.User.remove(testUser.id);
 
     await Buttress.Token.removeAllUserTokens();
   });
@@ -213,7 +186,7 @@ describe('@lambda', function() {
         }
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
 
       lambdaDB.name.should.equal('hello-world-lambda');
     });
@@ -260,7 +233,7 @@ describe('@lambda', function() {
         }
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
       lambdaDB.name.should.equal('organisation-edit-lambda');
     });
 
@@ -284,7 +257,7 @@ describe('@lambda', function() {
         }
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
       lambdaDB.name.should.equal('api-hello-world-lambda');
 
       await fetch(`${Config.endpoint}/api/v1/lambda/${lambdaDB.id}`, {
@@ -312,7 +285,7 @@ describe('@lambda', function() {
         }
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);  
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);  
       lambdaDB.name.should.equal('api-edit-organisation-lambda');
     });
 
@@ -336,7 +309,7 @@ describe('@lambda', function() {
         }
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
       lambdaDB.name.should.equal('api-add-organisation-lambda');
     });
 
@@ -394,7 +367,7 @@ describe('@lambda', function() {
         }
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda, lambdaAuth);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
       lambdaDB.name.should.equal('name-path-lambda');
     });
 
