@@ -70,14 +70,22 @@ const organisations = [{
   name: 'A&A CLEANING LTD LTD',
   number: '1',
   status: 'ACTIVE',
+  empolyees: ['John Doe'],
 }, {
   name: 'B&ESM VISION LTD LTD',
   number: '2',
   status: 'DISSOLVED',
+  empolyees: ['John Doe'],
 }, {
   name: 'C&H CARE SOLUTIONS LTD',
   number: '3',
   status: 'LIQUIDATION',
+  empolyees: ['John Doe'],
+}, {
+  name: 'LIGHTEN',
+  number: '4',
+  status: 'ACTIVE',
+  empolyees: ['John Doe'],
 }];
 
 describe('@lambda', function() {
@@ -125,6 +133,12 @@ describe('@lambda', function() {
           '__default': null,
           '__required': true,
           '__allowUpdate': true
+        },
+        'empolyees': {
+          '__type': 'array',
+          '__itemtype': 'string',
+          '__required': true,
+          '__allowUpdate': true,
         }
       }
     }];
@@ -289,6 +303,59 @@ describe('@lambda', function() {
       lambdaDB.name.should.equal('api-edit-organisation-lambda');
     });
 
+    it('Should call the api-edit-organisation-lambda lambda to edit all dissolved organisation to active', async function() {
+      const [lambda] = await Buttress.Lambda.search({
+        name: {
+          $eq: 'api-edit-organisation-lambda',
+        }
+      });
+      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambda.id}`, {
+        method: 'GET',
+      });
+      const executionId = await res.json();
+      await sleep(1000);
+
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
+        method: 'GET',
+      });
+      const resJson = await statusRes.json();
+      const status = resJson?.status;
+
+      const companies = await Buttress.getCollection('organisation').search({
+        status: {
+          $eq: 'ACTIVE',
+        },
+      });
+
+      companies.length.should.equal(3);
+      status.should.equal('COMPLETE');
+    });
+
+    it('Should fail executing a lambda that does not have the required access control policy', async function() {
+      const [lambda] = await Buttress.Lambda.search({
+        name: {
+          $eq: 'api-edit-organisation-lambda',
+        }
+      });
+
+      await Buttress.Lambda.setPolicyProperty(lambda.id, {
+        grade: 1,
+      });
+
+      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambda.id}`, {
+        method: 'GET',
+      });
+      const executionId = await res.json();
+      await sleep(1000);
+
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
+        method: 'GET',
+      });
+      const resJson = await statusRes.json();
+      const status = resJson?.status;
+      status.should.equal('ERROR');
+    });
+
     it('Should create a post api endpoint lambda for adding organisations', async function() {
       const lambda = {
         name: 'api-add-organisation-lambda',
@@ -316,20 +383,32 @@ describe('@lambda', function() {
     it('Should call API add organisation lambda to add an organisation', async function() {
       const organisation = {
         status: 'ACTIVE',
-        name: 'DPC',
+        name: 'Data Performance Consultancy',
         number: 10,
+        empolyees: ['John', 'Joe', 'Robert'],
       }
       const [lambda] = await Buttress.Lambda.search({
         name: {
           $eq: 'api-add-organisation-lambda',
         }
       });
+
       const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambda.id}`, {
         method: 'POST',
-        body: organisation,
+        body: JSON.stringify(organisation),
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': (JSON.stringify(organisation).length),
+        },
       });
+
       const executionId = await res.json();
-      await sleep(5000);
+
+      if (typeof executionId !== 'string') {
+        throw new Error('failed to make the API call');
+      }
+
+      await sleep(1000);
 
       const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
         method: 'GET',
@@ -339,7 +418,7 @@ describe('@lambda', function() {
 
       const companies = await Buttress.getCollection('organisation').search({
         name: {
-          $eq: 'DPC',
+          $eq: 'Data Performance Consultancy',
         },
       });
 
@@ -347,19 +426,19 @@ describe('@lambda', function() {
       status.should.equal('COMPLETE');
     });
 
-    it('Should create a name path mutation lambda', async function() {
+    it('Should create a name path mutation lambda and use the cr to change organisation name', async function() {
       const lambda = {
         name: 'name-path-lambda',
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/name-path-mutation.git',
-          currentDeployment : '26d70c08c065b34cccf2cf275c5aaefd5e2d3dbe',
+          currentDeployment : '57defc4f4e15d46fae2927b3dd7adeb573d38714',
           branch: 'main',
           entryPoint: 'index.js',
         },
         trigger: [{
           type: 'PATH_MUTATION',
           pathMutation: {
-            paths: ['organisation.name'],
+            paths: ['organisation.*.name', 'organisation.*.empolyees', 'organisation.empolyees.1'],
           }
         }],
         policyProperties: {
@@ -368,60 +447,42 @@ describe('@lambda', function() {
       };
 
       const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
-      lambdaDB.name.should.equal('name-path-lambda');
-    });
 
-    it('Should call the previously created lambda to execute editing a liquidation organisation name to Test Lambda API', async function() {
-      const [lambda] = await Buttress.Lambda.search({
+      await sleep(1000);
+
+      const [organisation] = await Buttress.getCollection('organisation').search({
         name: {
-          $eq: 'api-edit-organisation-lambda',
-        }
-      });
-      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambda.id}`, {
-        method: 'GET',
-      });
-      const executionId = await res.json();
-      await sleep(5000);
-
-      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
-        method: 'GET',
-      });
-      const resJson = await statusRes.json();
-      const status = resJson?.status;
-
-      const [company] = await Buttress.getCollection('organisation').search({
-        status: {
-          $eq: 'LIQUIDATION',
+          $eq: 'LIGHTEN'
         },
       });
 
-      company.name.should.equal('Test Lambda API');
-      status.should.equal('COMPLETE');
-    });
+      await Buttress.getCollection('organisation').update(organisation.id, [{
+        path: 'name',
+        value: 'DPC LTD'
+      }]);
 
-    it('Should fail executing a lambda that does not have the required access control policy', async function() {
-      const [lambda] = await Buttress.Lambda.search({
+      await sleep(1000);
+      const [testLambdaPathOrg] = await Buttress.getCollection('organisation').search({
         name: {
-          $eq: 'api-edit-organisation-lambda',
+          $eq: 'Test Lambda Path Mutation',
         }
       });
 
-      await Buttress.Lambda.setPolicyProperty(lambda.id, {
-        grade: 1,
+      await Buttress.getCollection('organisation').update(testLambdaPathOrg.id, [{
+        path: 'name',
+        value: 'Lighten'
+      }]);
+
+      await sleep(1000);
+      const testOrg = await Buttress.getCollection('organisation').search({
+        name: {
+          $eq: 'Test Lambda Path Mutation',
+        }
       });
 
-      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambda.id}`, {
-        method: 'GET',
-      });
-      const executionId = await res.json();
-      await sleep(2000);
-
-      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
-        method: 'GET',
-      });
-      const resJson = await statusRes.json();
-      const status = resJson?.status;
-      status.should.equal('ERROR');
+      lambdaDB.name.should.equal('name-path-lambda');
+      testLambdaPathOrg.name.should.equal('Test Lambda Path Mutation');
+      testOrg.length.should.equal(0);
     });
   });
 });
