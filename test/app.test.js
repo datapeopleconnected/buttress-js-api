@@ -17,6 +17,43 @@ Config.init();
 
 const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
+describe('@app', function() {
+  this.timeout(2000);
+  const testApps = [];
+
+  before(async function() {
+    Buttress.setAuthToken(Config.token);
+  });
+
+  after(async function() {
+    Buttress.setAuthToken(Config.token);
+    for await (const testApp of testApps) {
+      await Buttress.App.remove(testApp.id);
+    }
+  });
+
+  describe('Basic', function() {
+    it('should create an app', async function() {
+      const testAppData = {
+        name: 'Test App',
+        type: 'server',
+        version: '1.0.0',
+        authLevel: 2,
+        apiPath: 'test-app',
+      };
+
+      const testApp = await Buttress.App.save(testAppData);
+
+      testApp.name.should.equal(testAppData.name);
+      testApp.version.should.equal(testAppData.version);
+      testApp.apiPath.should.equal(testAppData.apiPath);
+
+      testApps.push(testApp);
+    });
+  });
+
+});
+
 describe('@app-schema', function() {
   this.timeout(2000);
   const testApps = [];
@@ -44,7 +81,6 @@ describe('@app-schema', function() {
         .getSchema()
         .then(function(schema) {
           schema.length.should.equal(Schemas.length);
-          schema[3].collection.should.equal('services');
           schema[3].name.should.equal('service');
           schema[3].properties.appProp1.__type.should.equal('string');
           schema[3].properties.appProp1.__required.should.equal(true);
@@ -72,7 +108,6 @@ describe('@app-schema', function() {
       Buttress.options.schema = [{
         "name": "test",
         "type": "collection",
-        "collection": "tests",
         "properties": {
           "name": {
             "__type": "string",
@@ -94,12 +129,12 @@ describe('@app-schema', function() {
 
     it(`should be able to interact with 'test' schema`, function(done) {
       try {
-        Buttress.getCollection('tests');
+        Buttress.getCollection('test');
       } catch (err) {
         return done(err);
       }
 
-      Buttress.getCollection('tests')
+      Buttress.getCollection('test')
         .getAll()
         .then((tests) => {
           tests.length.should.equal(0);
@@ -142,7 +177,6 @@ describe('@app-schema', function() {
   //     await Buttress.setSchema([{
   //       "name": "car",
   //       "type": "collection",
-  //       "collection": "cars",
   //       "properties": {
   //         "name": {
   //           "__type": "string",
@@ -164,9 +198,9 @@ describe('@app-schema', function() {
 
   //     const testData = {name: 'A red car'};
 
-  //     const res = await Buttress.getCollection('cars').save(testData);
+  //     const res = await Buttress.getCollection('car').save(testData);
 
-  //     await Buttress.getCollection('cars').save({name: 'A blue car'});
+  //     await Buttress.getCollection('car').save({name: 'A blue car'});
 
   //     res.name.should.equal(testData.name);
   //   });
@@ -176,7 +210,7 @@ describe('@app-schema', function() {
   //     Buttress.setAuthToken(testApp.token);
   //     Buttress.setAPIPath(testApp.apiPath);
 
-  //     const res = await Buttress.getCollection('cars').getAll();
+  //     const res = await Buttress.getCollection('car').getAll();
 
   //     res.length.should.equal(2);
   //   });
@@ -192,7 +226,6 @@ describe('@app-relationship', function() {
   const testApp2Schema = [{
     "name": "people",
     "type": "collection",
-    "collection": "people",
     "properties": {
       "name": {
         "__type": "string",
@@ -227,7 +260,6 @@ describe('@app-relationship', function() {
     await Buttress.setSchema([{
       "name": "car",
       "type": "collection",
-      "collection": "cars",
       "properties": {
         "name": {
           "__type": "string",
@@ -240,7 +272,7 @@ describe('@app-relationship', function() {
 
     await sleep(100); // Give it chance for the URL's to be regenerated
 
-    const car = await Buttress.getCollection('cars').save({name: 'A red car'});
+    const car = await Buttress.getCollection('car').save({name: 'A red car'});
 
     Buttress.setAuthToken(Config.token);
 
@@ -271,14 +303,16 @@ describe('@app-relationship', function() {
       token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
       email: 'test@test.com',
       profileUrl: 'http://test.com/thisisatest',
-      profileImgUrl: 'http://test.com/thisisatest.png'
+      profileImgUrl: 'http://test.com/thisisatest.png',
+      policyProperties: {
+        role: 'public',
+      },
     }, {
       authLevel: Buttress.Token.AuthLevel.USER,
       permissions: [{
         route: "*",
         permission: "*"
       }],
-      role: 'public',
       domains: ['test.local.buttressjs.com']
     });
   });
@@ -308,7 +342,7 @@ describe('@app-relationship', function() {
         dataSharing: {
           localApp: "",
           remoteApp: JSON.stringify({
-            cars: [
+            car: [
               "READ"
             ]
           }),
@@ -337,7 +371,7 @@ describe('@app-relationship', function() {
 
         dataSharing: {
           localApp: JSON.stringify({
-            cars: [
+            car: [
               "READ"
             ]
           }),
@@ -365,7 +399,7 @@ describe('@app-relationship', function() {
 
       const res = await Buttress.App.updateDataSharingPolicy(testAppRelationships[0].id, {
         "collections": [
-          "cars"
+          "car"
         ]
       });
       
@@ -377,8 +411,7 @@ describe('@app-relationship', function() {
       testApp2Schema.push({
         "name": "car",
         "type": "collection",
-        "collection": "cars",
-        "remote": "test-app1.cars",
+        "remote": "test-app1.car",
         "properties": {
           "price": {
             "__type": "string",
@@ -402,7 +435,7 @@ describe('@app-relationship', function() {
       people.length.should.equal(1, 'Person count doesn\'t match whats expected');
       people[0].name.should.equal('Jeff');
 
-      const cars = await Buttress.getCollection('cars').getAll();
+      const cars = await Buttress.getCollection('car').getAll();
 
       cars.length.should.equal(1, 'Car count doesn\'t match whats expected');
       cars[0].id.should.equal(people[0].carId);
@@ -414,7 +447,7 @@ describe('@app-relationship', function() {
 
       // await sleep(1000);
 
-      await Buttress.getCollection('cars').save({name: 'A red car'});
+      await Buttress.getCollection('car').save({name: 'A red car'});
     });
   });
 });
