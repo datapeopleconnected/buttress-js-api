@@ -255,7 +255,7 @@ describe('@lambda', function() {
       throw new Error('it did not fail');
     });
 
-    it('Should create a get api endpoint lambda to print hello world', async function() {
+    it('Should create a sync get api endpoint lambda to print hello world and call it using its url', async function() {
       const lambda = {
         name: 'api-hello-world-lambda',
         git: {
@@ -267,8 +267,9 @@ describe('@lambda', function() {
         },
         trigger: [{
           type: 'API_ENDPOINT',
-          api: {
+          apiEndpoint: {
             method: 'GET',
+            url: 'hello/world',
           }
         }],
         policyProperties: {
@@ -279,12 +280,23 @@ describe('@lambda', function() {
       const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
       lambdaDB.name.should.equal('api-hello-world-lambda');
 
-      await fetch(`${Config.endpoint}/api/v1/lambda/${lambdaDB.id}`, {
+      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${testApp.apiPath}/hello/world?token=${testApp.token}`, {
         method: 'GET',
       });
+
+      const parsedRes = await res.json();
+      const executionId = parsedRes.executionId;
+      await sleep(5000);
+
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${testApp.apiPath}/${executionId}?token=${testApp.token}`, {
+        method: 'GET',
+      });
+      const resJson = await statusRes.json();
+      const status = resJson?.status;
+      status.should.equal('COMPLETE');
     });
 
-    it('Should create a get api endpoint lambda to change liquidation organisations name to Test Lambda API', async function() {
+    it('Should create an async get api endpoint lambda to change liquidation organisations name to Test Lambda API', async function() {
       const lambda = {
         name: 'api-edit-organisation-lambda',
         git: {
@@ -296,8 +308,9 @@ describe('@lambda', function() {
         },
         trigger: [{
           type: 'API_ENDPOINT',
-          api: {
+          apiEndpoint: {
             method: 'GET',
+            type: 'ASYNC',
           }
         }],
         policyProperties: {
@@ -315,17 +328,9 @@ describe('@lambda', function() {
           $eq: 'api-edit-organisation-lambda',
         }
       });
-      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambda.id}`, {
+      await fetch(`${Config.endpoint}/api/v1/lambda/${testApp.apiPath}/${lambda.id}?token=${testApp.token}`, {
         method: 'GET',
       });
-      const executionId = await res.json();
-      await sleep(5000);
-
-      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
-        method: 'GET',
-      });
-      const resJson = await statusRes.json();
-      const status = resJson?.status;
 
       const companies = await Buttress.getCollection('organisation').search({
         name: {
@@ -334,7 +339,6 @@ describe('@lambda', function() {
       });
 
       companies.length.should.equal(1);
-      status.should.equal('COMPLETE');
     });
 
     it('Should fail executing a lambda that does not have the required access control policy', async function() {
@@ -348,14 +352,14 @@ describe('@lambda', function() {
         grade: 1,
       });
 
-      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambda.id}`, {
+      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${testApp.apiPath}/${lambda.id}?token=${testApp.token}`, {
         method: 'GET',
       });
 
-      const executionId = await res.json();
-      await sleep(5000);
+      const parsedRes = await res.json();
+      const executionId = parsedRes.executionId;
 
-      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${testApp.apiPath}/${executionId}?token=${testApp.token}`, {
         method: 'GET',
       });
       const resJson = await statusRes.json();
@@ -369,14 +373,15 @@ describe('@lambda', function() {
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-add-data.git',
           branch: 'main',
-          currentDeployment: 'a718685c3640f6edde9ef4f9b3d0ad097400ea93',
+          currentDeployment: '131a6dbac897b2d148fdac34e9d89edd8be2a932',
           entryFile: 'index.js',
           entryPoint: 'execute',
         },
         trigger: [{
           type: 'API_ENDPOINT',
-          api: {
+          apiEndpoint: {
             method: 'POST',
+            type: 'ASYNC',
           }
         }],
         policyProperties: {
@@ -401,7 +406,7 @@ describe('@lambda', function() {
         }
       });
 
-      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${lambda.id}`, {
+      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${testApp.apiPath}/${lambda.id}?token=${testApp.token}`, {
         method: 'POST',
         body: JSON.stringify(organisation),
         headers: {
@@ -410,15 +415,14 @@ describe('@lambda', function() {
         },
       });
 
-      const executionId = await res.json();
+      const parsedRes = await res.json();
+      const executionId = parsedRes.executionId;
 
       if (typeof executionId !== 'string') {
         throw new Error('failed to make the API call');
       }
 
-      await sleep(3000);
-
-      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${executionId}`, {
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${testApp.apiPath}/${executionId}?token=${testApp.token}`, {
         method: 'GET',
       });
       const resJson = await statusRes.json();
@@ -439,7 +443,7 @@ describe('@lambda', function() {
         name: 'name-path-lambda',
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/name-path-mutation.git',
-          currentDeployment : '0d0b2136c1b0514ec1a645d9cc7b0bbc4a26cf55',
+          currentDeployment : '7db386960094fe6dcb575c95e287ff69f204abe0',
           branch: 'main',
           entryFile: 'index.js',
           entryPoint: 'execute',
@@ -457,8 +461,6 @@ describe('@lambda', function() {
 
       const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
 
-      await sleep(5000);
-
       const [organisation] = await Buttress.getCollection('organisation').search({
         name: {
           $eq: 'LIGHTEN'
@@ -470,7 +472,7 @@ describe('@lambda', function() {
         value: 'DPC LTD'
       }]);
 
-      await sleep(1000);
+      await sleep(2000);
       const [testLambdaPathOrg] = await Buttress.getCollection('organisation').search({
         name: {
           $eq: 'Test Lambda Path Mutation',
@@ -482,7 +484,7 @@ describe('@lambda', function() {
         value: 'Lighten ltd'
       }]);
 
-      await sleep(1000);
+      await sleep(2000);
       const testOrg = await Buttress.getCollection('organisation').search({
         name: {
           $eq: 'Test Lambda Path Mutation',
