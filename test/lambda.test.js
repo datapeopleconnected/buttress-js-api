@@ -204,7 +204,7 @@ describe('@lambda', function() {
       try {
         await Buttress.Lambda.createLambda(lambda, authentication);
       } catch(err) {
-        err.message.should.equal('unsupported use of console, use lambdaLog instead');
+        err.message.should.equal('unsupported use of console, use lambda.log instead');
       }
     });
 
@@ -213,7 +213,7 @@ describe('@lambda', function() {
         name: 'organisation-edit-lambda',
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/edit-data.git',
-          currentDeployment : '4e90937cd0d73c74352bd7f036f1a828122f47f3',
+          currentDeployment : 'e91f68c18c85121df186dd5bcb27ca0706fe29d4',
           branch: 'main',
           entryFile: 'organisation-edit.js',
           entryPoint: 'execute',
@@ -261,7 +261,7 @@ describe('@lambda', function() {
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-hello-world.git',
           branch: 'main',
-          currentDeployment: '13a84f1b6edee517262f8a63c3df6d99c0aebbf8',
+          currentDeployment: '38075abf8ea62cf4f68d53c9911dba68bd52fa6e',
           entryFile: 'index.js',
           entryPoint: 'execute',
         },
@@ -302,7 +302,7 @@ describe('@lambda', function() {
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-edit-data.git',
           branch: 'main',
-          currentDeployment: '11098121029d3803d8dad00c22bfa6c19ad43ea1',
+          currentDeployment: '054f7e80279f0f06221d245d2f90ce9faf8a7648',
           entryFile: 'index.js',
           entryPoint: 'execute',
         },
@@ -310,7 +310,7 @@ describe('@lambda', function() {
           type: 'API_ENDPOINT',
           apiEndpoint: {
             method: 'GET',
-            type: 'ASYNC',
+            type: 'SYNC',
           }
         }],
         policyProperties: {
@@ -373,7 +373,7 @@ describe('@lambda', function() {
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-add-data.git',
           branch: 'main',
-          currentDeployment: '131a6dbac897b2d148fdac34e9d89edd8be2a932',
+          currentDeployment: 'e47ba5b7575582d0d78f9611f127979b6f47b570',
           entryFile: 'index.js',
           entryPoint: 'execute',
         },
@@ -381,7 +381,7 @@ describe('@lambda', function() {
           type: 'API_ENDPOINT',
           apiEndpoint: {
             method: 'POST',
-            type: 'ASYNC',
+            type: 'SYNC',
           }
         }],
         policyProperties: {
@@ -443,7 +443,7 @@ describe('@lambda', function() {
         name: 'name-path-lambda',
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/name-path-mutation.git',
-          currentDeployment : '7db386960094fe6dcb575c95e287ff69f204abe0',
+          currentDeployment : '107c6c5cea37aee288ab499b18869e6e117a6417',
           branch: 'main',
           entryFile: 'index.js',
           entryPoint: 'execute',
