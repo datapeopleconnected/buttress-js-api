@@ -425,7 +425,7 @@ describe('@app-relationship', function() {
     });
 
     it('should be able access data from App 1 using a App 2 token', async function() {
-      const [{value}] = testApp2User.tokens;
+      const value = testApp2User.token;
 
       Buttress.setAuthToken(value);
       Buttress.setAPIPath('test-app2');
