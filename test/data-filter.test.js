@@ -64,7 +64,7 @@ describe('@data-filter', function() {
 
     const addPostBoards = () => {
       return _testUsers.map((user) => {
-        const token = user.tokens[0];
+        const token = user.token;
         return Buttress.getCollection('boards').save({
           name: token.role,
           subscribed: [user.id],
