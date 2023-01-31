@@ -184,7 +184,7 @@ describe('@lambda', function() {
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/hello-world.git',
           branch: 'main',
-          currentDeployment: '54f2fd5f0c0e889881f0a2af40f9d69240b47b6b',
+          hash: '54f2fd5f0c0e889881f0a2af40f9d69240b47b6b',
           entryFile: 'index.js',
           entryPoint: 'execute',
         },
@@ -213,7 +213,7 @@ describe('@lambda', function() {
         name: 'organisation-edit-lambda',
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/edit-data.git',
-          currentDeployment : 'e91f68c18c85121df186dd5bcb27ca0706fe29d4',
+          hash : 'e91f68c18c85121df186dd5bcb27ca0706fe29d4',
           branch: 'main',
           entryFile: 'organisation-edit.js',
           entryPoint: 'execute',
@@ -261,7 +261,7 @@ describe('@lambda', function() {
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-hello-world.git',
           branch: 'main',
-          currentDeployment: '38075abf8ea62cf4f68d53c9911dba68bd52fa6e',
+          hash: '38075abf8ea62cf4f68d53c9911dba68bd52fa6e',
           entryFile: 'index.js',
           entryPoint: 'execute',
         },
@@ -302,7 +302,7 @@ describe('@lambda', function() {
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-edit-data.git',
           branch: 'main',
-          currentDeployment: '054f7e80279f0f06221d245d2f90ce9faf8a7648',
+          hash: '054f7e80279f0f06221d245d2f90ce9faf8a7648',
           entryFile: 'index.js',
           entryPoint: 'execute',
         },
@@ -373,7 +373,7 @@ describe('@lambda', function() {
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-add-data.git',
           branch: 'main',
-          currentDeployment: 'e47ba5b7575582d0d78f9611f127979b6f47b570',
+          hash: 'e47ba5b7575582d0d78f9611f127979b6f47b570',
           entryFile: 'index.js',
           entryPoint: 'execute',
         },
@@ -443,7 +443,7 @@ describe('@lambda', function() {
         name: 'name-path-lambda',
         git: {
           url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/name-path-mutation.git',
-          currentDeployment : '107c6c5cea37aee288ab499b18869e6e117a6417',
+          hash : '107c6c5cea37aee288ab499b18869e6e117a6417',
           branch: 'main',
           entryFile: 'index.js',
           entryPoint: 'execute',
