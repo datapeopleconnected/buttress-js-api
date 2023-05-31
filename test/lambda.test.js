@@ -34,10 +34,10 @@ const policies = [{
     },
   },
   config: [{
-    endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+    endpoints: ['%ALL%'],
     query: [{
-      schema: ['ALL'],
-      access: 'FULL_ACCESS',
+      schema: ['%ALL%'],
+      access: '%FULL_ACCESS%',
     }],
   }],
 }, {
@@ -56,14 +56,6 @@ const policies = [{
       },
     }],
   }],
-}];
-
-const allowList = [{
-  packageName: '@buttress/api',
-  packageVersion: '^3.0.0-12',
-}, {
-  packageName: 'passport',
-  packageVersion: '^0.6.0',
 }];
 
 const organisations = [{
@@ -100,14 +92,14 @@ describe('@lambda', function() {
     if (!testApp) {
       testApp = await Buttress.App.save({
         name: 'Lambda Test App',
-        type: 'server',
+        type: 'app',
         authLevel: 2,
         apiPath: 'lambda-test-app',
       });
     } else {
       // Fetch token and attach
       const tokens = await Buttress.Token.getAll();
-      const appToken = tokens.find((t) => t.type === 'app' && t._app === testApp.id);
+      const appToken = tokens.find((t) => t.type === 'app' && t._appId === testApp.id);
       if (!appToken) throw new Error('Found app but unable to find app token');
       testApp.token = appToken.value;
     }
@@ -147,11 +139,14 @@ describe('@lambda', function() {
     Buttress.setAPIPath('lambda-test-app');
 
     await Buttress.setSchema(schemas);
-    await Buttress.App.setAllowList(allowList);
-    await Buttress.App.updateAllowList([{
-      packageName: 'passport-google-oauth20',
-      packageVersion: '^2.0.0',
-    }]);
+    await Buttress.App.setPolicyPropertyList({
+      adminAccess: [true],
+      grade: [1],
+    });
+    await Buttress.App.updatePolicyPropertyList({
+      adminAccess: [true],
+      grade: [1],
+    });
 
     await organisations.reduce(async (prev, next) => {
       await prev;
