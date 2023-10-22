@@ -9,9 +9,9 @@
  *
  */
 
-const Sugar = require('sugar');
-const uuid = require('uuid');
-const ObjectId = require('bson-objectid');
+import Sugar from 'sugar';
+import uuid from 'uuid';
+import ObjectId from 'bson-objectid';
 
 const Errors = {
   NotYetInitiated: class extends Error {
@@ -340,7 +340,7 @@ const backOff = (attempt) => {
   return sleep(delay + (delay * 0.2 * Math.random()));
 };
 
-module.exports = {
+export default {
   Path,
   Schema,
   Errors,

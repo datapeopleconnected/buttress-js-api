@@ -9,13 +9,13 @@
  *
  */
 
-const Helpers = require('./helpers');
-const Schema = require('./schema.js');
+import Helpers from './helpers';
+import Schema from './helpers/schema';
 
 /**
  * @class AppDataSharing
  */
-class AppDataSharing extends Schema {
+export default class AppDataSharing extends Schema {
   /**
    * Instance of AppDataSharing
    * @param {object} ButtressOptions
@@ -83,5 +83,3 @@ class AppDataSharing extends Schema {
     return this._request('post', `deactivate/${dataSharingId}`, options);
   };
 }
-
-module.exports = (ButtressOptions) => new AppDataSharing(ButtressOptions);

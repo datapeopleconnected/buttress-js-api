@@ -7,13 +7,13 @@
  *
  */
 
-const Schema = require('./schema.js');
-const Helpers = require('./helpers');
+import Helpers from './helpers';
+import Schema from './helpers/schema';
 
 /**
 * @class Policy
 */
-class Policy extends Schema {
+export default class Policy extends Schema {
   /**
   * Instance of Policy
   * @param {object} ButtressOptions
@@ -63,4 +63,3 @@ class Policy extends Schema {
     return this._request('post', 'sync', options);
   };
 }
-module.exports = (ButtressOptions) => new Policy(ButtressOptions);

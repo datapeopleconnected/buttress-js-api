@@ -9,13 +9,13 @@
  *
  */
 
-const Helpers = require('./helpers');
-const Schema = require('./schema.js');
+import Helpers from './helpers';
+import Schema from './helpers/schema';
 
 /**
  * @class App
  */
-class App extends Schema {
+export default class App extends Schema {
   /**
    * Instance of App
    * @param {object} ButtressOptions
@@ -101,5 +101,3 @@ class App extends Schema {
     return this._request('get', path, options);
   }
 }
-
-module.exports = (ButtressOptions) => new App(ButtressOptions);

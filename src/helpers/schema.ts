@@ -9,14 +9,15 @@
  *
  */
 
-const parse = require('url-parse');
-const Helpers = require('./helpers');
-const fetch = require('cross-fetch');
+import Helpers from './';
+
+import parse from 'url-parse';
+import fetch from 'cross-fetch';
 
 /**
  * @class Schema
  */
-class Schema {
+export default class Schema {
   /**
    * Instance of Schema
    * @param {object} collection
@@ -404,5 +405,3 @@ class Schema {
     return this._request('search', 'count', options);
   }
 }
-
-module.exports = Schema;

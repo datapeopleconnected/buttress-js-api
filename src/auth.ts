@@ -9,13 +9,13 @@
  *
  */
 
-const Helpers = require('./helpers');
-const Schema = require('./schema.js');
+import Helpers from './helpers';
+import Schema from './helpers/schema';
 
 /**
  * @class Auth
  */
-class Auth extends Schema {
+export default class Auth extends Schema {
   /**
    * Instance of Auth
    * @param {object} ButtressOptions
@@ -88,5 +88,3 @@ class Auth extends Schema {
       }));
   };
 }
-
-module.exports = (ButtressOptions) => new Auth(ButtressOptions);

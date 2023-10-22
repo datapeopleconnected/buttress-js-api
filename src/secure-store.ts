@@ -7,13 +7,13 @@
  *
  */
 
-const Helpers = require('./helpers');
-const Schema = require('./schema.js');
+import Helpers from './helpers';
+import Schema from './helpers/schema';
 
 /**
  * @class SecureStore
  */
-class SecureStore extends Schema {
+export default class SecureStore extends Schema {
   /**
    * Instance of SecureStore
    * @param {object} ButtressOptions
@@ -63,4 +63,3 @@ class SecureStore extends Schema {
     return this._secureStoreInterface(secureStore);
   }
 }
-module.exports = (ButtressOptions) => new SecureStore(ButtressOptions);

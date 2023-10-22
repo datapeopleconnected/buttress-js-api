@@ -7,13 +7,13 @@
  *
  */
 
-const Helpers = require('./helpers');
-const Schema = require('./schema.js');
+import Helpers from './helpers';
+import Schema from './helpers/schema';
 
 /**
  * @class User
  */
-class User extends Schema {
+export default class User extends Schema {
   /**
    * Instance of User
    * @param {object} ButtressOptions
@@ -112,5 +112,3 @@ class User extends Schema {
     return this._request('put', `${userId}/clearPolicyProperty`, options);
   }
 }
-
-module.exports = (ButtressOptions) => new User(ButtressOptions);

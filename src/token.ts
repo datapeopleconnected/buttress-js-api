@@ -9,13 +9,13 @@
  *
  */
 
-const Helpers = require('./helpers');
-const Schema = require('./schema.js');
+import Helpers from './helpers';
+import Schema from './helpers/schema';
 
 /**
  * @class Token
  */
-class Token extends Schema {
+export default class Token extends Schema {
   /**
    * Instance of Token
    * @param {object} ButtressOptions
@@ -65,5 +65,3 @@ class Token extends Schema {
     return this._request('put', `roles`, options);
   };
 }
-
-module.exports = (ButtressOptions) => new Token(ButtressOptions);

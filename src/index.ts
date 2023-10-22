@@ -9,40 +9,80 @@
  *
  */
 
-const Sugar = require('sugar');
-const URL = require('url-parse');
+import Sugar from 'sugar';
+import URL from 'url-parse';
 
-const Helpers = require('./helpers');
-const Schema = require(`./schema.js`);
+import Helpers from './helpers';
+import Schema from './helpers/schema';
 
-const CoreModules = {
-  App: require('./app.js'),
-  Auth: require('./auth.js'),
-  Lambda: require('./lambda.js'),
-  Policy: require('./policy.js'),
-  Token: require('./token.js'),
-  User: require('./user.js'),
-  SecureStore: require('./secure-store.js'),
-  AppDataSharing: require('./app-data-sharing.js'),
+import App from './app';
+import Auth from './auth';
+import Lambda from './lambda';
+import Policy from './policy';
+import Token from './token';
+import User from './user';
+import SecureStore from './secure-store';
+import AppDataSharing from './app-data-sharing';
+import URLParse from 'url-parse';
+
+export interface ButtressOptions {
+  buttressUrl: string,
+  appToken: string,
+  apiPath: string,
+  schema?: any[],
+  roles?: any,
+  version: number,
+  update?: boolean,
+  allowUnauthorized?: boolean,
+}
+export interface ButtressOptionsInternal {
+  buttressUrl?: string;
+  authToken?: string;
+  compiledSchema?: any;
+  isolated: boolean,
+  apiPath: string;
+  schema: any[];
+  roles: any;
+  version: number;
+  update: boolean;
+  allowUnauthorized: boolean;
+  url?: URLParse<string>;
+}
+
+type Modules = {
+  [key: string]: Schema;
 };
 
 /**
  * @class Buttress
  */
 class Buttress {
-  /**
-   * Constructor for buttress
-   */
-  constructor() {
-    this.options = {
-      buttressUrl: false,
-      authToken: false,
-      compiledSchema: null,
-    };
+  App?: App;
+  Auth?: Auth;
+  Lambda?: Lambda;
+  Policy?: Policy;
+  Token?: Token;
+  User?: User;
+  SecureStore?: SecureStore;
+  AppDataSharing?: AppDataSharing;
 
-    this._modules = new WeakMap();
-    this._initialised = false;
-  }
+  options: ButtressOptionsInternal = {
+    isolated: false,
+    apiPath: '',
+    schema: [],
+    roles: {},
+    version: 1,
+    update: false,
+    allowUnauthorized: false
+  };
+
+  private __coreModules = { App, AppDataSharing, Auth, Lambda, Policy, Token, User, SecureStore };
+
+  private __modules: Modules = {};
+
+  private __initialised = false;
+
+  constructor() {}
 
   /**
    * @return {object} Buttress Instance
@@ -57,64 +97,40 @@ class Buttress {
    * @param {boolean} isolated
    * @return {promise}
    */
-  init(options, isolated = false) {
-    if (this._initialised === true) {
-      return;
-    }
-    this._initialised = true;
-    this.options.isolated = isolated;
-    this.options.buttressUrl = options.buttressUrl || false;
-    this.options.apiPath = options.apiPath || '';
-    this.options.authToken = options.appToken || false;
-    this.options.schema = options.schema || [];
-    this.options.roles = options.roles || {};
-    this.options.version = options.version || 1;
-    // If this flag is passed we will update the schema / role on init.
-    this.options.update = options.update || false;
+  async init(options: ButtressOptions, isolated = false) {
+    if (this.__initialised === true) return;
 
-    this.options.allowUnauthorized = options.allowUnauthorized || false;
+    this.__initialised = true;
+    this.options.isolated = isolated;
+
+    if (options.buttressUrl) this.options.buttressUrl = options.buttressUrl;
+    if (options.apiPath) this.options.apiPath = options.apiPath;
+    if (options.appToken) this.options.authToken = options.appToken;
+    if (options.schema) this.options.schema = options.schema;
+    if (options.roles) this.options.roles = options.roles;
+    if (options.version) this.options.version = options.version;
+    if (options.update) this.options.update = options.update;
+    if (options.allowUnauthorized) this.options.allowUnauthorized = options.allowUnauthorized;
 
     if (this.options.allowUnauthorized) {
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    //   axios.configure({
-    //     rejectUnauthorized: false,
-    //   });
     }
-
-    if (!this.options.buttressUrl) {
-      throw new Error('Missing required parameter: buttressUrl');
-    }
-    if (!this.options.apiPath) {
-      throw new Error('Missing required parameter: apiPath');
-    }
-    if (!this.options.version) {
-      throw new Error('Missing required parameter: version');
-    }
-    if (!this.options.authToken) {
-      throw new Error('Missing required paramter: authToken');
-    }
-
-    this.options.version = String(this.options.version);
 
     // This line is for testing
     this.options.url = new URL(options.buttressUrl);
 
     this._generateURLs();
 
-    return this._initCoreModules()
-      .then(() => {
-        if (this.options.update) return this.initSchema();
+    this._initCoreModules();
 
-        return Promise.resolve();
-      })
-      .then(() => this.getCollection('app').getSchema())
-      .then((schema) => {
-        this.options.compiledSchema = schema;
+    if (this.options.update) await this.initSchema();
 
-        schema.forEach((s) => this.getCollection(s.name));
+    this.options.compiledSchema = await this.getCollection('app').getSchema();
 
-        return true;
-      });
+    // Inflate schema locally
+    this.options.compiledSchema.forEach((s) => this.getCollection(s.name));
+
+    return true;
   }
 
   /**
@@ -251,12 +267,15 @@ class Buttress {
    * Init core modules
    * @return {promise}
    */
-  async _initCoreModules() {
-    // const modules = CoreModules._loadModules(this.options);
-    for await (const moduleKey of Object.keys(CoreModules)) {
-      this._modules[moduleKey] = CoreModules[moduleKey](this.options);
-      _defineModuleGetter(this, moduleKey);
-    }
+  _initCoreModules() {
+    this.App = new App(this.options);
+    this.Auth = new Auth(this.options);
+    this.Lambda = new Lambda(this.options);
+    this.Policy = new Policy(this.options);
+    this.Token = new Token(this.options);
+    this.User = new User(this.options);
+    this.SecureStore = new SecureStore(this.options);
+    this.AppDataSharing = new AppDataSharing(this.options);
   }
 
   /**
@@ -267,14 +286,14 @@ class Buttress {
   _addModule(mod) {
     const split = Sugar.String.capitalize(mod, true, true).split('-');
     if (split.length === 1) {
-      this._modules[split[0]] = this._loadModule(mod, `${__dirname}/${mod}.js`);
+      this.__modules[split[0]] = this._loadModule(mod, `${__dirname}/${mod}.js`);
       _defineModuleGetter(this, split[0]);
     } else {
-      if (!this._modules[split[0]]) {
-        this._modules[split[0]] = {};
+      if (!this.__modules[split[0]]) {
+        this.__modules[split[0]] = {};
         _defineModuleGetter(this, split[0]);
       }
-      this._modules[split[0]][split[1]] = this._loadModule(mod, `${__dirname}/${mod}.js`);
+      this.__modules[split[0]][split[1]] = this._loadModule(mod, `${__dirname}/${mod}.js`);
     }
   }
 
@@ -295,10 +314,10 @@ class Buttress {
   _findModule(mod) {
     const split = Sugar.String.capitalize(mod, true, true).split('-');
     if (split.length === 1) {
-      return this._modules[split[0]];
+      return this.__modules[split[0]];
     }
 
-    return this._modules[split[0]][split[1]];
+    return this.__modules[split[0]][split[1]];
   }
 
   /**
@@ -307,12 +326,12 @@ class Buttress {
    * @return {object} collection
    */
   getCollection(collection) {
-    if (!this._initialised) {
+    if (!this.__initialised) {
       throw new Error('Unable to getCollection before Buttress is initialised');
     }
 
     const mod = Sugar.String.capitalize(collection, true, true);
-    if (!this._modules[mod]) {
+    if (!this.__modules[mod]) {
       this._addModule(collection);
     }
 
@@ -329,7 +348,7 @@ function _defineModuleGetter(buttress, prop) {
     enumerable: false,
     configurable: false,
     get: () => {
-      return buttress._modules[prop];
+      return buttress.__modules[prop];
     },
   });
 }

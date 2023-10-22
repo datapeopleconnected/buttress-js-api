@@ -7,13 +7,13 @@
  *
  */
 
-const Schema = require('./schema.js');
-const Helpers = require('./helpers');
+import Helpers from './helpers';
+import Schema from './helpers/schema';
 
 /**
  * @class Lambda
  */
-class Lambda extends Schema {
+export default class Lambda extends Schema {
   /**
    * Instance of Lambda
    * @param {object} ButtressOptions
@@ -79,4 +79,3 @@ class Lambda extends Schema {
     return this._request('put', `${lambdaId}/clearPolicyProperty`, options);
   }
 }
-module.exports = (ButtressOptions) => new Lambda(ButtressOptions);
