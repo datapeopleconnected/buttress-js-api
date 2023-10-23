@@ -21,7 +21,7 @@ export default class AppDataSharing extends Schema {
    * @param {object} ButtressOptions
    */
   constructor(ButtressOptions) {
-    super('appDataSharing', ButtressOptions, true);
+    super('app-data-sharing', ButtressOptions, true);
   }
 
   /**

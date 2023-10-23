@@ -54,7 +54,7 @@ export default class Lambda extends Schema {
   setPolicyProperty(lambdaId, data, options = {}) {
     options = Helpers.checkOptions(options, this.token);
     if (data) options.data = data;
-    return this._request('put', `${lambdaId}/policyProperty`, options);
+    return this._request('put', `${lambdaId}/policy-property`, options);
   }
 
   /**
@@ -66,7 +66,7 @@ export default class Lambda extends Schema {
   updatePolicyProperty(lambdaId, data, options = {}) {
     options = Helpers.checkOptions(options, this.token);
     if (data) options.data = data;
-    return this._request('put', `${lambdaId}/updatePolicyProperty`, options);
+    return this._request('put', `${lambdaId}/update-policy-property`, options);
   }
 
   /**
@@ -76,6 +76,6 @@ export default class Lambda extends Schema {
    */
   clearPolicyProperty(lambdaId, options = {}) {
     options = Helpers.checkOptions(options, this.token);
-    return this._request('put', `${lambdaId}/clearPolicyProperty`, options);
+    return this._request('put', `${lambdaId}/clear-policy-property`, options);
   }
 }

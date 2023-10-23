@@ -10,6 +10,8 @@
 import Helpers from './helpers';
 import Schema from './helpers/schema';
 
+import ButtressOptionsInternal from './types/ButtressOptionsInternal';
+
 /**
  * @class User
  */
@@ -18,7 +20,7 @@ export default class User extends Schema {
    * Instance of User
    * @param {object} ButtressOptions
    */
-  constructor(ButtressOptions) {
+  constructor(ButtressOptions: ButtressOptionsInternal) {
     super('user', ButtressOptions, true);
   }
 
@@ -75,7 +77,7 @@ export default class User extends Schema {
   setPolicyProperty(userId, data, options = {}) {
     options = Helpers.checkOptions(options, this.token);
     if (data) options.data = data;
-    return this._request('put', `${userId}/policyProperty`, options);
+    return this._request('put', `${userId}/policy-property`, options);
   }
 
   /**
@@ -87,7 +89,7 @@ export default class User extends Schema {
   updatePolicyProperty(userId, data, options = {}) {
     options = Helpers.checkOptions(options, this.token);
     if (data) options.data = data;
-    return this._request('put', `${userId}/updatePolicyProperty`, options);
+    return this._request('put', `${userId}/update-policy-property`, options);
   }
 
   /**
@@ -99,7 +101,7 @@ export default class User extends Schema {
   removePolicyProperty(userId, data, options = {}) {
     options = Helpers.checkOptions(options, this.token);
     if (data) options.data = data;
-    return this._request('put', `${userId}/removePolicyProperty`, options);
+    return this._request('put', `${userId}/remove-policy-property`, options);
   }
 
   /**
@@ -109,6 +111,6 @@ export default class User extends Schema {
    */
   clearPolicyProperty(userId, options = {}) {
     options = Helpers.checkOptions(options, this.token);
-    return this._request('put', `${userId}/clearPolicyProperty`, options);
+    return this._request('put', `${userId}/clear-policy-property`, options);
   }
 }

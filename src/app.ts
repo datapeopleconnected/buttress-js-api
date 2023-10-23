@@ -58,7 +58,7 @@ export default class App extends Schema {
     options = Helpers.checkOptions(options, this.token);
     if (list) options.data = list;
 
-    let path = 'policyPropertyList/false';
+    let path = 'policy-property-list/false';
     if (appId) path = `${path}/${appId}`;
     return this._request('put', path, options);
   }
@@ -73,21 +73,10 @@ export default class App extends Schema {
     options = Helpers.checkOptions(options, this.token);
     if (list) options.data = list;
 
-    let path = 'policyPropertyList/true';
+    let path = 'policy-property-list/true';
     if (appId) path = `${path}/${appId}`;
     return this._request('put', path, options);
   }
-
-  /**
-  * @param {object} roles
-  * @param {object} [options={}] options
-  * @return {promise} - response
-  */
-  updateRoles(roles, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (roles) options.data = roles;
-    return this._request('put', 'roles', options);
-  };
 
   /**
    * @param {object} apiPath
@@ -97,7 +86,7 @@ export default class App extends Schema {
   getPolicyPropertiesList(apiPath, options={}) {
     options = Helpers.checkOptions(options, this.token);
     let path = `policyPropertyList`;
-    if (apiPath) path = `policyPropertyList/${apiPath}`;
+    if (apiPath) path = `policy-property-list/${apiPath}`;
     return this._request('get', path, options);
   }
 }
