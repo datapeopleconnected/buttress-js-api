@@ -13,6 +13,15 @@ import Sugar from 'sugar';
 import uuid from 'uuid';
 import ObjectId from 'bson-objectid';
 
+interface Options {
+  params: any,
+  data: any
+}
+
+interface Schema {
+
+}
+
 const Errors = {
   NotYetInitiated: class extends Error {
     /**
@@ -64,7 +73,7 @@ class Path {
    * @param {string} path
    * @return {*} normalizedPath
    */
-  static normalize(path) {
+  static normalize(path: string | string[]) {
     if (Array.isArray(path)) {
       const parts = [];
       for (let i = 0; i < path.length; i++) {
@@ -83,7 +92,7 @@ class Path {
    * @param {*} path
    * @return {array} splitPath
    */
-  static split(path) {
+  static split(path: string | string[]) {
     if (Array.isArray(path)) {
       return Path.normalize(path).split('.');
     }
@@ -93,10 +102,9 @@ class Path {
   /**
    * @param {object} root
    * @param {string} path
-   * @param {object} info
    * @return {*} value
    */
-  static get(root, path, info) {
+  static get(root: any, path: string) {
     let prop = root;
     const parts = Path.split(path);
 
@@ -108,9 +116,6 @@ class Path {
       prop = prop[part];
     }
 
-    if (info) {
-      info.path = parts.join('.');
-    }
     return prop;
   }
 }
@@ -143,7 +148,7 @@ class Schema {
    * @param {string} path
    * @return {object} schemaPart
    */
-  static createFromPath(schema, path) {
+  static createFromPath(schema, path: string) {
     const subSchema = Schema.getSubSchema(schema, path);
     if (!subSchema) {
       return false;
@@ -157,7 +162,7 @@ class Schema {
    * @param {string} path
    * @return {object} schemaPart
    */
-  static getSubSchema(schema, path) {
+  static getSubSchema(schema, path: string) {
     return path.split('.').reduce((out, path) => {
       if (!out) return false; // Skip all paths if we hit a false
 
@@ -313,18 +318,17 @@ class Schema {
   }
 }
 
-const _checkOptions = (options, defaultToken) => {
+const _checkOptions = (options: Options, defaultToken: string) => {
   options = Object.assign({}, options);
 
   if (!options) {
-    options = {};
+    options = {
+      params: {},
+      data: {},
+    };
   }
-  if (!options.params) {
-    options.params = {};
-  }
-  if (!options.data) {
-    options.data = {};
-  }
+  if (!options.params) options.params = {};
+  if (!options.data) options.data = {};
   if (!options.params.token) {
     options.params.token = defaultToken;
   }
@@ -332,10 +336,10 @@ const _checkOptions = (options, defaultToken) => {
   return options;
 };
 
-const sleep = (ms) => {
+const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
-const backOff = (attempt) => {
+const backOff = (attempt: number) => {
   const delay = Math.pow(2, attempt) * 200;
   return sleep(delay + (delay * 0.2 * Math.random()));
 };

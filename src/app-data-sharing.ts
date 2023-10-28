@@ -12,6 +12,8 @@
 import Helpers from './helpers';
 import Schema from './helpers/schema';
 
+import ButtressOptionsInternal from './types/ButtressOptionsInternal';
+
 /**
  * @class AppDataSharing
  */
@@ -20,7 +22,7 @@ export default class AppDataSharing extends Schema {
    * Instance of AppDataSharing
    * @param {object} ButtressOptions
    */
-  constructor(ButtressOptions) {
+  constructor(ButtressOptions: ButtressOptionsInternal) {
     super('app-data-sharing', ButtressOptions, true);
   }
 
