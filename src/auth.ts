@@ -9,7 +9,7 @@
  *
  */
 
-import Helpers from './helpers';
+import Helpers, {RequestOptionsIn} from './helpers';
 import Schema from './helpers/schema';
 
 /**
@@ -20,7 +20,7 @@ export default class Auth extends Schema {
    * Instance of Auth
    * @param {object} ButtressOptions
    */
-  constructor(ButtressOptions) {
+  constructor(ButtressOptions: ButtressOptionsInternal) {
     super('auth', ButtressOptions, true);
 
     this.User = require('./user.js')(ButtressOptions);
@@ -78,10 +78,10 @@ export default class Auth extends Schema {
    * @param {Object} appAuth - app auth details
    * @return {Promise} - resolves to the serialized User object
    */
-  addAuthToUser(userId, appAuth, options) {
-    options = Helpers.checkOptions(options, this.token);
-    if (appAuth) options.data = appAuth;
-    return this._request('put', `${userId}/auth`, options)
+  addAuthToUser(userId, appAuth, options: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (appAuth) opts.data = appAuth;
+    return this._request('put', `${userId}/auth`, opts)
       .then((response) => Object.assign(response.data, {
         buttressId: userId,
         buttressAuthToken: response.data.authToken,

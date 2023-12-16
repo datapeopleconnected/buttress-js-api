@@ -18,7 +18,7 @@ export default class Lambda extends Schema {
    * Instance of Lambda
    * @param {object} ButtressOptions
    */
-  constructor(ButtressOptions) {
+  constructor(ButtressOptions: ButtressOptionsInternal) {
     super('lambda', ButtressOptions, true);
   }
 

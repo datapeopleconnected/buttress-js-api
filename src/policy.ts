@@ -18,7 +18,7 @@ export default class Policy extends Schema {
   * Instance of Policy
   * @param {object} ButtressOptions
   */
-  constructor(ButtressOptions) {
+  constructor(ButtressOptions: ButtressOptionsInternal) {
     super('policy', ButtressOptions, true);
   }
 

@@ -18,7 +18,7 @@ export default class SecureStore extends Schema {
    * Instance of SecureStore
    * @param {object} ButtressOptions
    */
-  constructor(ButtressOptions) {
+  constructor(ButtressOptions: ButtressOptionsInternal) {
     super('secure-store', ButtressOptions, true);
   }
 

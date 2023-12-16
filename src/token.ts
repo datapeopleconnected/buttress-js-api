@@ -20,7 +20,7 @@ export default class Token extends Schema {
    * Instance of Token
    * @param {object} ButtressOptions
    */
-  constructor(ButtressOptions) {
+  constructor(ButtressOptions: ButtressOptionsInternal) {
     super('token', ButtressOptions, true);
   }
 

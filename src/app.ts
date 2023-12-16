@@ -9,18 +9,22 @@
  *
  */
 
-import Helpers from './helpers';
-import Schema from './helpers/schema';
+import Helpers, {RequestOptionsIn} from './helpers';
+import Base from './helpers/schema';
+
+import ButtressOptionsInternal from './types/ButtressOptionsInternal';
+
+import Schema from './model/Schema';
 
 /**
  * @class App
  */
-export default class App extends Schema {
+export default class App extends Base {
   /**
    * Instance of App
    * @param {object} ButtressOptions
    */
-  constructor(ButtressOptions) {
+  constructor(ButtressOptions: ButtressOptionsInternal) {
     super('app', ButtressOptions, true);
   }
 
@@ -30,21 +34,20 @@ export default class App extends Schema {
    * @return {promise} - response
    */
   getSchema(rawSchema = false, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (rawSchema) {
-      options.params.rawSchema = true;
-    }
-    return this._request('get', 'schema', options);
+    const opts = Helpers.checkOptions(options, this.token);
+    if (rawSchema) opts.params.rawSchema = true;
+    return this._request('get', 'schema', opts);
   };
 
   /**
   * @param {array} schema
   * @param {object} [options={}] options
   */
-  async updateSchema(schema, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (schema) options.data = schema;
-    const res = await this._request('put', 'schema', options);
+  async updateSchema(schema: Schema, options = {}) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (schema) opts.data = schema;
+    const res = await this._request('put', 'schema', opts);
+
     this._ButtressOptions.compiledSchema = res;
   };
 
@@ -55,12 +58,12 @@ export default class App extends Schema {
   * @return {promise} - response
   */
   setPolicyPropertyList(list, appId = null, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (list) options.data = list;
+    const opts = Helpers.checkOptions(options, this.token);
+    if (list) opts.data = list;
 
     let path = 'policy-property-list/false';
     if (appId) path = `${path}/${appId}`;
-    return this._request('put', path, options);
+    return this._request('put', path, opts);
   }
 
   /**
@@ -70,12 +73,12 @@ export default class App extends Schema {
   * @return {promise} - response
   */
   updatePolicyPropertyList(list, appId = null, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (list) options.data = list;
+    const opts = Helpers.checkOptions(options, this.token);
+    if (list) opts.data = list;
 
     let path = 'policy-property-list/true';
     if (appId) path = `${path}/${appId}`;
-    return this._request('put', path, options);
+    return this._request('put', path, opts);
   }
 
   /**
@@ -83,10 +86,10 @@ export default class App extends Schema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  getPolicyPropertiesList(apiPath, options={}) {
-    options = Helpers.checkOptions(options, this.token);
+  getPolicyPropertiesList(apiPath: string, options={}) {
+    const opts = Helpers.checkOptions(options, this.token);
     let path = `policyPropertyList`;
     if (apiPath) path = `policy-property-list/${apiPath}`;
-    return this._request('get', path, options);
+    return this._request('get', path, opts);
   }
 }

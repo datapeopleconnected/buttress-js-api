@@ -13,13 +13,23 @@ import Sugar from 'sugar';
 import uuid from 'uuid';
 import ObjectId from 'bson-objectid';
 
-interface Options {
-  params: any,
+export interface RequestOptions {
+  method: string
+  params: {
+    [key: string]: any
+    token: string
+  };
   data: any
+  body: any
+  headers: any
+  stream: boolean
 }
-
-interface Schema {
-
+export interface RequestOptionsIn {
+  params?: {
+    [key: string]: any
+    token?: string
+  };
+  data?: any;
 }
 
 const Errors = {
@@ -27,7 +37,7 @@ const Errors = {
     /**
      * @param {Any} message
      */
-    constructor(message) {
+    constructor(message: string) {
       super(message);
       this.name = 'ButtressNotYetInitiated';
     }
@@ -36,12 +46,15 @@ const Errors = {
     /**
      * @param {String} message
      */
-    constructor(message) {
+    constructor(message: string) {
       super(message);
       this.name = 'SchemaNotFound';
     }
   },
   ResponseError: class extends Error {
+    code: number;
+    statusCode: number;
+    statusMessage: string
     /**
      * @param {Object} response
      */
@@ -54,12 +67,13 @@ const Errors = {
     }
   },
   RequestError: class extends Error {
+    code: number;
     /**
      * @param {Error} err
      */
-    constructor(err) {
+    constructor(err: Error, code: number) {
       super(err.message);
-      this.code = err.code;
+      this.code = code;
       this.name = 'RequestError';
     }
   },
@@ -318,22 +332,26 @@ class Schema {
   }
 }
 
-const _checkOptions = (options: Options, defaultToken: string) => {
+const _checkOptions = (options: RequestOptionsIn, defaultToken?: string): RequestOptions => {
   options = Object.assign({}, options);
 
-  if (!options) {
-    options = {
-      params: {},
-      data: {},
-    };
-  }
-  if (!options.params) options.params = {};
-  if (!options.data) options.data = {};
-  if (!options.params.token) {
-    options.params.token = defaultToken;
-  }
+  if (!defaultToken) throw new Error('No default token provided');
 
-  return options;
+  const RequestOptions: RequestOptions = {
+    method: '',
+    params: {
+      token: defaultToken,
+    },
+    data: {},
+    headers: {},
+    body: {},
+    stream: false,
+  };
+
+  if (options.params) RequestOptions.params = {...RequestOptions.params, ...options.params};
+  if (options.data) RequestOptions.data = {...RequestOptions.data, ...options.data};
+
+  return RequestOptions;
 };
 
 const sleep = (ms: number) => {

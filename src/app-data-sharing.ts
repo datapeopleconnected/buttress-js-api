@@ -9,10 +9,12 @@
  *
  */
 
-import Helpers from './helpers';
+import Helpers, { RequestOptionsIn } from './helpers';
 import Schema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
+
+import AppDataSharingModel from './model/AppDataSharing';
 
 /**
  * @class AppDataSharing
@@ -28,12 +30,11 @@ export default class AppDataSharing extends Schema {
 
   /**
    * Add a new lambda to the database
-   * @param {Object} lambda
-   * @param {Object} auth
+   * @param {AppDataSharingModel} dataShare
    * @return {Promise}
    */
-  createDataSharing(lambda, auth) {
-    return this.save({lambda, auth});
+  createDataSharing(dataShare: AppDataSharingModel) {
+    return this.save(dataShare, {});
   };
 
   /**
@@ -42,10 +43,11 @@ export default class AppDataSharing extends Schema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  updateDataSharingPolicy(dataSharingId, data, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (data) options.data = data;
-    return this._request('put', `${dataSharingId}/policy`, options);
+  // TODO: Replace data with policy type
+  updateDataSharingPolicy(dataSharingId: string, data: any[], options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (data) opts.data = data;
+    return this._request('put', `${dataSharingId}/policy`, opts);
   };
 
   /**
@@ -54,11 +56,11 @@ export default class AppDataSharing extends Schema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  activate(registrationToken, newToken, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    options.params.token = registrationToken;
-    options.data = {newToken};
-    return this._request('post', `activate`, options);
+  activate(registrationToken: string, newToken: string, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.token);
+    opts.params.token = registrationToken;
+    opts.data = {newToken};
+    return this._request('post', `activate`, opts);
   };
 
   /**
@@ -67,10 +69,9 @@ export default class AppDataSharing extends Schema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  reactivate(dataSharingId, data, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (data) options.data = data;
-    return this._request('post', `reactivate/${dataSharingId}`, options);
+  reactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.token);
+    return this._request('post', `reactivate/${dataSharingId}`, opts);
   };
 
   /**
@@ -79,9 +80,8 @@ export default class AppDataSharing extends Schema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  deactivate(dataSharingId, data, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (data) options.data = data;
-    return this._request('post', `deactivate/${dataSharingId}`, options);
+  deactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.token);
+    return this._request('post', `deactivate/${dataSharingId}`, opts);
   };
 }

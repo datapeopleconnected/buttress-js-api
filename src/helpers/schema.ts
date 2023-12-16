@@ -9,7 +9,7 @@
  *
  */
 
-import Helpers from './';
+import Helpers, { RequestOptions } from './';
 
 import ButtressSchema from '../types/ButtressSchema';
 import ButtressOptionsInternal from '../types/ButtressOptionsInternal';
@@ -18,9 +18,9 @@ import parse from 'url-parse';
 import fetch from 'cross-fetch';
 
 /**
- * @class Schema
+ * @class Base
  */
-export default class Schema {
+export default class Base {
 
   collection: string;
   
@@ -118,7 +118,7 @@ export default class Schema {
    * @param {boolean} redirect
    * @return {promise}
    */
-  async _request(type, path, options, attempt = 0, redirect = false) {
+  async _request(type: string, path: string, options: RequestOptions, attempt = 0, redirect = false): Promise<any> {
     if (!this.__route) {
       throw new Error(`Unable to make request to Buttress due to unknown schema ${this.collection}`);
     }
@@ -212,7 +212,7 @@ export default class Schema {
         if (err.response) {
           error = new Helpers.Errors.ResponseError(err.response);
         } else if (err.request) {
-          error = new Helpers.Errors.RequestError(err);
+          error = new Helpers.Errors.RequestError(err, err.code);
         }
 
         // Handle error type and retry if necessary
@@ -262,7 +262,7 @@ export default class Schema {
    * @param {object} options
    * @return {promise}
    */
-  save(details, options) {
+  save(details: any, options: {}) {
     options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
 
     if (details) options.data = details;
