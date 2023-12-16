@@ -70,6 +70,19 @@ export default class Lambda extends Schema {
   }
 
   /**
+   * @param {string} lambdaId
+   * @param {string} executeAfter
+   * @param {array} metadata
+   * @param {object} options
+   * @return {Promise}
+   */
+  scheduleExecution(lambdaId, executeAfter, metadata, options = {}) {
+    options = Helpers.checkOptions(options, this.token);
+    if (executeAfter) options.data = {executeAfter, metadata};
+    return this._request('post', `${lambdaId}/schedule`, options);
+  }
+
+  /**
    * @param {Object} lambdaId - lambda id
    * @param {Object} options - request options
    * @return {Promise}
