@@ -7,7 +7,8 @@
  *
  */
 
-import Helpers from './helpers';
+import { AuthData } from './auth';
+import Helpers, { RequestOptionsIn } from './helpers';
 import Schema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
@@ -30,9 +31,9 @@ export default class User extends Schema {
    * @param {Object} [options={}] options - request options
    * @return {promise}
    */
-  findUser(appName, appUserId, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    return this._request('get', `${appName}/${appUserId}`, options);
+  findUser(appName: string, appUserId: string, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    return this._request('get', `${appName}/${appUserId}`, opts);
   }
 
   /**
@@ -40,9 +41,9 @@ export default class User extends Schema {
    * @param {Object} [options={}] options - request options
    * @return {promise}
    */
-  getUser(parameter, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    return this._request('get', `${parameter}`, options);
+  getUser(parameter: string, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    return this._request('get', `${parameter}`, opts);
   }
 
   /**
@@ -51,10 +52,10 @@ export default class User extends Schema {
    * @param {Object} options - request options
    * @return {Promise} - resolves to the serialized Token object
    */
-  createToken(userId, token, options) {
-    options = Helpers.checkOptions(options, this.token);
-    if (token) options.data = token;
-    return this._request('post', `${userId}/token`, options);
+  createToken(userId: string, token: AuthData, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (token) opts.data = token;
+    return this._request('post', `${userId}/token`, opts);
   }
 
   /**
@@ -62,10 +63,10 @@ export default class User extends Schema {
    * @param {Object} [options={}] options - request options
    * @return {promise}
    */
-  getUserByToken(token, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (token) options.data = {token};
-    return this._request('post', `get-by-token`, options);
+  getUserByToken(token: string, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (token) opts.data = {token};
+    return this._request('post', `get-by-token`, opts);
   }
 
   /**
@@ -74,10 +75,10 @@ export default class User extends Schema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  setPolicyProperty(userId, data, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (data) options.data = data;
-    return this._request('put', `${userId}/policy-property`, options);
+  setPolicyProperty(userId: string, data: any, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (data) opts.data = data;
+    return this._request('put', `${userId}/policy-property`, opts);
   }
 
   /**
@@ -86,10 +87,10 @@ export default class User extends Schema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  updatePolicyProperty(userId, data, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (data) options.data = data;
-    return this._request('put', `${userId}/update-policy-property`, options);
+  updatePolicyProperty(userId: string, data: any, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (data) opts.data = data;
+    return this._request('put', `${userId}/update-policy-property`, opts);
   }
 
   /**
@@ -98,10 +99,10 @@ export default class User extends Schema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  removePolicyProperty(userId, data, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (data) options.data = data;
-    return this._request('put', `${userId}/remove-policy-property`, options);
+  removePolicyProperty(userId: string, data: any, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (data) opts.data = data;
+    return this._request('put', `${userId}/remove-policy-property`, opts);
   }
 
   /**
@@ -109,8 +110,8 @@ export default class User extends Schema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  clearPolicyProperty(userId, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    return this._request('put', `${userId}/clear-policy-property`, options);
+  clearPolicyProperty(userId: string, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    return this._request('put', `${userId}/clear-policy-property`, opts);
   }
 }

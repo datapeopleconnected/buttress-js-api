@@ -7,8 +7,12 @@
  *
  */
 
-import Helpers from './helpers';
+import Helpers, { RequestOptionsIn } from './helpers';
 import Schema from './helpers/schema';
+
+import SecureStoreModel from './model/SecureStore';
+
+import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 /**
  * @class SecureStore
@@ -22,9 +26,9 @@ export default class SecureStore extends Schema {
     super('secure-store', ButtressOptions, true);
   }
 
-  _secureStoreInterface(secureStore) {
+  _secureStoreInterface(secureStore: SecureStoreModel) {
     return {
-      'getValue': (key) => {
+      'getValue': (key: string) => {
         const output = secureStore.storeData[key];
         if (!output) {
           throw new Error(`${key} does not exist on the secure store ${secureStore.name}`);
@@ -32,7 +36,7 @@ export default class SecureStore extends Schema {
   
         return output;
       },
-      'setValue': (key, value) => {
+      'setValue': (key: string, value: any) => {
         return this.update(secureStore.id, [{
           path: `storeData.${key}`,
           value: value,
@@ -46,7 +50,7 @@ export default class SecureStore extends Schema {
    * @param {Object} details
    * @return {Promise}
    */
-  async createSecureStore(details) {
+  async createSecureStore(details: any) {
     const store = await this.save(details);
     return this._secureStoreInterface(store)
   };
@@ -57,9 +61,9 @@ export default class SecureStore extends Schema {
    * @param {Object} [options={}] options - request options
    * @return {Promise}
    */
-  async findByName(name, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    const secureStore = await this._request('get', `name/${name}`, options);
+  async findByName(name: string, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    const secureStore = await this._request('get', `name/${name}`, opts);
     return this._secureStoreInterface(secureStore);
   }
 }

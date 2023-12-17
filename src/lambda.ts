@@ -7,8 +7,12 @@
  *
  */
 
-import Helpers from './helpers';
+import Helpers, { RequestOptionsIn } from './helpers';
 import Schema from './helpers/schema';
+
+import LambdaModel from './model/Lambda';
+
+import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 /**
  * @class Lambda
@@ -28,7 +32,7 @@ export default class Lambda extends Schema {
    * @param {Object} auth
    * @return {Promise}
    */
-  createLambda(lambda, auth) {
+  createLambda(lambda: LambdaModel, auth: any) {
     return this.save({lambda, auth});
   };
 
@@ -39,10 +43,10 @@ export default class Lambda extends Schema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  editLambdaDeployment(lambdaId, data, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (data) options.data = data;
-    return this._request('put', `${lambdaId}/deployment`, options);
+  editLambdaDeployment(lambdaId: string, data: any, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (data) opts.data = data;
+    return this._request('put', `${lambdaId}/deployment`, opts);
   }
 
   /**
@@ -51,10 +55,10 @@ export default class Lambda extends Schema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  setPolicyProperty(lambdaId, data, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (data) options.data = data;
-    return this._request('put', `${lambdaId}/policy-property`, options);
+  setPolicyProperty(lambdaId: string, data: any, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (data) opts.data = data;
+    return this._request('put', `${lambdaId}/policy-property`, opts);
   }
 
   /**
@@ -63,10 +67,10 @@ export default class Lambda extends Schema {
      * @param {Object} options - request options
      * @return {Promise}
      */
-  updatePolicyProperty(lambdaId, data, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (data) options.data = data;
-    return this._request('put', `${lambdaId}/update-policy-property`, options);
+  updatePolicyProperty(lambdaId: string, data: any, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (data) opts.data = data;
+    return this._request('put', `${lambdaId}/update-policy-property`, opts);
   }
 
   /**
@@ -76,10 +80,10 @@ export default class Lambda extends Schema {
    * @param {object} options
    * @return {Promise}
    */
-  scheduleExecution(lambdaId, executeAfter, metadata, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (executeAfter) options.data = {executeAfter, metadata};
-    return this._request('post', `${lambdaId}/schedule`, options);
+  scheduleExecution(lambdaId: string, executeAfter: string, metadata: any, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (executeAfter) opts.data = {executeAfter, metadata};
+    return this._request('post', `${lambdaId}/schedule`, opts);
   }
 
   /**
@@ -87,8 +91,8 @@ export default class Lambda extends Schema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  clearPolicyProperty(lambdaId, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    return this._request('put', `${lambdaId}/clear-policy-property`, options);
+  clearPolicyProperty(lambdaId: string, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    return this._request('put', `${lambdaId}/clear-policy-property`, opts);
   }
 }

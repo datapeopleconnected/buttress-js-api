@@ -13,6 +13,8 @@ import Sugar from 'sugar';
 import uuid from 'uuid';
 import ObjectId from 'bson-objectid';
 
+import SchemaModel, { Property, Properties } from '../model/Schema';
+
 export interface RequestOptions {
   method: string
   params: {
@@ -29,6 +31,7 @@ export interface RequestOptionsIn {
     [key: string]: any
     token?: string
   };
+  project?: string
   data?: any;
 }
 
@@ -149,7 +152,7 @@ class Schema {
    * @param {object} schema
    * @return {object}
    */
-  static create(schema) {
+  static create(schema: SchemaModel) {
     if (!schema) {
       return false;
     }
@@ -162,7 +165,7 @@ class Schema {
    * @param {string} path
    * @return {object} schemaPart
    */
-  static createFromPath(schema, path: string) {
+  static createFromPath(schema: SchemaModel, path: string) {
     const subSchema = Schema.getSubSchema(schema, path);
     if (!subSchema) {
       return false;
@@ -176,20 +179,21 @@ class Schema {
    * @param {string} path
    * @return {object} schemaPart
    */
-  static getSubSchema(schema, path: string) {
-    return path.split('.').reduce((out, path) => {
-      if (!out) return false; // Skip all paths if we hit a false
+  static getSubSchema(schema: SchemaModel, path: string) {
+    return path.split('.').reduce((out: SchemaModel | undefined, path: string) => {
+      if (!out) return; // Skip all paths if we hit a false
 
       const property = Path.get(out.properties, path);
       if (!property) {
-        return false;
+        return;
       }
       if (property.type && property.type === 'array' && !property.__schema) {
-        return false;
+        return;
       }
 
       return {
-        collection: path,
+        name: path,
+        type: 'collection',
         properties: property.__schema || property,
       };
     }, schema);
@@ -199,8 +203,8 @@ class Schema {
    * @param {object} schema
    * @return {object} flatSchema
    */
-  static getFlattened(schema) {
-    const __buildFlattenedSchema = (property, parent, path, flattened) => {
+  static getFlattened(schema: SchemaModel) {
+    const __buildFlattenedSchema = (property: string, parent: Properties, path: string[], flattened: {[key: string]: Property}) => {
       path.push(property);
 
       let isRoot = true;
@@ -239,7 +243,7 @@ class Schema {
    * @param {boolean} createId
    * @return {object} schema
    */
-  static inflate(schema, createId) {
+  static inflate(schema: SchemaModel, createId: boolean) {
     const __inflateObject = (parent, path, value) => {
       if (path.length > 1) {
         const parentKey = path.shift();
@@ -294,7 +298,7 @@ class Schema {
    * @param {object} config
    * @return {*} defaultValue
    */
-  static getPropDefault(config) {
+  static getPropDefault(config: Property) {
     let res;
     switch (config.__type) {
     default:
@@ -332,7 +336,7 @@ class Schema {
   }
 }
 
-const _checkOptions = (options: RequestOptionsIn, defaultToken?: string): RequestOptions => {
+const _checkOptions = (options?: RequestOptionsIn, defaultToken?: string): RequestOptions => {
   options = Object.assign({}, options);
 
   if (!defaultToken) throw new Error('No default token provided');

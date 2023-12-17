@@ -7,8 +7,10 @@
  *
  */
 
-import Helpers from './helpers';
+import Helpers, { RequestOptionsIn } from './helpers';
 import Schema from './helpers/schema';
+
+import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 /**
 * @class Policy
@@ -27,7 +29,7 @@ export default class Policy extends Schema {
   * @param {Object} policy
   * @return {Promise}
   */
-  createPolicy(policy) {
+  createPolicy(policy: any) {
     return this.save(policy);
   };
 
@@ -45,10 +47,10 @@ export default class Policy extends Schema {
    * @param {Object} options
    * @return {Promise}
    */
-  deletePolicyByName(data, options = {}) {
-    options = Helpers.checkOptions(options, this.token);
-    if (data) options.data = data;
-    return this._request('post', 'delete-transient-policy', options);
+  deletePolicyByName(data: any, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (data) opts.data = data;
+    return this._request('post', 'delete-transient-policy', opts);
   }
 
   /**
@@ -57,9 +59,9 @@ export default class Policy extends Schema {
    * @param {object} options
    * @return {Promise}
    */
-  syncAppPolicy(policies, options) {
-    options = Helpers.checkOptions(options, this.token);
-    if (policies) options.data = policies;
-    return this._request('post', 'sync', options);
+  syncAppPolicy(policies: any[], options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (policies) opts.data = policies;
+    return this._request('post', 'sync', opts);
   };
 }

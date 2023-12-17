@@ -9,7 +9,7 @@
  *
  */
 
-import Helpers, { RequestOptions } from './';
+import Helpers, { RequestOptions, RequestOptionsIn } from './';
 
 import ButtressSchema from '../types/ButtressSchema';
 import ButtressOptionsInternal from '../types/ButtressOptionsInternal';
@@ -252,9 +252,9 @@ export default class Base {
    * @param {object} options
    * @return {promise}
    */
-  get(id, options) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
-    return this._request('get', id, options);
+  get(id: string, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    return this._request('get', id, opts);
   }
 
   /**
@@ -262,12 +262,12 @@ export default class Base {
    * @param {object} options
    * @return {promise}
    */
-  save(details: any, options: {}) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+  save(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('post', null, options)
+    return this._request('post', '', opts)
       .then((data) => {
         if (Array.isArray(data)) return data.slice(0, 1).shift();
         return data;
@@ -280,12 +280,12 @@ export default class Base {
    * @param {object} options
    * @return {promise}
    */
-  update(id, details, options) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+  update(id: string, details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('put', id, options);
+    return this._request('put', id, opts);
   }
 
   /**
@@ -293,19 +293,19 @@ export default class Base {
    * @param {object} options
    * @return {promise}
    */
-  remove(id, options) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
-    return this._request('delete', id, options);
+  remove(id: string, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    return this._request('delete', id, opts);
   }
 
   /**
    * @param {object} options
    * @return {promise}
    */
-  getAll(options) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+  getAll(options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
 
-    return this._request('get', null, options);
+    return this._request('get', '', opts);
   }
 
   /**
@@ -316,9 +316,9 @@ export default class Base {
    * @param {object} options
    * @return {promise}
    */
-  search(query, limit=0, skip=0, sort, options) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
-    options.data = {
+  search(query: any, limit=0, skip=0, sort=0, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    opts.data = {
       query,
       limit,
       skip,
@@ -326,10 +326,10 @@ export default class Base {
     };
 
     if (options.project) {
-      options.data.project = options.project;
+      opts.data.project = options.project;
     }
 
-    return this._request('search', null, options);
+    return this._request('search', '', opts);
   }
 
   /**
@@ -337,12 +337,12 @@ export default class Base {
    * @param {object} options
    * @return {promise}
    */
-  removeAll(details, options) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+  removeAll(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('delete', null, options);
+    return this._request('delete', '', opts);
   }
 
   /**
@@ -350,16 +350,16 @@ export default class Base {
    * @param {object} options
    * @return {promise}
    */
-  bulkGet(details, options) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+  bulkGet(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
 
     if (details) {
-      options.data.query = {
+      opts.data.query = {
         ids: details,
       };
     }
 
-    return this._request('search', 'bulk/load', options);
+    return this._request('search', 'bulk/load', opts);
   }
 
   /**
@@ -367,12 +367,12 @@ export default class Base {
    * @param {object} options
    * @return {promise}
    */
-  bulkSave(details, options) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+  bulkSave(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('post', 'bulk/add', options);
+    return this._request('post', 'bulk/add', opts);
   }
 
   /**
@@ -380,12 +380,12 @@ export default class Base {
    * @param {object} options
    * @return {promise}
    */
-  bulkUpdate(details, options) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+  bulkUpdate(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('post', 'bulk/update', options);
+    return this._request('post', 'bulk/update', opts);
   }
 
   /**
@@ -393,12 +393,12 @@ export default class Base {
    * @param {object} options
    * @return {promise}
    */
-  bulkRemove(details, options) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+  bulkRemove(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('post', 'bulk/delete', options);
+    return this._request('post', 'bulk/delete', opts);
   }
 
   /**
@@ -407,14 +407,14 @@ export default class Base {
   * @param {object} options
    * @return {promise}
    */
-  count(query, sort, options) {
-    options = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+  count(query: any, sort: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
 
-    options.data = {
+    opts.data = {
       query,
       sort,
     };
 
-    return this._request('search', 'count', options);
+    return this._request('search', 'count', opts);
   }
 }
