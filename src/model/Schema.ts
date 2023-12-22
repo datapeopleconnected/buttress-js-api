@@ -3,6 +3,8 @@ export interface Property {
   __default?: any,
   __required?: boolean,
   __allowUpdate?: boolean,
+  __enum?: string[],
+  __schema?: Properties
 }
 
 export interface Properties {

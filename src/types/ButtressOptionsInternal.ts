@@ -1,6 +1,20 @@
 import Schema from "../model/Schema";
+import {URL} from 'url';
 
-import URLParse from "url-parse";
+// URL {
+//   href: 'https://www.google.com/',
+//   origin: 'https://www.google.com',
+//   protocol: 'https:',
+//   username: '',
+//   password: '',
+//   host: 'www.google.com',
+//   hostname: 'www.google.com',
+//   port: '',
+//   pathname: '/',
+//   search: '',
+//   searchParams: URLSearchParams {},
+//   hash: ''
+// }
 
 export default interface ButtressOptionsInternal {
   buttressUrl?: string;
@@ -12,7 +26,7 @@ export default interface ButtressOptionsInternal {
   version: number;
   update: boolean;
   allowUnauthorized: boolean;
-  url?: URLParse<string>;
+  url?: URL;
   urls?: {
     core: string;
     app: string;

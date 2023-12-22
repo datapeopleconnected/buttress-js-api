@@ -8,13 +8,13 @@
  * @author Lighten
  *
  */
+import { URL } from 'url';
 
 import Helpers, { RequestOptions, RequestOptionsIn } from './';
 
-import ButtressSchema from '../types/ButtressSchema';
+import ModelSchema from '../model/Schema';
 import ButtressOptionsInternal from '../types/ButtressOptionsInternal';
 
-import parse from 'url-parse';
 import fetch from 'cross-fetch';
 
 /**
@@ -26,13 +26,11 @@ export default class Base {
   
   core: boolean = false;
 
-  private __ButtressOptions: ButtressOptionsInternal;
+  protected _ButtressOptions: ButtressOptionsInternal;
 
   private __route?: string;
 
-  private __schema?: ButtressSchema;
-
-  private static __protocolRegex = /(^\w+:|^)\/\//;
+  private __schema?: ModelSchema;
 
   /**
    * Instance of Schema
@@ -42,12 +40,12 @@ export default class Base {
    */
   constructor(collection: string, ButtressOptions: ButtressOptionsInternal, core = false) {
     this.collection = collection;
-    this.__ButtressOptions = ButtressOptions;
+    this._ButtressOptions = ButtressOptions;
 
     this.core = core;
     if (core) this.__route = collection;
 
-    if (!core) this.getSchema();
+    if (!core) this.loadSchema();
   }
 
   /**
@@ -64,29 +62,30 @@ export default class Base {
    * @return {string} url
    */
   getEndpoint() {
-    return (this.core) ? this.__ButtressOptions.urls.core : this.__ButtressOptions.urls.app;
+    const endpoint = (this.core) ? this._ButtressOptions.urls?.core : this._ButtressOptions.urls?.app;
+    return endpoint || '';
   }
 
   /**
    * @readonly
    */
   get token() {
-    return this.__ButtressOptions.authToken;
+    return this._ButtressOptions.authToken;
   }
 
   /**
    * @return {object} schema
    */
-  getSchema() {
+  loadSchema() {
     if (this.__schema) {
       return this.__schema;
     }
 
-    if (!this.__ButtressOptions.compiledSchema) {
+    if (!this._ButtressOptions.compiledSchema) {
       throw new Helpers.Errors.NotYetInitiated('Attempting to load schema before buttress init');
     }
 
-    const schema = this.__ButtressOptions.compiledSchema.find((s) => s.name === this.collection);
+    const schema = this._ButtressOptions.compiledSchema.find((s) => s.name === this.collection);
     if (!schema) {
       throw new Helpers.Errors.SchemaNotFound(`Unable to find the schema with the name '${this.collection}'`);
     }
@@ -102,12 +101,12 @@ export default class Base {
    * @param {string} path
    * @return {object} schemaPart
    */
-  createObject(path) {
+  createObject(path: string) {
     if (path) {
-      return Helpers.Schema.createFromPath(this.getSchema(), path);
+      return Helpers.Schema.createFromPath(this.loadSchema(), path);
     }
 
-    return Helpers.Schema.create(this.getSchema());
+    return Helpers.Schema.create(this.loadSchema());
   }
 
   /**
@@ -125,12 +124,16 @@ export default class Base {
 
     options.method = type.toUpperCase();
 
-    const url = parse(`${this.getEndpoint()}/${this.__route}`);
+    const url = new URL(`${this.getEndpoint()}/${this.__route}`);
     if (path) {
-      url.set('pathname', `${url.pathname}/${path}`);
+      url.pathname = `${url.pathname}/${path}`;
     }
 
-    url.set('query', options.params);
+    if (options.params) {
+      Object.keys(options.params).forEach((key) => {
+        url.searchParams.append(key, options.params[key]);
+      });
+    }
 
     /*
      * NOTE: Check to see if our options.data is JSON,
@@ -154,10 +157,10 @@ export default class Base {
 
     attempt++;
     if (redirect) {
-      url.href = url.href.replace(Schema.__protocolRegex, 'https://');
+      url.protocol = 'https:';
     }
 
-    if (this.__ButtressOptions.isolated) {
+    if (this._ButtressOptions.isolated) {
       const response = await lambda.fetch({
         url,
         options,
@@ -219,9 +222,9 @@ export default class Base {
         if (error instanceof Helpers.Errors.RequestError &&
           Boolean(error.code) &&
           error.code !== 'ECONNABORTED' &&
-          Schema.Constants.RETRY_METHODS.includes(type)
+          Base.Constants.RETRY_METHODS.includes(type)
         ) {
-          if (attempt >= Schema.Constants.MAX_RETRIES) throw error;
+          if (attempt >= Base.Constants.MAX_RETRIES) throw error;
 
           return Helpers.backOff(attempt)
             .then(() => this._request(type, path, options, attempt));
@@ -237,7 +240,7 @@ export default class Base {
    * @param {object} url
    * @returns {promise}
    */
-  _postRedirect(response, url) {
+  _postRedirect(response, url: URL) {
     let originalURL = url.href.match(Schema.__protocolRegex);
     let redirectedURL = response.url.match(Schema.__protocolRegex);
     const originalProtocol = originalURL.pop();
@@ -253,7 +256,7 @@ export default class Base {
    * @return {promise}
    */
   get(id: string, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     return this._request('get', id, opts);
   }
 
@@ -263,7 +266,7 @@ export default class Base {
    * @return {promise}
    */
   save(details: any, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
 
@@ -281,7 +284,7 @@ export default class Base {
    * @return {promise}
    */
   update(id: string, details: any, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
 
@@ -294,7 +297,7 @@ export default class Base {
    * @return {promise}
    */
   remove(id: string, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     return this._request('delete', id, opts);
   }
 
@@ -303,7 +306,7 @@ export default class Base {
    * @return {promise}
    */
   getAll(options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     return this._request('get', '', opts);
   }
@@ -317,7 +320,7 @@ export default class Base {
    * @return {promise}
    */
   search(query: any, limit=0, skip=0, sort=0, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     opts.data = {
       query,
       limit,
@@ -338,7 +341,7 @@ export default class Base {
    * @return {promise}
    */
   removeAll(details: any, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
 
@@ -351,7 +354,7 @@ export default class Base {
    * @return {promise}
    */
   bulkGet(details: any, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) {
       opts.data.query = {
@@ -368,7 +371,7 @@ export default class Base {
    * @return {promise}
    */
   bulkSave(details: any, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
 
@@ -381,7 +384,7 @@ export default class Base {
    * @return {promise}
    */
   bulkUpdate(details: any, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
 
@@ -394,7 +397,7 @@ export default class Base {
    * @return {promise}
    */
   bulkRemove(details: any, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
 
@@ -408,7 +411,7 @@ export default class Base {
    * @return {promise}
    */
   count(query: any, sort: any, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.__ButtressOptions.authToken);
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     opts.data = {
       query,

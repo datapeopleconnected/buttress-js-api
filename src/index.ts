@@ -10,12 +10,11 @@
  */
 
 import Sugar from 'sugar';
-import URL from 'url-parse';
 
 import Helpers from './helpers';
 import Schema from './helpers/schema';
 
-import ButtressSchema from './types/ButtressSchema';
+import ModelSchema from './model/Schema';
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 import App from './app';
@@ -26,7 +25,6 @@ import Token from './token';
 import User from './user';
 import SecureStore from './secure-store';
 import AppDataSharing from './app-data-sharing';
-import URLParse from 'url-parse';
 
 export interface ButtressOptions {
   buttressUrl: string,
@@ -113,7 +111,7 @@ export class Buttress {
     if (this.options.update) await this.initSchema();
 
     this.options.compiledSchema = await this.getCollection('app').getSchema();
-    this.options.compiledSchema?.forEach((s: ButtressSchema) => this.getCollection(s.name));
+    this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
 
     return true;
   }
@@ -180,7 +178,7 @@ export class Buttress {
    * @param {array} schema
    * @return {promise}
    */
-  async setSchema(schema: ButtressSchema[]) {
+  async setSchema(schema: ModelSchema[]) {
     this.options.schema = schema;
 
     if (!this.options.schema) return;
@@ -188,7 +186,7 @@ export class Buttress {
     await this.getCollection('app').updateSchema(this.options.schema);
 
     this.options.compiledSchema = await this.getCollection('app').getSchema();
-    this.options.compiledSchema?.forEach((s: ButtressSchema) => this.getCollection(s.name));
+    this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
 
     return true;
   }
@@ -199,7 +197,7 @@ export class Buttress {
    * @param {Object} policy
    * @return {Promise}
    */
-  async createUserTransientPolicy(userId: string, policy) {
+  async createUserTransientPolicy(userId: string, policy: any) {
     if (!this.Policy || !this.User) throw new Error('Unable to create transient policy before Buttress is initialised');
 
     await this.Policy.createPolicy(policy);
@@ -256,16 +254,9 @@ export class Buttress {
    * @param {string} mod
    * @return {void}
    */
-  _addModule(mod) {
-    const split = Sugar.String.capitalize(mod, true, true).split('-');
-    if (split.length === 1) {
-      this.__modules[split[0]] = this._loadModule(mod, `${__dirname}/${mod}.js`);
-    } else {
-      if (!this.__modules[split[0]]) {
-        this.__modules[split[0]] = {};
-      }
-      this.__modules[split[0]][split[1]] = this._loadModule(mod, `${__dirname}/${mod}.js`);
-    }
+  _addModule(mod: string) {
+    const caped = Sugar.String.capitalize(mod, true, true);
+    this.__modules[caped] = this._loadModule(mod);
   }
 
   /**
@@ -283,12 +274,8 @@ export class Buttress {
    * @return {object} module
    */
   _findModule(mod: string) {
-    const split = Sugar.String.capitalize(mod, true, true).split('-');
-    if (split.length === 1) {
-      return this.__modules[split[0]];
-    }
-
-    return this.__modules[split[0]][split[1]];
+    const caped = Sugar.String.capitalize(mod, true, true);
+    return this.__modules[caped];
   }
 
   /**

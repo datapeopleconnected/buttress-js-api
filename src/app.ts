@@ -57,7 +57,7 @@ export default class App extends Base {
   * @param {object} [options={}] options
   * @return {promise} - response
   */
-  setPolicyPropertyList(list, appId = null, options = {}) {
+  setPolicyPropertyList(list: any[], appId = null, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (list) opts.data = list;
 
@@ -72,7 +72,7 @@ export default class App extends Base {
   * @param {object} [options={}] options
   * @return {promise} - response
   */
-  updatePolicyPropertyList(list, appId = null, options = {}) {
+  updatePolicyPropertyList(list: any[], appId = null, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (list) opts.data = list;
 
