@@ -43,7 +43,7 @@ export default class App extends Base {
   * @param {array} schema
   * @param {object} [options={}] options
   */
-  async updateSchema(schema: Schema, options = {}) {
+  async updateSchema(schema: Schema[], options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (schema) opts.data = schema;
     const res = await this._request('put', 'schema', opts);

@@ -51,7 +51,7 @@ export default class Auth extends Schema {
     let user = null;
     try {
       user = await this.User.findUser(userData.app, userData.appId);
-    } catch (err: Error) {
+    } catch (err: any) {
       if (err.code === 404) {
         user = await this.User.save({
           auth: [userData],

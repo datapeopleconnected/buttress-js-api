@@ -110,7 +110,7 @@ export class Buttress {
 
     if (this.options.update) await this.initSchema();
 
-    this.options.compiledSchema = await this.getCollection('app').getSchema();
+    this.options.compiledSchema = await (this.getCollection('app') as App).getSchema();
     this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
 
     return true;
@@ -183,9 +183,9 @@ export class Buttress {
 
     if (!this.options.schema) return;
 
-    await this.getCollection('app').updateSchema(this.options.schema);
+    await (this.getCollection('app') as App).updateSchema(this.options.schema);
 
-    this.options.compiledSchema = await this.getCollection('app').getSchema();
+    this.options.compiledSchema = await (this.getCollection('app') as App).getSchema();
     this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
 
     return true;

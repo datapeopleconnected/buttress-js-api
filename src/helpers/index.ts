@@ -61,16 +61,16 @@ const Errors = {
     /**
      * @param {Object} response
      */
-    constructor(response) {
+    constructor(response: Response) {
       super();
       this.name = 'ResponseError';
       this.code = this.statusCode = response.status;
       this.statusMessage = response.statusText;
-      this.message = (response.data && response.data.message) ? response.data.message : response.statusText;
+      this.message = response.statusText;
     }
   },
   RequestError: class extends Error {
-    code: number;
+    code: number | string;
     /**
      * @param {Error} err
      */
@@ -203,23 +203,27 @@ class Schema {
    * @param {object} schema
    * @return {object} flatSchema
    */
-  static getFlattened(schema: SchemaModel) {
+  static getFlattened(schema: SchemaModel): {[key: string]: Property} {
     const __buildFlattenedSchema = (property: string, parent: Properties, path: string[], flattened: {[key: string]: Property}) => {
       path.push(property);
 
-      let isRoot = true;
-      for (const childProp in parent[property]) {
-        if (!parent[property].hasOwnProperty(childProp)) continue;
-        if (/^__/.test(childProp)) {
-          continue;
-        }
+      const isProps = (parent[property].__type) ? false : true;
 
-        isRoot = false;
-        __buildFlattenedSchema(childProp, parent[property], path, flattened);
+      let isRoot = true;
+      if (isProps) {
+        for (const childProp in parent[property]) {
+          if (!parent[property].hasOwnProperty(childProp)) continue;
+          if (/^__/.test(childProp)) {
+            continue;
+          }
+
+          isRoot = false; 
+          __buildFlattenedSchema(childProp, parent[property] as Properties, path, flattened);
+        }
       }
 
-      if (isRoot === true) {
-        flattened[path.join('.')] = parent[property];
+      if (isRoot === true && isProps) {
+        flattened[path.join('.')] = parent[property] as Property;
         path.pop();
         return;
       }
@@ -229,7 +233,7 @@ class Schema {
     };
 
     const flattened = {};
-    const path = [];
+    const path: string[] = [];
     for (const property in schema.properties) {
       if (!schema.properties.hasOwnProperty(property)) continue;
       __buildFlattenedSchema(property, schema.properties, path, flattened);
@@ -244,9 +248,11 @@ class Schema {
    * @return {object} schema
    */
   static inflate(schema: SchemaModel, createId: boolean) {
-    const __inflateObject = (parent, path, value) => {
+    const __inflateObject = (parent: {[key: string]: any}, path: string[], value: any) => {
       if (path.length > 1) {
         const parentKey = path.shift();
+        if (!parentKey) return;
+
         if (!parent[parentKey]) {
           parent[parentKey] = {};
         }
@@ -254,14 +260,16 @@ class Schema {
         return;
       }
 
-      parent[path.shift()] = value;
+      const part = path.shift();
+
+      if (part) parent[part] = value;
       return;
     };
 
     const flattenedSchema = Schema.getFlattened(schema);
 
-    const res = {};
-    const objects = {};
+    const res: {[key: string]: any} = {};
+    const objects: {[key: string]: any} = {};
     for (const property in flattenedSchema) {
       if (!flattenedSchema.hasOwnProperty(property)) continue;
       const config = flattenedSchema[property];
@@ -272,6 +280,8 @@ class Schema {
 
       const path = propVal.path.split('.');
       const root = path.shift();
+      if (!root) continue;
+
       let value = propVal.value;
       if (path.length > 0) {
         if (!objects[root]) {

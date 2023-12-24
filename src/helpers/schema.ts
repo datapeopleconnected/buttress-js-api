@@ -16,6 +16,10 @@ import ModelSchema from '../model/Schema';
 import ButtressOptionsInternal from '../types/ButtressOptionsInternal';
 
 import fetch from 'cross-fetch';
+import APIResponse from '../types/Response';
+
+// Used by buttress internally
+declare var lambda: any;
 
 /**
  * @class Base
@@ -183,7 +187,7 @@ export default class Base {
     }
 
     return fetch(url, options)
-      .then((response) => {
+      .then((response: APIResponse) => {
         if (options.method === 'POST') {
           const needsRedirect = this._postRedirect(response, url);
           if (needsRedirect) {
@@ -240,14 +244,16 @@ export default class Base {
    * @param {object} url
    * @returns {promise}
    */
-  _postRedirect(response, url: URL) {
-    let originalURL = url.href.match(Schema.__protocolRegex);
-    let redirectedURL = response.url.match(Schema.__protocolRegex);
-    const originalProtocol = originalURL.pop();
-    const redirectedProtocol = redirectedURL.pop();
-    originalURL = url.href.replace(Schema.__protocolRegex, '');
-    redirectedURL = response.url.replace(Schema.__protocolRegex, '');
-    return originalURL === redirectedURL && originalProtocol !== redirectedProtocol;
+  _postRedirect(response: APIResponse, url: URL) {
+    // let originalURL = url.href.match(Base.__protocolRegex);
+    const redirectedURL = new URL(response.url);
+
+    const originalProtocol = url.protocol;
+    const redirectedProtocol = redirectedURL.protocol;
+
+    const noProtoURL = url.href.replace(originalProtocol, '');
+    const noProtoRedirect = response.url.replace(redirectedProtocol, '');
+    return noProtoURL === noProtoRedirect && originalProtocol !== redirectedProtocol;
   }
 
   /**
