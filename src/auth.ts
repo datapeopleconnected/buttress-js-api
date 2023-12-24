@@ -9,21 +9,37 @@
  *
  */
 
-const Helpers = require('./helpers');
-const Schema = require('./schema.js');
+import Helpers, {RequestOptionsIn} from './helpers';
+import Schema from './helpers/schema';
+
+import ButtressOptionsInternal from './types/ButtressOptionsInternal';
+
+import User from './user';
+
+export interface UserData {
+  app: string
+  appId: string
+  policyProperties?: any
+}
+export interface AuthData {
+
+}
 
 /**
  * @class Auth
  */
-class Auth extends Schema {
+export default class Auth extends Schema {
+
+  private User: User;
+
   /**
    * Instance of Auth
    * @param {object} ButtressOptions
    */
-  constructor(ButtressOptions) {
+  constructor(ButtressOptions: ButtressOptionsInternal) {
     super('auth', ButtressOptions, true);
 
-    this.User = require('./user.js')(ButtressOptions);
+    this.User = new User(ButtressOptions);
   }
 
   /**
@@ -31,11 +47,11 @@ class Auth extends Schema {
    * @param {Object} auth - auth details
    * @return {Promise} - resolves to the serialized User object
    */
-  async findOrCreateUser(userData, authData) {
+  async findOrCreateUser(userData: UserData, authData: AuthData) {
     let user = null;
     try {
       user = await this.User.findUser(userData.app, userData.appId);
-    } catch (err) {
+    } catch (err: any) {
       if (err.code === 404) {
         user = await this.User.save({
           auth: [userData],
@@ -64,29 +80,27 @@ class Auth extends Schema {
   };
 
   /**
-   * @param {Object} userId - user id
-   * @param {Object} token - token details
+   * @param {String} userId - user id
+   * @param {String} token - token details
    * @param {Object} options - request options
    * @return {Promise} - resolves to the serialized Token object
    */
-  createToken(userId, token, options) {
+  createToken(userId: string, token: AuthData, options?: RequestOptionsIn) {
     return this.User.createToken(userId, token, options);
   };
 
   /**
-   * @param {Object} userId - user details
+   * @param {String} userId - user details
    * @param {Object} appAuth - app auth details
    * @return {Promise} - resolves to the serialized User object
    */
-  addAuthToUser(userId, appAuth, options) {
-    options = Helpers.checkOptions(options, this.token);
-    if (appAuth) options.data = appAuth;
-    return this._request('put', `${userId}/auth`, options)
+  addAuthToUser(userId: string, appAuth: AuthData, options?: RequestOptionsIn) {
+    const opts = Helpers.checkOptions(options, this.token);
+    if (appAuth) opts.data = appAuth;
+    return this._request('put', `${userId}/auth`, opts)
       .then((response) => Object.assign(response.data, {
         buttressId: userId,
         buttressAuthToken: response.data.authToken,
       }));
   };
 }
-
-module.exports = (ButtressOptions) => new Auth(ButtressOptions);

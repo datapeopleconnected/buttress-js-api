@@ -8,31 +8,46 @@
  * @author Lighten
  *
  */
+import { URL } from 'url';
 
-const Sugar = require('sugar');
-const parse = require('url-parse');
-const Helpers = require('./helpers');
-const fetch = require('cross-fetch');
+import Helpers, { RequestOptions, RequestOptionsIn } from './';
+
+import ModelSchema from '../model/Schema';
+import ButtressOptionsInternal from '../types/ButtressOptionsInternal';
+
+import fetch from 'cross-fetch';
+import APIResponse from '../types/Response';
+
+// Used by buttress internally
+declare var lambda: any;
 
 /**
- * @class Schema
+ * @class Base
  */
-class Schema {
+export default class Base {
+
+  collection: string;
+  
+  core: boolean = false;
+
+  protected _ButtressOptions: ButtressOptionsInternal;
+
+  private __route?: string;
+
+  private __schema?: ModelSchema;
+
   /**
    * Instance of Schema
    * @param {object} collection
    * @param {object} ButtressOptions
    * @param {boolean} [core=false] - core schema
    */
-  constructor(collection, ButtressOptions, core = false) {
+  constructor(collection: string, ButtressOptions: ButtressOptionsInternal, core = false) {
     this.collection = collection;
     this._ButtressOptions = ButtressOptions;
 
     this.core = core;
-
-    this._route = (core) ? collection : null;
-    this._schema = null;
-    this._protocolRegex = /(^\w+:|^)\/\//;
+    if (core) this.__route = collection;
 
     if (!core) this.loadSchema();
   }
@@ -51,7 +66,8 @@ class Schema {
    * @return {string} url
    */
   getEndpoint() {
-    return (this.core) ? this._ButtressOptions.urls.core : this._ButtressOptions.urls.app;
+    const endpoint = (this.core) ? this._ButtressOptions.urls?.core : this._ButtressOptions.urls?.app;
+    return endpoint || '';
   }
 
   /**
@@ -64,9 +80,9 @@ class Schema {
   /**
    * @return {object} schema
    */
-  fetchSchema() {
-    if (this._schema) {
-      return this._schema;
+  loadSchema() {
+    if (this.__schema) {
+      return this.__schema;
     }
 
     if (!this._ButtressOptions.compiledSchema) {
@@ -78,22 +94,18 @@ class Schema {
       throw new Helpers.Errors.SchemaNotFound(`Unable to find the schema with the name '${this.collection}'`);
     }
 
-    this._schema = schema;
+    this.__schema = schema;
 
-    this.__setRoute(schema.name);
+    this.__route = schema.name;
 
-    return this._schema;
-  }
-
-  __setRoute(name) {
-    this._route = name.split('-').map((p) => Sugar.String.dasherize(p)).join('/');
+    return this.__schema;
   }
 
   /**
    * @param {string} path
    * @return {object} schemaPart
    */
-  createObject(path) {
+  createObject(path: string) {
     if (path) {
       return Helpers.Schema.createFromPath(this.loadSchema(), path);
     }
@@ -109,19 +121,23 @@ class Schema {
    * @param {boolean} redirect
    * @return {promise}
    */
-  async _request(type, path, options, attempt = 0, redirect = false) {
-    if (!this._route) {
+  async _request(type: string, path: string, options: RequestOptions, attempt = 0, redirect = false): Promise<any> {
+    if (!this.__route) {
       throw new Error(`Unable to make request to Buttress due to unknown schema ${this.collection}`);
     }
 
     options.method = type.toUpperCase();
 
-    const url = parse(`${this.getEndpoint()}/${this._route}`);
+    const url = new URL(`${this.getEndpoint()}/${this.__route}`);
     if (path) {
-      url.set('pathname', `${url.pathname}/${path}`);
+      url.pathname = `${url.pathname}/${path}`;
     }
 
-    url.set('query', options.params);
+    if (options.params) {
+      Object.keys(options.params).forEach((key) => {
+        url.searchParams.append(key, options.params[key]);
+      });
+    }
 
     /*
      * NOTE: Check to see if our options.data is JSON,
@@ -145,7 +161,7 @@ class Schema {
 
     attempt++;
     if (redirect) {
-      url.href = url.href.replace(this._protocolRegex, 'https://');
+      url.protocol = 'https:';
     }
 
     if (this._ButtressOptions.isolated) {
@@ -154,8 +170,12 @@ class Schema {
         options,
       });
 
-      if (response.redirected && response.url.match(this._protocolRegex) && options.method === 'POST') {
-        throw new Error(`[ERROR] incorrect protocol, use https for post requests`);
+      if (options.method === 'POST') {
+        const needsRedirect = this._postRedirect(response, url);
+        if (needsRedirect) {
+          lambda.log(`[WARNING] A POST redirect is occuring due to different http protocol`);
+          return this._request(type, path, options, attempt, true);
+        }
       }
 
       if (!response.ok) {
@@ -167,9 +187,13 @@ class Schema {
     }
 
     return fetch(url, options)
-      .then((response) => {
-        if (response.redirected && response.url.match(this._protocolRegex) && options.method === 'POST') {
-          throw new Error(`[ERROR] incorrect protocol, use https for post requests`);
+      .then((response: APIResponse) => {
+        if (options.method === 'POST') {
+          const needsRedirect = this._postRedirect(response, url);
+          if (needsRedirect) {
+            console.log(`[WARNING] A POST redirect is occuring due to different http protocol`);
+            return this._request(type, path, options, attempt, true);
+          }
         }
 
         if (!response.ok) {
@@ -195,16 +219,16 @@ class Schema {
         if (err.response) {
           error = new Helpers.Errors.ResponseError(err.response);
         } else if (err.request) {
-          error = new Helpers.Errors.RequestError(err);
+          error = new Helpers.Errors.RequestError(err, err.code);
         }
 
         // Handle error type and retry if necessary
         if (error instanceof Helpers.Errors.RequestError &&
           Boolean(error.code) &&
           error.code !== 'ECONNABORTED' &&
-          Schema.Constants.RETRY_METHODS.includes(type)
+          Base.Constants.RETRY_METHODS.includes(type)
         ) {
-          if (attempt >= Schema.Constants.MAX_RETRIES) throw error;
+          if (attempt >= Base.Constants.MAX_RETRIES) throw error;
 
           return Helpers.backOff(attempt)
             .then(() => this._request(type, path, options, attempt));
@@ -220,14 +244,16 @@ class Schema {
    * @param {object} url
    * @returns {promise}
    */
-  _postRedirect(response, url) {
-    let originalURL = url.href.match(this._protocolRegex);
-    let redirectedURL = response.url.match(this._protocolRegex);
-    const originalProtocol = originalURL.pop();
-    const redirectedProtocol = redirectedURL.pop();
-    originalURL = url.href.replace(this._protocolRegex, '');
-    redirectedURL = response.url.replace(this._protocolRegex, '');
-    return originalURL === redirectedURL && originalProtocol !== redirectedProtocol;
+  _postRedirect(response: APIResponse, url: URL) {
+    // let originalURL = url.href.match(Base.__protocolRegex);
+    const redirectedURL = new URL(response.url);
+
+    const originalProtocol = url.protocol;
+    const redirectedProtocol = redirectedURL.protocol;
+
+    const noProtoURL = url.href.replace(originalProtocol, '');
+    const noProtoRedirect = response.url.replace(redirectedProtocol, '');
+    return noProtoURL === noProtoRedirect && originalProtocol !== redirectedProtocol;
   }
 
   /**
@@ -235,9 +261,9 @@ class Schema {
    * @param {object} options
    * @return {promise}
    */
-  get(id, options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
-    return this._request('get', id, options);
+  get(id: string, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+    return this._request('get', id, opts);
   }
 
   /**
@@ -245,12 +271,12 @@ class Schema {
    * @param {object} options
    * @return {promise}
    */
-  save(details, options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  save(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('post', null, options)
+    return this._request('post', '', opts)
       .then((data) => {
         if (Array.isArray(data)) return data.slice(0, 1).shift();
         return data;
@@ -263,12 +289,12 @@ class Schema {
    * @param {object} options
    * @return {promise}
    */
-  update(id, details, options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  update(id: string, details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('put', id, options);
+    return this._request('put', id, opts);
   }
 
   /**
@@ -276,19 +302,19 @@ class Schema {
    * @param {object} options
    * @return {promise}
    */
-  remove(id, options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
-    return this._request('delete', id, options);
+  remove(id: string, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+    return this._request('delete', id, opts);
   }
 
   /**
    * @param {object} options
    * @return {promise}
    */
-  getAll(options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  getAll(options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    return this._request('get', null, options);
+    return this._request('get', '', opts);
   }
 
   /**
@@ -299,9 +325,9 @@ class Schema {
    * @param {object} options
    * @return {promise}
    */
-  search(query, limit=0, skip=0, sort, options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
-    options.data = {
+  search(query: any, limit=0, skip=0, sort=0, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+    opts.data = {
       query,
       limit,
       skip,
@@ -309,10 +335,10 @@ class Schema {
     };
 
     if (options.project) {
-      options.data.project = options.project;
+      opts.data.project = options.project;
     }
 
-    return this._request('search', null, options);
+    return this._request('search', '', opts);
   }
 
   /**
@@ -320,12 +346,12 @@ class Schema {
    * @param {object} options
    * @return {promise}
    */
-  removeAll(details, options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  removeAll(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('delete', null, options);
+    return this._request('delete', '', opts);
   }
 
   /**
@@ -333,16 +359,16 @@ class Schema {
    * @param {object} options
    * @return {promise}
    */
-  bulkGet(details, options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  bulkGet(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) {
-      options.data.query = {
+      opts.data.query = {
         ids: details,
       };
     }
 
-    return this._request('search', 'bulk/load', options);
+    return this._request('search', 'bulk/load', opts);
   }
 
   /**
@@ -350,12 +376,12 @@ class Schema {
    * @param {object} options
    * @return {promise}
    */
-  bulkSave(details, options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  bulkSave(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('post', 'bulk/add', options);
+    return this._request('post', 'bulk/add', opts);
   }
 
   /**
@@ -363,12 +389,12 @@ class Schema {
    * @param {object} options
    * @return {promise}
    */
-  bulkUpdate(details, options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  bulkUpdate(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('post', 'bulk/update', options);
+    return this._request('post', 'bulk/update', opts);
   }
 
   /**
@@ -376,12 +402,12 @@ class Schema {
    * @param {object} options
    * @return {promise}
    */
-  bulkRemove(details, options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  bulkRemove(details: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) options.data = details;
+    if (details) opts.data = details;
 
-    return this._request('post', 'bulk/delete', options);
+    return this._request('post', 'bulk/delete', opts);
   }
 
   /**
@@ -390,16 +416,14 @@ class Schema {
   * @param {object} options
    * @return {promise}
    */
-  count(query, sort, options) {
-    options = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  count(query: any, sort: any, options: RequestOptionsIn = {}) {
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    options.data = {
+    opts.data = {
       query,
       sort,
     };
 
-    return this._request('search', 'count', options);
+    return this._request('search', 'count', opts);
   }
 }
-
-module.exports = Schema;

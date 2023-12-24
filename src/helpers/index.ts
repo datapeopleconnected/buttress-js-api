@@ -9,16 +9,38 @@
  *
  */
 
-const Sugar = require('sugar');
-const uuid = require('uuid');
-const ObjectId = require('bson-objectid');
+import Sugar from 'sugar';
+import uuid from 'uuid';
+import ObjectId from 'bson-objectid';
+
+import SchemaModel, { Property, Properties } from '../model/Schema';
+
+export interface RequestOptions {
+  method: string
+  params: {
+    [key: string]: any
+    token: string
+  };
+  data: any
+  body: any
+  headers: any
+  stream: boolean
+}
+export interface RequestOptionsIn {
+  params?: {
+    [key: string]: any
+    token?: string
+  };
+  project?: string
+  data?: any;
+}
 
 const Errors = {
   NotYetInitiated: class extends Error {
     /**
      * @param {Any} message
      */
-    constructor(message) {
+    constructor(message: string) {
       super(message);
       this.name = 'ButtressNotYetInitiated';
     }
@@ -27,30 +49,34 @@ const Errors = {
     /**
      * @param {String} message
      */
-    constructor(message) {
+    constructor(message: string) {
       super(message);
       this.name = 'SchemaNotFound';
     }
   },
   ResponseError: class extends Error {
+    code: number;
+    statusCode: number;
+    statusMessage: string
     /**
      * @param {Object} response
      */
-    constructor(response) {
+    constructor(response: Response) {
       super();
       this.name = 'ResponseError';
       this.code = this.statusCode = response.status;
       this.statusMessage = response.statusText;
-      this.message = (response.data && response.data.message) ? response.data.message : response.statusText;
+      this.message = response.statusText;
     }
   },
   RequestError: class extends Error {
+    code: number | string;
     /**
      * @param {Error} err
      */
-    constructor(err) {
+    constructor(err: Error, code: number) {
       super(err.message);
-      this.code = err.code;
+      this.code = code;
       this.name = 'RequestError';
     }
   },
@@ -64,7 +90,7 @@ class Path {
    * @param {string} path
    * @return {*} normalizedPath
    */
-  static normalize(path) {
+  static normalize(path: string | string[]) {
     if (Array.isArray(path)) {
       const parts = [];
       for (let i = 0; i < path.length; i++) {
@@ -83,7 +109,7 @@ class Path {
    * @param {*} path
    * @return {array} splitPath
    */
-  static split(path) {
+  static split(path: string | string[]) {
     if (Array.isArray(path)) {
       return Path.normalize(path).split('.');
     }
@@ -93,10 +119,9 @@ class Path {
   /**
    * @param {object} root
    * @param {string} path
-   * @param {object} info
    * @return {*} value
    */
-  static get(root, path, info) {
+  static get(root: any, path: string) {
     let prop = root;
     const parts = Path.split(path);
 
@@ -108,9 +133,6 @@ class Path {
       prop = prop[part];
     }
 
-    if (info) {
-      info.path = parts.join('.');
-    }
     return prop;
   }
 }
@@ -130,7 +152,7 @@ class Schema {
    * @param {object} schema
    * @return {object}
    */
-  static create(schema) {
+  static create(schema: SchemaModel) {
     if (!schema) {
       return false;
     }
@@ -143,7 +165,7 @@ class Schema {
    * @param {string} path
    * @return {object} schemaPart
    */
-  static createFromPath(schema, path) {
+  static createFromPath(schema: SchemaModel, path: string) {
     const subSchema = Schema.getSubSchema(schema, path);
     if (!subSchema) {
       return false;
@@ -157,20 +179,21 @@ class Schema {
    * @param {string} path
    * @return {object} schemaPart
    */
-  static getSubSchema(schema, path) {
-    return path.split('.').reduce((out, path) => {
-      if (!out) return false; // Skip all paths if we hit a false
+  static getSubSchema(schema: SchemaModel, path: string) {
+    return path.split('.').reduce((out: SchemaModel | undefined, path: string) => {
+      if (!out) return; // Skip all paths if we hit a false
 
       const property = Path.get(out.properties, path);
       if (!property) {
-        return false;
+        return;
       }
       if (property.type && property.type === 'array' && !property.__schema) {
-        return false;
+        return;
       }
 
       return {
-        collection: path,
+        name: path,
+        type: 'collection',
         properties: property.__schema || property,
       };
     }, schema);
@@ -180,23 +203,27 @@ class Schema {
    * @param {object} schema
    * @return {object} flatSchema
    */
-  static getFlattened(schema) {
-    const __buildFlattenedSchema = (property, parent, path, flattened) => {
+  static getFlattened(schema: SchemaModel): {[key: string]: Property} {
+    const __buildFlattenedSchema = (property: string, parent: Properties, path: string[], flattened: {[key: string]: Property}) => {
       path.push(property);
 
-      let isRoot = true;
-      for (const childProp in parent[property]) {
-        if (!parent[property].hasOwnProperty(childProp)) continue;
-        if (/^__/.test(childProp)) {
-          continue;
-        }
+      const isProps = (parent[property].__type) ? false : true;
 
-        isRoot = false;
-        __buildFlattenedSchema(childProp, parent[property], path, flattened);
+      let isRoot = true;
+      if (isProps) {
+        for (const childProp in parent[property]) {
+          if (!parent[property].hasOwnProperty(childProp)) continue;
+          if (/^__/.test(childProp)) {
+            continue;
+          }
+
+          isRoot = false; 
+          __buildFlattenedSchema(childProp, parent[property] as Properties, path, flattened);
+        }
       }
 
-      if (isRoot === true) {
-        flattened[path.join('.')] = parent[property];
+      if (isRoot === true && isProps) {
+        flattened[path.join('.')] = parent[property] as Property;
         path.pop();
         return;
       }
@@ -206,7 +233,7 @@ class Schema {
     };
 
     const flattened = {};
-    const path = [];
+    const path: string[] = [];
     for (const property in schema.properties) {
       if (!schema.properties.hasOwnProperty(property)) continue;
       __buildFlattenedSchema(property, schema.properties, path, flattened);
@@ -220,10 +247,12 @@ class Schema {
    * @param {boolean} createId
    * @return {object} schema
    */
-  static inflate(schema, createId) {
-    const __inflateObject = (parent, path, value) => {
+  static inflate(schema: SchemaModel, createId: boolean) {
+    const __inflateObject = (parent: {[key: string]: any}, path: string[], value: any) => {
       if (path.length > 1) {
         const parentKey = path.shift();
+        if (!parentKey) return;
+
         if (!parent[parentKey]) {
           parent[parentKey] = {};
         }
@@ -231,14 +260,16 @@ class Schema {
         return;
       }
 
-      parent[path.shift()] = value;
+      const part = path.shift();
+
+      if (part) parent[part] = value;
       return;
     };
 
     const flattenedSchema = Schema.getFlattened(schema);
 
-    const res = {};
-    const objects = {};
+    const res: {[key: string]: any} = {};
+    const objects: {[key: string]: any} = {};
     for (const property in flattenedSchema) {
       if (!flattenedSchema.hasOwnProperty(property)) continue;
       const config = flattenedSchema[property];
@@ -249,6 +280,8 @@ class Schema {
 
       const path = propVal.path.split('.');
       const root = path.shift();
+      if (!root) continue;
+
       let value = propVal.value;
       if (path.length > 0) {
         if (!objects[root]) {
@@ -275,7 +308,7 @@ class Schema {
    * @param {object} config
    * @return {*} defaultValue
    */
-  static getPropDefault(config) {
+  static getPropDefault(config: Property) {
     let res;
     switch (config.__type) {
     default:
@@ -313,34 +346,37 @@ class Schema {
   }
 }
 
-const _checkOptions = (options, defaultToken) => {
+const _checkOptions = (options?: RequestOptionsIn, defaultToken?: string): RequestOptions => {
   options = Object.assign({}, options);
 
-  if (!options) {
-    options = {};
-  }
-  if (!options.params) {
-    options.params = {};
-  }
-  if (!options.data) {
-    options.data = {};
-  }
-  if (!options.params.token) {
-    options.params.token = defaultToken;
-  }
+  if (!defaultToken) throw new Error('No default token provided');
 
-  return options;
+  const RequestOptions: RequestOptions = {
+    method: '',
+    params: {
+      token: defaultToken,
+    },
+    data: {},
+    headers: {},
+    body: {},
+    stream: false,
+  };
+
+  if (options.params) RequestOptions.params = {...RequestOptions.params, ...options.params};
+  if (options.data) RequestOptions.data = {...RequestOptions.data, ...options.data};
+
+  return RequestOptions;
 };
 
-const sleep = (ms) => {
+const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
-const backOff = (attempt) => {
+const backOff = (attempt: number) => {
   const delay = Math.pow(2, attempt) * 200;
   return sleep(delay + (delay * 0.2 * Math.random()));
 };
 
-module.exports = {
+export default {
   Path,
   Schema,
   Errors,
