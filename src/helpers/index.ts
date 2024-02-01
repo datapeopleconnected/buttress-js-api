@@ -12,8 +12,14 @@
 import Sugar from 'sugar';
 import uuid from 'uuid';
 import ObjectId from 'bson-objectid';
+import crypto from 'crypto';
 
 import SchemaModel, { Property, Properties } from '../model/Schema';
+
+import ButtressOptionsInternal from '../types/ButtressOptionsInternal';
+
+// Used by buttress internally
+declare var lambda: any;
 
 export interface RequestOptions {
   method: string
@@ -152,12 +158,12 @@ class Schema {
    * @param {object} schema
    * @return {object}
    */
-  static create(schema: SchemaModel) {
+  static create(schema: SchemaModel, buttressOptions: ButtressOptionsInternal) {
     if (!schema) {
       return false;
     }
 
-    return Schema.inflate(schema, true);
+    return Schema.inflate(schema, true, buttressOptions);
   }
 
   /**
@@ -165,13 +171,13 @@ class Schema {
    * @param {string} path
    * @return {object} schemaPart
    */
-  static createFromPath(schema: SchemaModel, path: string) {
+  static createFromPath(schema: SchemaModel, path: string, buttressOptions: ButtressOptionsInternal) {
     const subSchema = Schema.getSubSchema(schema, path);
     if (!subSchema) {
       return false;
     }
 
-    return Schema.inflate(subSchema, false);
+    return Schema.inflate(subSchema, false, buttressOptions);
   }
 
   /**
@@ -245,9 +251,10 @@ class Schema {
   /**
    * @param {object} schema
    * @param {boolean} createId
+   * @param {object} buttressOptions
    * @return {object} schema
    */
-  static inflate(schema: SchemaModel, createId: boolean) {
+  static async inflate(schema: SchemaModel, createId: boolean, buttressOptions: ButtressOptionsInternal) {
     const __inflateObject = (parent: {[key: string]: any}, path: string[], value: any) => {
       if (path.length > 1) {
         const parentKey = path.shift();
@@ -275,7 +282,7 @@ class Schema {
       const config = flattenedSchema[property];
       const propVal = {
         path: property,
-        value: Schema.getPropDefault(config),
+        value: await Schema.getPropDefault(config, buttressOptions),
       };
 
       const path = propVal.path.split('.');
@@ -295,10 +302,10 @@ class Schema {
     }
 
     if (!res.id && createId) {
-      res.id = Schema.getPropDefault({
+      res.id = await Schema.getPropDefault({
         __type: 'id',
         __default: 'new',
-      });
+      }, buttressOptions);
     }
 
     return res;
@@ -306,9 +313,10 @@ class Schema {
 
   /**
    * @param {object} config
+   * @param {object} ButtressOptionsInternal
    * @return {*} defaultValue
    */
-  static getPropDefault(config: Property) {
+  static async getPropDefault(config: Property, buttressOptions: ButtressOptionsInternal) {
     let res;
     switch (config.__type) {
     default:
@@ -317,6 +325,18 @@ class Schema {
       break;
     case 'string':
       res = config.__default !== undefined ? config.__default : '';
+      if (config.__default === 'randomString') {
+        res = '';
+        const length = 36;
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const mask = 0x3d;
+
+        const bytes = (buttressOptions.isolated) ? await lambda.cryptoRandomBytes(length) : crypto.randomBytes(length);
+        for (let x = 0; x < bytes.length; x++) {
+          const byte = bytes[x];
+          res += chars[byte & mask];
+        }
+      }
       break;
     case 'number':
       res = config.__default !== undefined ? config.__default : 0;

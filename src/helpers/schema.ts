@@ -107,10 +107,10 @@ export default class Base {
    */
   createObject(path: string) {
     if (path) {
-      return Helpers.Schema.createFromPath(this.loadSchema(), path);
+      return Helpers.Schema.createFromPath(this.loadSchema(), path, this._ButtressOptions);
     }
 
-    return Helpers.Schema.create(this.loadSchema());
+    return Helpers.Schema.create(this.loadSchema(), this._ButtressOptions);
   }
 
   /**
