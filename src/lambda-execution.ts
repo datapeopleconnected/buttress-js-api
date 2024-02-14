@@ -7,18 +7,19 @@
  *
  */
 
-const Schema = require('./schema.js');
+import Schema from './helpers/schema';
+
+import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 /**
  * @class LambdaExecution
  */
-class LambdaExecution extends Schema {
+export default class LambdaExecution extends Schema {
   /**
    * Instance of LambdaExecution
    * @param {object} ButtressOptions
    */
-  constructor(ButtressOptions) {
+  constructor(ButtressOptions: ButtressOptionsInternal) {
     super('lambda-execution', ButtressOptions, true);
   }
 }
-module.exports = (ButtressOptions) => new LambdaExecution(ButtressOptions);

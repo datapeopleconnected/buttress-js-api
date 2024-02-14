@@ -25,6 +25,7 @@ import Token from './token';
 import User from './user';
 import SecureStore from './secure-store';
 import AppDataSharing from './app-data-sharing';
+import LambdaExecution from './lambda-execution';
 
 export interface ButtressOptions {
   buttressUrl: string,
@@ -52,6 +53,7 @@ export class Buttress {
   User?: User;
   SecureStore?: SecureStore;
   AppDataSharing?: AppDataSharing;
+  LambdaExecution?: LambdaExecution;
 
   options: ButtressOptionsInternal = {
     isolated: false,
@@ -247,6 +249,7 @@ export class Buttress {
     this.User = new User(this.options);
     this.SecureStore = new SecureStore(this.options);
     this.AppDataSharing = new AppDataSharing(this.options);
+    this.LambdaExecution = new LambdaExecution(this.options);
   }
 
   /**
