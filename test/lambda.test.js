@@ -275,7 +275,7 @@ describe('@lambda', function() {
       const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
       lambdaDB.name.should.equal('api-hello-world-lambda');
 
-      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${testApp.apiPath}/hello/world?token=${testApp.token}`, {
+      const res = await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/hello/world?token=${testApp.token}`, {
         method: 'GET',
       });
 
@@ -283,7 +283,7 @@ describe('@lambda', function() {
       const executionId = parsedRes.executionId;
       await sleep(5000);
 
-      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${testApp.apiPath}/${executionId}?token=${testApp.token}`, {
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda-execution/${executionId}/status?token=${testApp.token}`, {
         method: 'GET',
       });
       const resJson = await statusRes.json();
@@ -323,7 +323,7 @@ describe('@lambda', function() {
           $eq: 'api-edit-organisation-lambda',
         }
       });
-      await fetch(`${Config.endpoint}/api/v1/lambda/${testApp.apiPath}/${lambda.id}?token=${testApp.token}`, {
+      await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/${lambda.id}?token=${testApp.token}`, {
         method: 'GET',
       });
 
@@ -347,14 +347,14 @@ describe('@lambda', function() {
         grade: 1,
       });
 
-      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${testApp.apiPath}/${lambda.id}?token=${testApp.token}`, {
+      const res = await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/${lambda.id}?token=${testApp.token}`, {
         method: 'GET',
       });
 
       const parsedRes = await res.json();
       const executionId = parsedRes.executionId;
 
-      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${testApp.apiPath}/${executionId}?token=${testApp.token}`, {
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda-execution/${executionId}/status?token=${testApp.token}`, {
         method: 'GET',
       });
       const resJson = await statusRes.json();
@@ -401,7 +401,7 @@ describe('@lambda', function() {
         }
       });
 
-      const res = await fetch(`${Config.endpoint}/api/v1/lambda/${testApp.apiPath}/${lambda.id}?token=${testApp.token}`, {
+      const res = await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/${lambda.id}?token=${testApp.token}`, {
         method: 'POST',
         body: JSON.stringify(organisation),
         headers: {
@@ -417,7 +417,7 @@ describe('@lambda', function() {
         throw new Error('failed to make the API call');
       }
 
-      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda/status/${testApp.apiPath}/${executionId}?token=${testApp.token}`, {
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda-execution/${executionId}/status?token=${testApp.token}`, {
         method: 'GET',
       });
       const resJson = await statusRes.json();
