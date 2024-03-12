@@ -27,6 +27,7 @@
     "test-posts": "mocha --require should --reporter spec -g @posts",
     "test-users": "mocha --require should --reporter spec -g @users",
     "test-policy": "mocha --require should --reporter spec -g @policy",
+    "test-advanced-policy": "mocha --require should --reporter spec -g @advanced-policy",
     "test-lambda": "mocha --require should --reporter spec -g @lambda",
     "test-boards": "mocha --require should --reporter spec -g @boards",
     "test-data-filter": "mocha --require should --reporter spec -g @data-filter",
