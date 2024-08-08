@@ -10,7 +10,7 @@
  */
 
 import Helpers, { RequestOptionsIn } from './helpers';
-import Schema from './helpers/schema';
+import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
@@ -19,7 +19,7 @@ import AppDataSharingModel from './model/AppDataSharing';
 /**
  * @class AppDataSharing
  */
-export default class AppDataSharing extends Schema {
+export default class AppDataSharing extends BaseSchema {
   /**
    * Instance of AppDataSharing
    * @param {object} ButtressOptions

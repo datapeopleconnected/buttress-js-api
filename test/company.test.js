@@ -9,7 +9,7 @@
  *
  */
 
-const Buttress = require('../lib/buttressjs');
+const {default: Buttress} = require('../dist/index');
 const Config = require('./config');
 const should = require('should');
 const ObjectId = require('bson-objectid');

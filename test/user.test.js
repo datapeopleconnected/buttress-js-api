@@ -9,7 +9,7 @@
  *
  */
 
-const Buttress = require('../lib/buttressjs');
+const {default: Buttress} = require('../dist/index');
 const Config = require('./config');
 
 Config.init();

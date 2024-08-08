@@ -9,14 +9,14 @@
 
 import { AuthData } from './auth';
 import Helpers, { RequestOptionsIn } from './helpers';
-import Schema from './helpers/schema';
+import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 /**
  * @class User
  */
-export default class User extends Schema {
+export default class User extends BaseSchema {
   /**
    * Instance of User
    * @param {object} ButtressOptions

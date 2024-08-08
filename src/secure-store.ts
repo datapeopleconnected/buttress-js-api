@@ -8,7 +8,7 @@
  */
 
 import Helpers, { RequestOptionsIn } from './helpers';
-import Schema from './helpers/schema';
+import BaseSchema from './helpers/schema';
 
 import SecureStoreModel from './model/SecureStore';
 
@@ -17,7 +17,7 @@ import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 /**
  * @class SecureStore
  */
-export default class SecureStore extends Schema {
+export default class SecureStore extends BaseSchema {
   /**
    * Instance of SecureStore
    * @param {object} ButtressOptions

@@ -22,9 +22,9 @@ import APIResponse from '../types/Response';
 declare var lambda: any;
 
 /**
- * @class Base
+ * @class BaseSchema
  */
-export default class Base {
+export default class BaseSchema {
 
   collection: string;
   
@@ -186,56 +186,53 @@ export default class Base {
       return response.body;
     }
 
-    return fetch(url, options)
-      .then((response: APIResponse) => {
-        if (options.method === 'POST') {
-          const needsRedirect = this._postRedirect(response, url);
-          if (needsRedirect) {
-            console.log(`[WARNING] A POST redirect is occuring due to different http protocol`);
-            return this._request(type, path, options, attempt, true);
-          }
+    try {
+      const response = await fetch(url, options);
+      if (options.method === 'POST') {
+        const needsRedirect = this._postRedirect(response, url);
+        if (needsRedirect) {
+          console.log(`[WARNING] A POST redirect is occuring due to different http protocol`);
+          return this._request(type, path, options, attempt, true);
         }
+      }
 
-        if (!response.ok) {
-          return response.json()
-            .then((body) => {
-              response.data = body;
-              throw new Helpers.Errors.ResponseError(response);
-            })
-            .catch((err) => {
-              throw new Helpers.Errors.ResponseError(response);
-            });
+      if (!response.ok) {
+        try {
+          const body = await response.json();
+          throw new Helpers.Errors.ResponseError({...response, body});
+        } catch {
+          throw new Helpers.Errors.ResponseError(response);
         }
+      }
 
-        if (options.stream === true) {
-          return response.body;
-        }
+      if (options.stream === true) {
+        return response.body;
+      }
 
-        return response.json();
-      })
-      .catch((err) => {
-        let error = err;
+      return response.json();
+    } catch (err: any) {
+      let error = err;
 
-        if (err.response) {
-          error = new Helpers.Errors.ResponseError(err.response);
-        } else if (err.request) {
-          error = new Helpers.Errors.RequestError(err, err.code);
-        }
+      if (err.response) {
+        error = new Helpers.Errors.ResponseError(err.response);
+      } else if (err.request) {
+        error = new Helpers.Errors.RequestError(err, err.code);
+      }
 
-        // Handle error type and retry if necessary
-        if (error instanceof Helpers.Errors.RequestError &&
-          Boolean(error.code) &&
-          error.code !== 'ECONNABORTED' &&
-          Base.Constants.RETRY_METHODS.includes(type)
-        ) {
-          if (attempt >= Base.Constants.MAX_RETRIES) throw error;
+      // Handle error type and retry if necessary
+      if (error instanceof Helpers.Errors.RequestError &&
+        Boolean(error.code) &&
+        error.code !== 'ECONNABORTED' &&
+        BaseSchema.Constants.RETRY_METHODS.includes(type)
+      ) {
+        if (attempt >= BaseSchema.Constants.MAX_RETRIES) throw error;
 
-          return Helpers.backOff(attempt)
-            .then(() => this._request(type, path, options, attempt));
-        }
+        return Helpers.backOff(attempt)
+          .then(() => this._request(type, path, options, attempt));
+      }
 
-        throw error;
-      });
+      throw error;
+    };
   }
 
   /**
@@ -245,7 +242,7 @@ export default class Base {
    * @returns {promise}
    */
   _postRedirect(response: APIResponse, url: URL) {
-    // let originalURL = url.href.match(Base.__protocolRegex);
+    // let originalURL = url.href.match(BaseSchema.__protocolRegex);
     const redirectedURL = new URL(response.url);
 
     const originalProtocol = url.protocol;

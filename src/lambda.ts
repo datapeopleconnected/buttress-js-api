@@ -8,7 +8,7 @@
  */
 
 import Helpers, { RequestOptionsIn } from './helpers';
-import Schema from './helpers/schema';
+import BaseSchema from './helpers/schema';
 
 import LambdaModel from './model/Lambda';
 
@@ -17,7 +17,7 @@ import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 /**
  * @class Lambda
  */
-export default class Lambda extends Schema {
+export default class Lambda extends BaseSchema {
   /**
    * Instance of Lambda
    * @param {object} ButtressOptions

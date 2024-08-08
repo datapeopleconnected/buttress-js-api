@@ -10,14 +10,14 @@
  */
 
 import Helpers, { RequestOptionsIn } from './helpers';
-import Schema from './helpers/schema';
+import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 /**
  * @class Token
  */
-export default class Token extends Schema {
+export default class Token extends BaseSchema {
   /**
    * Instance of Token
    * @param {object} ButtressOptions

@@ -10,7 +10,7 @@
  */
 
 import Helpers, {RequestOptionsIn} from './helpers';
-import Schema from './helpers/schema';
+import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
@@ -28,7 +28,7 @@ export interface AuthData {
 /**
  * @class Auth
  */
-export default class Auth extends Schema {
+export default class Auth extends BaseSchema {
 
   private User: User;
 
@@ -63,7 +63,7 @@ export default class Auth extends Schema {
       }
     }
 
-    if (!user.token) {
+    if (!user.tokens || user.tokens.length === 0) {
       const newToken = await this.createToken(user.id, authData);
       user.token = newToken.value;
     }

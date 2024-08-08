@@ -10,7 +10,7 @@
  */
 
 import Sugar from 'sugar';
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import ObjectId from 'bson-objectid';
 import crypto from 'crypto';
 
@@ -351,7 +351,7 @@ class Schema {
       res = config.__default === 'new' ? Schema.id : null;
       break;
     case 'uuid':
-      res = config.__default === 'new' ? uuid.v4() : null;
+      res = config.__default === 'new' ? uuidv4() : null;
       break;
     case 'date':
       if (config.__default === null) {

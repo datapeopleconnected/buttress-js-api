@@ -10,7 +10,7 @@
  */
 
 const io = require('socket.io-client');
-const Buttress = require('../lib/buttressjs');
+const {default: Buttress} = require('../dist/index');
 const Config = require('./config');
 
 Config.init();
@@ -348,7 +348,6 @@ describe('@socket', function() {
     if (!testApp) {
       testApp = await Buttress.App.save({
         name: 'Socket Test App',
-        type: 'server',
         authLevel: 2,
         apiPath: 'socket-test-app',
       });

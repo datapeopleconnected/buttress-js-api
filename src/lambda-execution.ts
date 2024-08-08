@@ -7,14 +7,14 @@
  *
  */
 
-import Schema from './helpers/schema';
+import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 /**
  * @class LambdaExecution
  */
-export default class LambdaExecution extends Schema {
+export default class LambdaExecution extends BaseSchema {
   /**
    * Instance of LambdaExecution
    * @param {object} ButtressOptions

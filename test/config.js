@@ -9,7 +9,7 @@
  *
  */
 
-const Buttress = require('../lib/buttressjs');
+const {default: Buttress} = require('../dist/index');
 const TestSchema = require('./data/schema');
 const TestAppRoles = require('./data/appRoles.json');
 const ObjectId = require('bson-objectid');
@@ -39,8 +39,8 @@ class Config {
     console.log(`BUTTRESS_TEST_API_URL: `, this.endpoint);
     console.log(`BUTTRESS_TEST_SUPER_APP_KEY: `, this.token);
 
-    before((done) => {
-      Buttress.init({
+    before(async () => {
+      await Buttress.init({
         buttressUrl: this.endpoint,
         appToken: this.token,
         allowUnauthorized: true,
@@ -49,21 +49,17 @@ class Config {
         apiPath: 'bjs',
         version: 1,
         update: true,
-      })
-        .then(() => {
-          return Promise.all([
-            Buttress.User.removeAll(),
-            Buttress.Token.removeAllUserTokens(),
-            Buttress.getCollection('service').removeAll(),
-            Buttress.getCollection('company').removeAll(),
-            Buttress.getCollection('board').removeAll(),
-            Buttress.getCollection('post').removeAll(),
-          ]);
-        })
-        .then(() => done())
-        .catch((err) => {
-          console.error(err);
-        });
+      });
+
+      await Promise.all([
+        Buttress.User.removeAll(),
+        Buttress.Token.removeAllUserTokens(),
+        Buttress.getCollection('service').removeAll(),
+        Buttress.getCollection('company').removeAll(),
+        Buttress.getCollection('board').removeAll(),
+        Buttress.getCollection('post').removeAll(),
+      ]);
+      console.log('Cleared out existing local data.');
     });
 
     after(function(done) {

@@ -11,7 +11,7 @@
 const Sugar = require('sugar');
 const fetch = require('cross-fetch');
 
-const Buttress = require('../lib/buttressjs');
+const {default: Buttress} = require('../dist/index');
 const Config = require('./config');
 
 Config.init();

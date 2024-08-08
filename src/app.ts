@@ -10,7 +10,7 @@
  */
 
 import Helpers, {RequestOptionsIn} from './helpers';
-import Base from './helpers/schema';
+import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
@@ -19,7 +19,7 @@ import Schema from './model/Schema';
 /**
  * @class App
  */
-export default class App extends Base {
+export default class App extends BaseSchema {
   /**
    * Instance of App
    * @param {object} ButtressOptions

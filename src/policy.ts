@@ -8,14 +8,14 @@
  */
 
 import Helpers, { RequestOptionsIn } from './helpers';
-import Schema from './helpers/schema';
+import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 /**
 * @class Policy
 */
-export default class Policy extends Schema {
+export default class Policy extends BaseSchema {
   /**
   * Instance of Policy
   * @param {object} ButtressOptions

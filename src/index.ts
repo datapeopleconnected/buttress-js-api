@@ -1,5 +1,7 @@
 'use strict';
 
+import 'source-map-support/register';
+
 /**
  * Buttress API -
  *
@@ -12,7 +14,7 @@
 import Sugar from 'sugar';
 
 import Helpers from './helpers';
-import Schema from './helpers/schema';
+import BaseSchema from './helpers/schema';
 
 import ModelSchema from './model/Schema';
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
@@ -38,7 +40,7 @@ export interface ButtressOptions {
 }
 
 type Modules = {
-  [key: string]: Schema;
+  [key: string]: BaseSchema;
 };
 
 /**
@@ -99,9 +101,9 @@ export class Buttress {
     if (options.update) this.options.update = options.update;
     if (options.allowUnauthorized) this.options.allowUnauthorized = options.allowUnauthorized;
 
-    if (this.options.allowUnauthorized) {
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    }
+    // if (this.options.allowUnauthorized) {
+    //   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    // }
 
     // This line is for testing
     this.options.url = new URL(options.buttressUrl);
@@ -110,7 +112,11 @@ export class Buttress {
 
     this.__initCoreModules();
 
+    console.log('INIT');
+
     if (this.options.update) await this.initSchema();
+
+    console.log('Update');
 
     this.options.compiledSchema = await (this.getCollection('app') as App).getSchema();
     this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
@@ -122,10 +128,8 @@ export class Buttress {
    * Init schema for current app
    * @return {promise}
    */
-  initSchema() {
-    return Promise.all([
-      this.setSchema(this.options.schema),
-    ]);
+  async initSchema() {
+    return this.setSchema(this.options.schema);
   }
 
   /**
@@ -183,11 +187,11 @@ export class Buttress {
   async setSchema(schema: ModelSchema[]) {
     this.options.schema = schema;
 
-    if (!this.options.schema) return;
+    if (!this.options.schema) return false;
 
-    await (this.getCollection('app') as App).updateSchema(this.options.schema);
+    await this.getCollection<App>('app').updateSchema(this.options.schema);
 
-    this.options.compiledSchema = await (this.getCollection('app') as App).getSchema();
+    this.options.compiledSchema = await this.getCollection<App>('app').getSchema();
     this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
 
     return true;
@@ -241,15 +245,15 @@ export class Buttress {
    * @return {promise}
    */
   private __initCoreModules() {
-    this.App = new App(this.options);
-    this.Auth = new Auth(this.options);
-    this.Lambda = new Lambda(this.options);
-    this.Policy = new Policy(this.options);
-    this.Token = new Token(this.options);
-    this.User = new User(this.options);
-    this.SecureStore = new SecureStore(this.options);
-    this.AppDataSharing = new AppDataSharing(this.options);
-    this.LambdaExecution = new LambdaExecution(this.options);
+    this.App = this.__modules['App'] = new App(this.options);
+    this.Auth = this.__modules['Auth'] = new Auth(this.options);
+    this.Lambda = this.__modules['Lambda'] = new Lambda(this.options);
+    this.Policy = this.__modules['Policy'] = new Policy(this.options);
+    this.Token = this.__modules['Token'] = new Token(this.options);
+    this.User = this.__modules['User'] = new User(this.options);
+    this.SecureStore = this.__modules['SecureStore'] = new SecureStore(this.options);
+    this.AppDataSharing = this.__modules['AppDataSharing'] = new AppDataSharing(this.options);
+    this.LambdaExecution = this.__modules['LambdaExecution'] = new LambdaExecution(this.options);
   }
 
   /**
@@ -268,7 +272,7 @@ export class Buttress {
    * @return {object}
    */
   _loadModule(collection: string) {
-    return new Schema(collection, this.options);
+    return new BaseSchema(collection, this.options);
   }
 
   /**
@@ -286,7 +290,7 @@ export class Buttress {
    * @param {string} collection
    * @return {object} collection
    */
-  getCollection(collection: string) {
+  getCollection<T extends BaseSchema>(collection: string): T {
     if (!this.__initialised) throw new Error('Unable to getCollection before Buttress is initialised');
 
     const mod = Sugar.String.capitalize(collection, true, true);
@@ -294,7 +298,7 @@ export class Buttress {
       this._addModule(collection);
     }
 
-    return this._findModule(collection);
+    return this._findModule(collection) as T;
   }
 }
 
