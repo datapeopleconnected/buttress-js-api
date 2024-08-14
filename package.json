@@ -2,12 +2,9 @@
   "name": "@buttress/api",
   "description": "ButtressJS API for Node.js",
   "version": "3.0.0-43",
-  "author": "Lighten",
-  "contributors": [
-    "Chris Bates-Keegan <chris@wearelighten.co.uk>"
-  ],
+  "author": "Data People Connected LTD",
   "homepage": "https://github.com/wearelighten/buttress-js-api",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wearelighten/buttress-js-api"
@@ -22,6 +19,7 @@
     "build": "tsc",
     "watch": "tsc --watch",
     "lint": "eslint 'lib/**/*.js'",
+    "licence-check": "./.husky/licence-check",
     "test": "mocha --require should --reporter spec --bail",
     "test-app": "mocha --require should --reporter spec -g @app",
     "test-company": "mocha --require should --reporter spec -g company",

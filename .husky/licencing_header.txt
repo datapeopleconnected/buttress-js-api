@@ -13,13 +13,3 @@
  * You should have received a copy of the GNU Affero General Public Licence along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
-export default interface ButtressOptions {
-  buttressUrl: string,
-  appToken: string,
-  apiPath: string,
-  schema?: any[],
-  version: number,
-  update?: boolean,
-  allowUnauthorized?: boolean,
-}
