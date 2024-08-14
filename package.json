@@ -1,7 +1,7 @@
 {
   "name": "@buttress/api",
   "description": "ButtressJS API for Node.js",
-  "version": "3.0.0-44",
+  "version": "3.0.0-45",
   "author": "Data People Connected LTD",
   "homepage": "https://github.com/wearelighten/buttress-js-api",
   "license": "AGPL-3.0-or-later",
@@ -34,6 +34,9 @@
     "prepare": "husky install && ./.husky/nvm-fix"
   },
   "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "bson-objectid": "^2.0.2",
     "cross-fetch": "^3.1.5",
