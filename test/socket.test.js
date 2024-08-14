@@ -87,12 +87,7 @@ const users = [{
 }];
 
 const authentication = {
-  authLevel: 2,
-  domains: [Config.endpoint],
-  role: 'public',
-  permissions: [
-    {route: '*', permission: '*'},
-  ],
+  domains: [Config.endpoint]
 };
 
 const policies = [{
@@ -105,8 +100,8 @@ const policies = [{
   config: [{
     endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
     query: [{
-      schema: ['ALL'],
-      access: 'FULL_ACCESS',
+      schema: ['%ALL%'],
+      access: '%FULL_ACCESS%',
     }],
   }],
 }, {
@@ -141,7 +136,7 @@ const policies = [{
     }],
     query: [{
       schema: ['organisation'],
-      access: 'FULL_ACCESS',
+      access: '%FULL_ACCESS%',
     }],
   }],
 }, {
@@ -348,7 +343,6 @@ describe('@socket', function() {
     if (!testApp) {
       testApp = await Buttress.App.save({
         name: 'Socket Test App',
-        authLevel: 2,
         apiPath: 'socket-test-app',
       });
     } else {

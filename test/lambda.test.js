@@ -19,11 +19,7 @@ Config.init();
 const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
 const authentication = {
-  authLevel: 2,
-  domains: [Config.endpoint],
-  permissions: [
-    {route: '*', permission: '*'},
-  ],
+  domains: [Config.endpoint]
 };
 
 const policies = [{
@@ -93,7 +89,6 @@ describe('@lambda', function() {
       testApp = await Buttress.App.save({
         name: 'Lambda Test App',
         type: 'app',
-        authLevel: 2,
         apiPath: 'lambda-test-app',
       });
     } else {

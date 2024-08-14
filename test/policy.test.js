@@ -17,9 +17,6 @@ Config.init();
 const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
 const user = {
-  policyProperties: {
-    adminAccess: true,
-  },
   app: 'google',
   id: '12345678987654321',
   username: 'Test User',
@@ -30,12 +27,10 @@ const user = {
 };
 
 const authentication = {
-  authLevel: 2,
   domains: [Config.endpoint],
-  role: 'public',
-  permissions: [
-    {route: '*', permission: '*'},
-  ],
+  policyProperties: {
+    adminAccess: true,
+  },
 };
 
 const policies = [{
@@ -48,8 +43,8 @@ const policies = [{
   config: [{
     endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
     query: [{
-      schema: ['ALL'],
-      access: 'FULL_ACCESS',
+      schema: ['%ALL%'],
+      access: '%FULL_ACCESS%',
     }],
   }],
 }, {
@@ -84,7 +79,7 @@ const policies = [{
     }],
     query: [{
       schema: ['organisation'],
-      access: 'FULL_ACCESS',
+      access: '%FULL_ACCESS%',
     }]
   }],
 }, {
@@ -119,7 +114,7 @@ const policies = [{
     }],
     query: [{
       schema: ['organisation'],
-      access: 'FULL_ACCESS',
+      access: '%FULL_ACCESS%',
     }]
   }],
 }, {
@@ -206,7 +201,7 @@ const policies = [{
     }],
     query: [{
       schema: ['organisation'],
-      access: 'FULL_ACCESS',
+      access: '%FULL_ACCESS%',
     }]
   }],
 }, {
@@ -434,8 +429,10 @@ describe('@policy', function() {
     if (!testApp) {
       testApp = await Buttress.App.save({
         name: 'Policy Test App',
-        authLevel: 3,
         apiPath: 'policy-test-app',
+        policyPropertiesList: {
+          adminAccess: [true],
+        },
       });
     } else {
       // Fetch token and attach

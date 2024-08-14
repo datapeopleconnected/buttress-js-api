@@ -36,9 +36,7 @@ describe('@app', function() {
     it('should create an app', async function() {
       const testAppData = {
         name: 'Test App',
-        type: 'server',
         version: '1.0.0',
-        authLevel: 2,
         apiPath: 'test-app',
       };
 
@@ -249,9 +247,7 @@ describe('@app-relationship', function() {
 
     testApps.push(await Buttress.App.save({
       name: 'Test App 1',
-      type: 'server',
-      authLevel: 2,
-      apiPath: 'test-app1',
+      apiPath: 'test-app1'
     }));
 
     Buttress.setAuthToken(testApps[0].token);
@@ -278,15 +274,32 @@ describe('@app-relationship', function() {
 
     testApps.push(await Buttress.App.save({
       name: 'Test App 2',
-      type: 'server',
-      authLevel: 2,
       apiPath: 'test-app2',
+      policyPropertiesList: {
+        role: ['TEST'],
+      },
     }));
 
     Buttress.setAuthToken(testApps[1].token);
     Buttress.setAPIPath('test-app2');
 
     await Buttress.setSchema(testApp2Schema);
+
+    await Buttress.getCollection('Policy').createPolicy({
+      name: "test-policy",
+      selection: {
+        role: {
+          "@eq": "TEST"
+        }
+      },
+      config: [{
+        endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+        query: [{
+          schema: ['%ALL%'],
+          access: '%FULL_ACCESS%',
+        }],
+      }]
+    });
 
     await sleep(100); // Give it chance for the URL's to be regenerated
 
@@ -304,15 +317,10 @@ describe('@app-relationship', function() {
       email: 'test@test.com',
       profileUrl: 'http://test.com/thisisatest',
       profileImgUrl: 'http://test.com/thisisatest.png',
-      policyProperties: {
-        role: 'public',
-      },
     }, {
-      authLevel: Buttress.Token.AuthLevel.USER,
-      permissions: [{
-        route: "*",
-        permission: "*"
-      }],
+      policyProperties: {
+        role: 'TEST',
+      },
       domains: ['test.local.buttressjs.com']
     });
   });
@@ -328,9 +336,9 @@ describe('@app-relationship', function() {
 
   describe('Basic', function() {
     it('should register a data share for app2 to connect to app1', async function() {
-      Buttress.setAuthToken(Config.token);
+      Buttress.setAuthToken(testApps[0].token);
 
-      const res = await Buttress.App.registerDataSharing({
+      const res = await Buttress.AppDataSharing.createDataSharing({
         name: 'test-app2',
 
         remoteApp: {
@@ -348,7 +356,13 @@ describe('@app-relationship', function() {
           }),
         },
 
-        _appId: testApps[0].id,
+        policyConfig: [{
+          endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+          query: [{
+            schema: ['%ALL%'],
+            access: '%FULL_ACCESS%',
+          }],
+        }]
       });
 
       res.name.should.equal('test-app2');
@@ -358,15 +372,15 @@ describe('@app-relationship', function() {
     });
 
     it('should register a data share for app1 to connect to app2', async function() {
-      Buttress.setAuthToken(Config.token);
+      Buttress.setAuthToken(testApps[1].token);
 
-      const res = await Buttress.App.registerDataSharing({
+      const res = await Buttress.AppDataSharing.createDataSharing({
         name: 'test-app1',
 
         remoteApp: {
           endpoint: Config.endpoint,
           apiPath: testApps[0].apiPath,
-          token: testAppRelationships[0].remoteAppToken,
+          token: testAppRelationships[0].registrationToken,
         },
 
         dataSharing: {
@@ -378,14 +392,20 @@ describe('@app-relationship', function() {
           remoteApp: null,
         },
 
-        _appId: testApps[1].id,
+        policyConfig: [{
+          endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+          query: [{
+            schema: ['%ALL%'],
+            access: '%FULL_ACCESS%',
+          }],
+        }]
       });
 
       res.name.should.equal('test-app1');
       res.active.should.equal(true);
       res.remoteApp.endpoint.should.equal(Config.endpoint);
       res.remoteApp.apiPath.should.equal(testApps[0].apiPath);
-      res.remoteApp.token.should.equal(testAppRelationships[0].remoteAppToken);
+      res.remoteApp.token.should.not.equal(testAppRelationships[0].registrationToken);
       testAppRelationships.push(res);
     });
 
@@ -397,7 +417,7 @@ describe('@app-relationship', function() {
     it('should update the policy for the source relationship', async function() {
       Buttress.setAuthToken(testApps[0].token);
 
-      const res = await Buttress.App.updateDataSharingPolicy(testAppRelationships[0].id, {
+      const res = await Buttress.AppDataSharing.updateDataSharingPolicy(testAppRelationships[0].id, {
         "collections": [
           "car"
         ]
@@ -411,7 +431,10 @@ describe('@app-relationship', function() {
       testApp2Schema.push({
         "name": "car",
         "type": "collection",
-        "remote": "test-app1.car",
+        "remotes": [{
+          "name": "test-app1",
+          "schema": "car"
+        }],
         "properties": {
           "price": {
             "__type": "string",
@@ -425,8 +448,7 @@ describe('@app-relationship', function() {
     });
 
     it('should be able access data from App 1 using a App 2 token', async function() {
-      const value = testApp2User.token;
-
+      const [{value}] = testApp2User.tokens;
       Buttress.setAuthToken(value);
       Buttress.setAPIPath('test-app2');
 

@@ -51,12 +51,6 @@ describe('@data-filter', function() {
             profileUrl: 'http://test.com/thisisatest',
             profileImgUrl: 'http://test.com/thisisatest.png',
           }, {
-            authLevel: Buttress.Token.AuthLevel.USER,
-            permissions: [{
-              route: '*',
-              permission: '*',
-            }],
-            role: user.name,
             domains: [Buttress.options.url.host],
           });
       });

@@ -112,11 +112,7 @@ export class Buttress {
 
     this.__initCoreModules();
 
-    console.log('INIT');
-
     if (this.options.update) await this.initSchema();
-
-    console.log('Update');
 
     this.options.compiledSchema = await (this.getCollection('app') as App).getSchema();
     this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));

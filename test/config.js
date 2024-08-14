@@ -52,12 +52,12 @@ class Config {
       });
 
       await Promise.all([
-        Buttress.User.removeAll(),
-        Buttress.Token.removeAllUserTokens(),
-        Buttress.getCollection('service').removeAll(),
-        Buttress.getCollection('company').removeAll(),
-        Buttress.getCollection('board').removeAll(),
-        Buttress.getCollection('post').removeAll(),
+        // Remove all existing apps, this should clear out any existing data.
+        await Buttress.App.removeAll(),
+        // Buttress.getCollection('service').removeAll(),
+        // Buttress.getCollection('company').removeAll(),
+        // Buttress.getCollection('board').removeAll(),
+        // Buttress.getCollection('post').removeAll(),
       ]);
       console.log('Cleared out existing local data.');
     });
@@ -167,7 +167,7 @@ class Config {
       }
     ];
 
-    return Buttress.getCollection('companies').bulkSave(companies);
+    return Buttress.getCollection('company').bulkSave(companies);
   }
 
   createUser() {
@@ -180,11 +180,6 @@ class Config {
       profileUrl: 'http://test.com/thisisatest',
       profileImgUrl: 'http://test.com/thisisatest.png'
     }, {
-      authLevel: Buttress.Token.AuthLevel.USER,
-      permissions: [{
-        route: "*",
-        permission: "*"
-      }],
       domains: [Buttress.options.url.host]
     })
       .catch(err => {

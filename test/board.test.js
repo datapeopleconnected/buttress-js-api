@@ -26,13 +26,13 @@ describe('@boards', function() {
   });
 
   after(function(done) {
-    Buttress.getCollection('boards').removeAll()
+    Buttress.getCollection('board').removeAll()
       .then(() => done()).catch(done);
   });
 
   describe('Post Basics', function() {
     it('should return no boards', function(done) {
-      Buttress.getCollection('boards').getAll()
+      Buttress.getCollection('board').getAll()
         .then(function(boards) {
           boards.length.should.equal(0);
           done();

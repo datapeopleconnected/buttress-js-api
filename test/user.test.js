@@ -76,12 +76,6 @@ describe('@users', function() {
     it('should create a user', function(done) {
       Buttress.Auth
         .findOrCreateUser(USERS[0], {
-          authLevel: Buttress.Token.AuthLevel.USER,
-          permissions: [{
-            route: '*',
-            permission: '*',
-          }],
-          role: 'public',
           domains: [Buttress.options.url.host],
         })
         .then(function(user) {
@@ -117,11 +111,6 @@ describe('@users', function() {
     it('should find an existing user', function(done) {
       Buttress.Auth
         .findOrCreateUser(USERS[0], {
-          authLevel: Buttress.Token.AuthLevel.USER,
-          permissions: [{
-            route: '*',
-            permission: '*',
-          }],
           domains: [Buttress.options.url.host],
         })
         .then(function(user) {
@@ -143,11 +132,6 @@ describe('@users', function() {
     it('should create a another user (default role)', function(done) {
       Buttress.Auth
         .findOrCreateUser(USERS[1], {
-          authLevel: Buttress.Token.AuthLevel.SUPER,
-          permissions: [{
-            route: '*',
-            permission: '*',
-          }],
           domains: [Buttress.options.url.host],
         })
         .then(function(user) {
@@ -172,12 +156,6 @@ describe('@users', function() {
 
       Buttress.Auth
         .createToken(user.id, {
-          authLevel: Buttress.Token.AuthLevel.USER,
-          permissions: [{
-            route: '*',
-            permission: '*',
-          }],
-          role: 'user.member',
           domains: [Buttress.options.url.host],
         })
         .then(function(token) {

@@ -33,7 +33,7 @@ describe('@service-basics', function() {
 
   after(function(done) {
     Promise.all([
-      Buttress.getCollection('companies').removeAll(),
+      Buttress.getCollection('company').removeAll(),
       Buttress.getCollection('services').removeAll(),
       Buttress.User.removeAll(),
     ])
