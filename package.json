@@ -31,7 +31,7 @@
     "test-boards": "mocha --require should --reporter spec -g @boards",
     "test-data-filter": "mocha --require should --reporter spec -g @data-filter",
     "test-socket": "mocha --require should --reporter spec -g @socket",
-    "prepare": "husky"
+    "prepare": "husky install && ./.husky/nvm-fix"
   },
   "main": "./dist/index.js",
   "dependencies": {
