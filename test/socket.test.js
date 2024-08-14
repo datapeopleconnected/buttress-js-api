@@ -1,16 +1,23 @@
 'use strict';
 
 /**
- * Buttress API -
+ * Buttress API - The federated real-time open data platform
+ * Copyright (C) 2016-2024 Data People Connected LTD.
+ * <https://www.dpc-ltd.com/>
  *
- * @file app.test.js
- * @description
- * @author Chris Bates-Keegan
- *
+ * This file is part of Buttress.
+ * Buttress is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public Licence as published by the Free Software
+ * Foundation, either version 3 of the Licence, or (at your option) any later version.
+ * Buttress is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public Licence for more details.
+ * You should have received a copy of the GNU Affero General Public Licence along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 const io = require('socket.io-client');
-const Buttress = require('../lib/buttressjs');
+const {default: Buttress} = require('../dist/index');
 const Config = require('./config');
 
 Config.init();
@@ -87,12 +94,7 @@ const users = [{
 }];
 
 const authentication = {
-  authLevel: 2,
-  domains: [Config.endpoint],
-  role: 'public',
-  permissions: [
-    {route: '*', permission: '*'},
-  ],
+  domains: [Config.endpoint]
 };
 
 const policies = [{
@@ -105,8 +107,8 @@ const policies = [{
   config: [{
     endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
     query: [{
-      schema: ['ALL'],
-      access: 'FULL_ACCESS',
+      schema: ['%ALL%'],
+      access: '%FULL_ACCESS%',
     }],
   }],
 }, {
@@ -141,7 +143,7 @@ const policies = [{
     }],
     query: [{
       schema: ['organisation'],
-      access: 'FULL_ACCESS',
+      access: '%FULL_ACCESS%',
     }],
   }],
 }, {
@@ -348,8 +350,6 @@ describe('@socket', function() {
     if (!testApp) {
       testApp = await Buttress.App.save({
         name: 'Socket Test App',
-        type: 'server',
-        authLevel: 2,
         apiPath: 'socket-test-app',
       });
     } else {

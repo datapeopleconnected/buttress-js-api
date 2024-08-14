@@ -1,15 +1,22 @@
 "use strict";
 
 /**
- * Buttress API -
+ * Buttress API - The federated real-time open data platform
+ * Copyright (C) 2016-2024 Data People Connected LTD.
+ * <https://www.dpc-ltd.com/>
  *
- * @file config.js
- * @description
- * @author Chris Bates-Keegan
- *
+ * This file is part of Buttress.
+ * Buttress is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public Licence as published by the Free Software
+ * Foundation, either version 3 of the Licence, or (at your option) any later version.
+ * Buttress is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public Licence for more details.
+ * You should have received a copy of the GNU Affero General Public Licence along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Buttress = require('../lib/buttressjs');
+const {default: Buttress} = require('../dist/index');
 const TestSchema = require('./data/schema');
 const TestAppRoles = require('./data/appRoles.json');
 const ObjectId = require('bson-objectid');
@@ -39,8 +46,8 @@ class Config {
     console.log(`BUTTRESS_TEST_API_URL: `, this.endpoint);
     console.log(`BUTTRESS_TEST_SUPER_APP_KEY: `, this.token);
 
-    before((done) => {
-      Buttress.init({
+    before(async () => {
+      await Buttress.init({
         buttressUrl: this.endpoint,
         appToken: this.token,
         allowUnauthorized: true,
@@ -49,21 +56,17 @@ class Config {
         apiPath: 'bjs',
         version: 1,
         update: true,
-      })
-        .then(() => {
-          return Promise.all([
-            Buttress.User.removeAll(),
-            Buttress.Token.removeAllUserTokens(),
-            Buttress.getCollection('service').removeAll(),
-            Buttress.getCollection('company').removeAll(),
-            Buttress.getCollection('board').removeAll(),
-            Buttress.getCollection('post').removeAll(),
-          ]);
-        })
-        .then(() => done())
-        .catch((err) => {
-          console.error(err);
-        });
+      });
+
+      await Promise.all([
+        // Remove all existing apps, this should clear out any existing data.
+        await Buttress.App.removeAll(),
+        // Buttress.getCollection('service').removeAll(),
+        // Buttress.getCollection('company').removeAll(),
+        // Buttress.getCollection('board').removeAll(),
+        // Buttress.getCollection('post').removeAll(),
+      ]);
+      console.log('Cleared out existing local data.');
     });
 
     after(function(done) {
@@ -171,7 +174,7 @@ class Config {
       }
     ];
 
-    return Buttress.getCollection('companies').bulkSave(companies);
+    return Buttress.getCollection('company').bulkSave(companies);
   }
 
   createUser() {
@@ -184,11 +187,6 @@ class Config {
       profileUrl: 'http://test.com/thisisatest',
       profileImgUrl: 'http://test.com/thisisatest.png'
     }, {
-      authLevel: Buttress.Token.AuthLevel.USER,
-      permissions: [{
-        route: "*",
-        permission: "*"
-      }],
       domains: [Buttress.options.url.host]
     })
       .catch(err => {

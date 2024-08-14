@@ -1,17 +1,25 @@
 'use strict';
 
 /**
- * Buttress API -
+ * Buttress API - The federated real-time open data platform
+ * Copyright (C) 2016-2024 Data People Connected LTD.
+ * <https://www.dpc-ltd.com/>
  *
- * @file lambda.test.js
- * @description
- * @author Chris Bates-Keegan
- *
+ * This file is part of Buttress.
+ * Buttress is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public Licence as published by the Free Software
+ * Foundation, either version 3 of the Licence, or (at your option) any later version.
+ * Buttress is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public Licence for more details.
+ * You should have received a copy of the GNU Affero General Public Licence along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
 const Sugar = require('sugar');
 const fetch = require('cross-fetch');
 
-const Buttress = require('../lib/buttressjs');
+const {default: Buttress} = require('../dist/index');
 const Config = require('./config');
 
 Config.init();
@@ -19,11 +27,7 @@ Config.init();
 const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
 const authentication = {
-  authLevel: 2,
-  domains: [Config.endpoint],
-  permissions: [
-    {route: '*', permission: '*'},
-  ],
+  domains: [Config.endpoint]
 };
 
 const policies = [{
@@ -93,7 +97,6 @@ describe('@lambda', function() {
       testApp = await Buttress.App.save({
         name: 'Lambda Test App',
         type: 'app',
-        authLevel: 2,
         apiPath: 'lambda-test-app',
       });
     } else {

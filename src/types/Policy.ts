@@ -13,12 +13,3 @@
  * You should have received a copy of the GNU Affero General Public Licence along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
-const Schema = [
-  require('./schema/board.json'),
-  require('./schema/company.json'),
-  require('./schema/post.json'),
-  require('./schema/service.json')
-];
-
-module.exports = Schema;

@@ -14,11 +14,19 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Schema = [
-  require('./schema/board.json'),
-  require('./schema/company.json'),
-  require('./schema/post.json'),
-  require('./schema/service.json')
-];
+import BaseSchema from './helpers/schema';
 
-module.exports = Schema;
+import ButtressOptionsInternal from './types/ButtressOptionsInternal';
+
+/**
+ * @class LambdaExecution
+ */
+export default class LambdaExecution extends BaseSchema {
+  /**
+   * Instance of LambdaExecution
+   * @param {object} ButtressOptions
+   */
+  constructor(ButtressOptions: ButtressOptionsInternal) {
+    super('lambda-execution', ButtressOptions, true);
+  }
+}

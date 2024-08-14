@@ -14,11 +14,22 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Schema = [
-  require('./schema/board.json'),
-  require('./schema/company.json'),
-  require('./schema/post.json'),
-  require('./schema/service.json')
-];
+import Schema from "../model/Schema";
+import {URL} from 'url';
 
-module.exports = Schema;
+export default interface ButtressOptionsInternal {
+  buttressUrl?: string;
+  authToken?: string;
+  compiledSchema?: Schema[];
+  isolated: boolean,
+  apiPath: string;
+  schema: Schema[];
+  version: number;
+  update: boolean;
+  allowUnauthorized: boolean;
+  url?: URL;
+  urls?: {
+    core: string;
+    app: string;
+  }
+}

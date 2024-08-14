@@ -14,11 +14,23 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Schema = [
-  require('./schema/board.json'),
-  require('./schema/company.json'),
-  require('./schema/post.json'),
-  require('./schema/service.json')
-];
+export interface Property {
+  __type: string,
+  __default?: any,
+  __required?: boolean,
+  __allowUpdate?: boolean,
+  __enum?: string[],
+  __schema?: Properties
+}
 
-module.exports = Schema;
+export interface Properties {
+  [key: string]: Property | Properties
+}
+
+export default interface Schema {
+  name: string,
+  type: string,
+  extends?: string[],
+  core?: boolean,
+  properties: Properties
+}

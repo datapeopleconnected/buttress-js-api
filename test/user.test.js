@@ -1,15 +1,22 @@
 'use strict';
 
 /**
- * Buttress API -
+ * Buttress API - The federated real-time open data platform
+ * Copyright (C) 2016-2024 Data People Connected LTD.
+ * <https://www.dpc-ltd.com/>
  *
- * @file user.test.js
- * @description
- * @author Chris Bates-Keegan
- *
+ * This file is part of Buttress.
+ * Buttress is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Affero General Public Licence as published by the Free Software
+ * Foundation, either version 3 of the Licence, or (at your option) any later version.
+ * Buttress is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Affero General Public Licence for more details.
+ * You should have received a copy of the GNU Affero General Public Licence along with
+ * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Buttress = require('../lib/buttressjs');
+const {default: Buttress} = require('../dist/index');
 const Config = require('./config');
 
 Config.init();
@@ -76,12 +83,6 @@ describe('@users', function() {
     it('should create a user', function(done) {
       Buttress.Auth
         .findOrCreateUser(USERS[0], {
-          authLevel: Buttress.Token.AuthLevel.USER,
-          permissions: [{
-            route: '*',
-            permission: '*',
-          }],
-          role: 'public',
           domains: [Buttress.options.url.host],
         })
         .then(function(user) {
@@ -117,11 +118,6 @@ describe('@users', function() {
     it('should find an existing user', function(done) {
       Buttress.Auth
         .findOrCreateUser(USERS[0], {
-          authLevel: Buttress.Token.AuthLevel.USER,
-          permissions: [{
-            route: '*',
-            permission: '*',
-          }],
           domains: [Buttress.options.url.host],
         })
         .then(function(user) {
@@ -143,11 +139,6 @@ describe('@users', function() {
     it('should create a another user (default role)', function(done) {
       Buttress.Auth
         .findOrCreateUser(USERS[1], {
-          authLevel: Buttress.Token.AuthLevel.SUPER,
-          permissions: [{
-            route: '*',
-            permission: '*',
-          }],
           domains: [Buttress.options.url.host],
         })
         .then(function(user) {
@@ -172,12 +163,6 @@ describe('@users', function() {
 
       Buttress.Auth
         .createToken(user.id, {
-          authLevel: Buttress.Token.AuthLevel.USER,
-          permissions: [{
-            route: '*',
-            permission: '*',
-          }],
-          role: 'user.member',
           domains: [Buttress.options.url.host],
         })
         .then(function(token) {

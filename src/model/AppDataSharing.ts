@@ -14,11 +14,14 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Schema = [
-  require('./schema/board.json'),
-  require('./schema/company.json'),
-  require('./schema/post.json'),
-  require('./schema/service.json')
-];
-
-module.exports = Schema;
+export default interface AppDataSharing {
+  id?: string
+  name: string
+  remoteApp: {
+    endpoint: string
+    apiPath: string
+    token: string
+  }
+  policy: any[],
+  _appId?: string
+}

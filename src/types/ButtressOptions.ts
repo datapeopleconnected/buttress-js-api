@@ -14,11 +14,12 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Schema = [
-  require('./schema/board.json'),
-  require('./schema/company.json'),
-  require('./schema/post.json'),
-  require('./schema/service.json')
-];
-
-module.exports = Schema;
+export default interface ButtressOptions {
+  buttressUrl: string,
+  appToken: string,
+  apiPath: string,
+  schema?: any[],
+  version: number,
+  update?: boolean,
+  allowUnauthorized?: boolean,
+}
