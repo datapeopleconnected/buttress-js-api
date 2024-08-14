@@ -1,7 +1,7 @@
 {
   "name": "@buttress/api",
   "description": "ButtressJS API for Node.js",
-  "version": "3.0.0-43",
+  "version": "3.0.0-44",
   "author": "Data People Connected LTD",
   "homepage": "https://github.com/wearelighten/buttress-js-api",
   "license": "AGPL-3.0-or-later",
