@@ -14,7 +14,7 @@ Buttress API is a comprehensive solution for interacting with Buttress, a federa
 To install the Buttress API, use npm:
 
 ```sh
-npm install buttress-api
+npm install @buttress/api
 ```
 
 ## Usage

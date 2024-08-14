@@ -1,16 +1,16 @@
 {
   "name": "@buttress/api",
   "description": "ButtressJS API for Node.js",
-  "version": "3.0.0-45",
+  "version": "3.0.0-46",
   "author": "Data People Connected LTD",
-  "homepage": "https://github.com/wearelighten/buttress-js-api",
+  "homepage": "https://github.com/datapeopleconnected/buttress-js-api",
   "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wearelighten/buttress-js-api"
+    "url": "git+https://github.com/datapeopleconnected/buttress-js-api"
   },
   "bugs": {
-    "url": "https://github.com/wearelighten/buttress-js-api/issues"
+    "url": "https://github.com/datapeopleconnected/buttress-js-api/issues"
   },
   "engines": {
     "node": ">=14.x.x"

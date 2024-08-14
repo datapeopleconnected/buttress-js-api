@@ -48,6 +48,8 @@ type Modules = {
   [key: string]: BaseSchema;
 };
 
+export const Errors = Helpers.Errors;
+
 /**
  * @class Buttress
  */
@@ -303,5 +305,4 @@ export class Buttress {
   }
 }
 
-const __global = new Buttress();
-export default __global;
+export default new Buttress();
