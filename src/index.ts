@@ -16,6 +16,8 @@
 
 import Sugar from 'sugar';
 
+import { URL } from 'url';
+
 import Helpers from './helpers';
 import BaseSchema from './helpers/schema';
 
