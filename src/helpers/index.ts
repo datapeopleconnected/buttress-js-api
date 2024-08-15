@@ -44,6 +44,7 @@ export interface RequestOptionsIn {
   };
   project?: string
   data?: any;
+  stream?: boolean
 }
 
 const Errors = {
@@ -376,7 +377,7 @@ const _checkOptions = (options?: RequestOptionsIn, defaultToken?: string): Reque
 
   if (!defaultToken) throw new Error('No default token provided');
 
-  const RequestOptions: RequestOptions = {
+  const requestOptions: RequestOptions = {
     method: '',
     params: {
       token: defaultToken,
@@ -387,10 +388,11 @@ const _checkOptions = (options?: RequestOptionsIn, defaultToken?: string): Reque
     stream: false,
   };
 
-  if (options.params) RequestOptions.params = {...RequestOptions.params, ...options.params};
-  if (options.data) RequestOptions.data = {...RequestOptions.data, ...options.data};
+  if (options.params) requestOptions.params = {...requestOptions.params, ...options.params};
+  if (options.data) requestOptions.data = {...requestOptions.data, ...options.data};
+  if (options.stream) requestOptions.stream = options.stream;
 
-  return RequestOptions;
+  return requestOptions;
 };
 
 const sleep = (ms: number) => {
