@@ -15,7 +15,7 @@
  */
 
 import Schema from "../model/Schema";
-import {URL} from 'url';
+import { URL } from 'url';
 
 export default interface ButtressOptionsInternal {
   buttressUrl?: string;
