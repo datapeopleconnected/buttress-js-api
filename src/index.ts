@@ -14,8 +14,6 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import 'source-map-support/register';
-
 import Sugar from 'sugar';
 
 import Helpers from './helpers';
