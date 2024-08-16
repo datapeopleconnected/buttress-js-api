@@ -1,2 +1,2 @@
-### Latest: 3.0.0-48
+### Latest: 3.0.0-50
 Change log will be maintained after pre-release cycle.

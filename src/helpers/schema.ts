@@ -14,8 +14,6 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { URL } from 'url';
-
 import Helpers, { RequestOptions, RequestOptionsIn } from './';
 
 import ModelSchema from '../model/Schema';
@@ -41,6 +39,8 @@ export default class BaseSchema {
   private __route?: string;
 
   private __schema?: ModelSchema;
+
+  private __protocolRegex = /(^\w+:|^)\/\//;
 
   /**
    * Instance of Schema
@@ -134,15 +134,23 @@ export default class BaseSchema {
 
     options.method = type.toUpperCase();
 
-    const url = new URL(`${this.getEndpoint()}/${this.__route}`);
+    let url = `${this.getEndpoint()}/${this.__route}`;
+
+    // If no protocol has been provided then default to https
+    if (!url.match(this.__protocolRegex)) {
+      url = `https://${url}`;
+    }
+
     if (path) {
-      url.pathname = `${url.pathname}/${path}`;
+      url = `${url}/${path}`;
     }
 
     if (options.params) {
-      Object.keys(options.params).forEach((key) => {
-        url.searchParams.append(key, options.params[key]);
-      });
+      const params = Object.keys(options.params).map((key) => {
+        return `${key}=${options.params[key]}`;
+      }).join('&');
+
+      url = `${url}?${params}`;
     }
 
     /*
@@ -167,7 +175,7 @@ export default class BaseSchema {
 
     attempt++;
     if (redirect) {
-      url.protocol = 'https:';
+      url = url.replace(this.__protocolRegex, 'https://');
     }
 
     if (this._ButtressOptions.isolated) {
@@ -247,16 +255,17 @@ export default class BaseSchema {
    * @param {object} url
    * @returns {promise}
    */
-  _postRedirect(response: APIResponse, url: URL) {
-    // let originalURL = url.href.match(BaseSchema.__protocolRegex);
-    const redirectedURL = new URL(response.url);
+  _postRedirect(response: APIResponse, url: string) {
+    const originalURL = url.match(this.__protocolRegex);
+    const redirectedURL = response.url.match(this.__protocolRegex);
 
-    const originalProtocol = url.protocol;
-    const redirectedProtocol = redirectedURL.protocol;
+    const originalProtocol = (originalURL !== null) ? originalURL.pop() : null;
+    const redirectedProtocol = (redirectedURL !== null) ? redirectedURL.pop() : null;
 
-    const noProtoURL = url.href.replace(originalProtocol, '');
-    const noProtoRedirect = response.url.replace(redirectedProtocol, '');
-    return noProtoURL === noProtoRedirect && originalProtocol !== redirectedProtocol;
+    const replacedOriginalURL = url.replace(this.__protocolRegex, '');
+    const replacedRedirectedURL = response.url.replace(this.__protocolRegex, '');
+
+    return replacedOriginalURL === replacedRedirectedURL && originalProtocol !== redirectedProtocol;
   }
 
   /**

@@ -15,7 +15,6 @@
  */
 
 import Schema from "../model/Schema";
-import { URL } from 'url';
 
 export default interface ButtressOptionsInternal {
   buttressUrl?: string;
@@ -27,7 +26,7 @@ export default interface ButtressOptionsInternal {
   version: number;
   update: boolean;
   allowUnauthorized: boolean;
-  url?: URL;
+  url?: string;
   urls?: {
     core: string;
     app: string;
