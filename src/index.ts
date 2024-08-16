@@ -16,8 +16,6 @@
 
 import Sugar from 'sugar';
 
-import { URL } from 'url';
-
 import Helpers from './helpers';
 import BaseSchema from './helpers/schema';
 
@@ -108,12 +106,7 @@ export class Buttress {
     if (options.update) this.options.update = options.update;
     if (options.allowUnauthorized) this.options.allowUnauthorized = options.allowUnauthorized;
 
-    // if (this.options.allowUnauthorized) {
-    //   process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    // }
-
-    // This line is for testing
-    this.options.url = new URL(options.buttressUrl);
+    this.options.url = options.buttressUrl;
 
     this.__generateURLs();
 
