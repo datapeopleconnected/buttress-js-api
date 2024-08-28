@@ -1,0 +1,165 @@
+[{
+  "name": "first-policy",
+  "selection": {
+    "role": {
+      "@eq": "DIRECTOR"
+    }
+  },
+  "env": {
+    "userId": "user.id",
+    "userEmail": "user.auth.email"
+  },
+  "config": [{
+    "endpoints": ["GET", "SEARCH"],
+    "query": [{
+      "schema": ["invitation"],
+      "access": "%FULL_ACCESS%"
+    }]
+  }]
+}, {
+  "name": "second-policy",
+  "selection": {
+    "role": {
+      "@eq": "INVITER"
+    }
+  },
+  "env": {
+    "userId": "user.id",
+    "userEmail": "user.auth.email"
+  },
+  "config": [{
+    "endpoints": ["GET", "SEARCH"],
+    "query": [{
+      "schema": ["invitation"],
+      "inviter.email": {
+        "@in": "env.userEmail"
+      }
+    }]
+  }]
+}, {
+  "name": "third-policy",
+  "selection": {
+    "role": {
+      "@eq": "INVITEE"
+    }
+  },
+  "env": {
+    "userId": "user.id",
+    "userEmail": "user.auth.email"
+  },
+  "config": [{
+    "endpoints": ["GET", "SEARCH"],
+    "query": [{
+      "schema": ["invitation"],
+      "invitee.email": {
+        "@in": "env.userEmail"
+      }
+    }]
+  }]
+}, {
+  "name": "fourth-policy",
+  "selection": {
+    "role": {
+      "@eq": "FIRST_PROJECTED_INVITATION"
+    }
+  },
+  "env": {
+    "userId": "user.id",
+    "userEmail": "user.auth.email"
+  },
+  "config": [{
+    "endpoints": ["GET", "SEARCH"],
+    "query": [{
+      "schema": ["invitation"],
+      "invitee.email": {
+        "@in": "env.userEmail"
+      }
+    }],
+    "projection": [{
+      "schema": ["invitation"],
+      "keys": ["invitationToken"]
+    }]
+  }]
+}, {
+  "name": "fifth-policy",
+  "selection": {
+    "role": {
+      "@eq": "SECOND_PROJECTED_INVITATION"
+    }
+  },
+  "config": [{
+    "endpoints": ["GET", "SEARCH"],
+    "query": [{
+      "schema": ["invitation"],
+      "invitee.email": {
+        "@eq": "test@example.com"
+      }
+    }],
+    "projection": [{
+      "schema": ["invitation"],
+      "keys": ["type"]
+    }]
+  }]
+}, {
+  "name": "sixth-policy",
+  "selection": {
+    "role": {
+      "@eq": "THIRD_PROJECTED_INVITATION"
+    }
+  },
+  "env": {
+    "userId": "user.id",
+    "userEmail": "user.auth.email"
+  },
+  "config": [{
+    "endpoints": ["GET", "SEARCH"],
+    "query": [{
+      "schema": ["invitation"],
+      "invitee.email": {
+        "@in": "env.userEmail"
+      }
+    }],
+    "projection": [{
+      "schema": ["invitation"],
+      "keys": ["type"]
+    }]
+  }]
+}, {
+  "name": "first-event-policy",
+  "selection": {
+    "role": {
+      "@eq": "DIRECTOR"
+    }
+  },
+  "config": [{
+    "endpoints": ["GET", "SEARCH"],
+    "query": [{
+      "schema": ["event"],
+      "personId": {
+        "@eq": "5f3e7ee60091126e4a622c6a"
+      }
+    }]
+  }]
+}, {
+  "name": "second-event-policy",
+  "selection": {
+    "role": {
+      "@eq": "DIRECTOR"
+    }
+  },
+  "config": [{
+    "endpoints": ["GET", "SEARCH"],
+    "query": [{
+      "schema": ["event"],
+      "$and": [{
+        "type": {
+          "@eq": "STATUS"
+        }
+      }, {
+        "personId": {
+          "@ne": null
+        }
+      }]
+    }]
+  }]
+}]
