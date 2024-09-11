@@ -277,7 +277,7 @@ export class Buttress {
    * @return {object} module
    */
   _findModule(mod: string) {
-    const caped = Sugar.String.capitalize(mod, true, true);
+    const caped = Sugar.String.capitalize(mod);
     return this.__modules[caped];
   }
 
@@ -289,7 +289,7 @@ export class Buttress {
   getCollection<T extends BaseSchema>(collection: string): T {
     if (!this.__initialised) throw new Error('Unable to getCollection before Buttress is initialised');
 
-    const mod = Sugar.String.capitalize(collection, true, true);
+    const mod = Sugar.String.capitalize(collection);
     if (!this.__modules[mod]) {
       this._addModule(collection);
     }
