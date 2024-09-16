@@ -164,12 +164,12 @@ class Schema {
    * @param {object} schema
    * @return {object}
    */
-  static create(schema: SchemaModel, buttressOptions: ButtressOptionsInternal) {
+  static create(schema: SchemaModel) {
     if (!schema) {
       return false;
     }
 
-    return Schema.inflate(schema, true, buttressOptions);
+    return Schema.inflate(schema, true);
   }
 
   /**
@@ -177,13 +177,13 @@ class Schema {
    * @param {string} path
    * @return {object} schemaPart
    */
-  static createFromPath(schema: SchemaModel, path: string, buttressOptions: ButtressOptionsInternal) {
+  static createFromPath(schema: SchemaModel, path: string) {
     const subSchema = Schema.getSubSchema(schema, path);
     if (!subSchema) {
       return false;
     }
 
-    return Schema.inflate(subSchema, false, buttressOptions);
+    return Schema.inflate(subSchema, false);
   }
 
   /**
@@ -229,12 +229,12 @@ class Schema {
             continue;
           }
 
-          isRoot = false; 
+          isRoot = false;
           __buildFlattenedSchema(childProp, parent[property] as Properties, path, flattened);
         }
       }
 
-      if (isRoot === true && isProps) {
+      if (isRoot === true && !isProps) {
         flattened[path.join('.')] = parent[property] as Property;
         path.pop();
         return;
@@ -257,10 +257,9 @@ class Schema {
   /**
    * @param {object} schema
    * @param {boolean} createId
-   * @param {object} buttressOptions
    * @return {object} schema
    */
-  static async inflate(schema: SchemaModel, createId: boolean, buttressOptions: ButtressOptionsInternal) {
+  static inflate(schema: SchemaModel, createId: boolean) {
     const __inflateObject = (parent: {[key: string]: any}, path: string[], value: any) => {
       if (path.length > 1) {
         const parentKey = path.shift();
@@ -288,7 +287,7 @@ class Schema {
       const config = flattenedSchema[property];
       const propVal = {
         path: property,
-        value: await Schema.getPropDefault(config, buttressOptions),
+        value: Schema.getPropDefault(config),
       };
 
       const path = propVal.path.split('.');
@@ -308,10 +307,10 @@ class Schema {
     }
 
     if (!res.id && createId) {
-      res.id = await Schema.getPropDefault({
+      res.id = Schema.getPropDefault({
         __type: 'id',
         __default: 'new',
-      }, buttressOptions);
+      });
     }
 
     return res;
@@ -319,10 +318,9 @@ class Schema {
 
   /**
    * @param {object} config
-   * @param {object} ButtressOptionsInternal
    * @return {*} defaultValue
    */
-  static async getPropDefault(config: Property, buttressOptions: ButtressOptionsInternal) {
+  static getPropDefault(config: Property) {
     let res;
     switch (config.__type) {
     default:
@@ -337,7 +335,7 @@ class Schema {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         const mask = 0x3d;
 
-        const bytes = (buttressOptions.isolated) ? await lambda.cryptoRandomBytes(length) : crypto.randomBytes(length);
+        const bytes = crypto.randomBytes(length);
         for (let x = 0; x < bytes.length; x++) {
           const byte = bytes[x];
           res += chars[byte & mask];
