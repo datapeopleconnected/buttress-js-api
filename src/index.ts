@@ -241,15 +241,15 @@ export class Buttress {
    * @return {promise}
    */
   private __initCoreModules() {
-    this.App = this.__modules['App'] = new App(this.options);
-    this.Auth = this.__modules['Auth'] = new Auth(this.options);
-    this.Lambda = this.__modules['Lambda'] = new Lambda(this.options);
-    this.Policy = this.__modules['Policy'] = new Policy(this.options);
-    this.Token = this.__modules['Token'] = new Token(this.options);
-    this.User = this.__modules['User'] = new User(this.options);
-    this.SecureStore = this.__modules['SecureStore'] = new SecureStore(this.options);
-    this.AppDataSharing = this.__modules['AppDataSharing'] = new AppDataSharing(this.options);
-    this.LambdaExecution = this.__modules['LambdaExecution'] = new LambdaExecution(this.options);
+    this.App = this.__modules['app'] = new App(this.options);
+    this.Auth = this.__modules['auth'] = new Auth(this.options);
+    this.Lambda = this.__modules['lambda'] = new Lambda(this.options);
+    this.Policy = this.__modules['policy'] = new Policy(this.options);
+    this.Token = this.__modules['token'] = new Token(this.options);
+    this.User = this.__modules['user'] = new User(this.options);
+    this.SecureStore = this.__modules['secure-store'] = new SecureStore(this.options);
+    this.AppDataSharing = this.__modules['app-data-sharing'] = new AppDataSharing(this.options);
+    this.LambdaExecution = this.__modules['lambda-execution'] = new LambdaExecution(this.options);
   }
 
   /**
@@ -258,7 +258,7 @@ export class Buttress {
    * @return {void}
    */
   _addModule(mod: string) {
-    const caped = Sugar.String.capitalize(mod, true, true);
+    const caped = Sugar.String.dasherize(mod);
     this.__modules[caped] = this._loadModule(mod);
   }
 
@@ -277,7 +277,7 @@ export class Buttress {
    * @return {object} module
    */
   _findModule(mod: string) {
-    const caped = Sugar.String.capitalize(mod);
+    const caped = Sugar.String.dasherize(mod);
     return this.__modules[caped];
   }
 
@@ -289,7 +289,7 @@ export class Buttress {
   getCollection<T extends BaseSchema>(collection: string): T {
     if (!this.__initialised) throw new Error('Unable to getCollection before Buttress is initialised');
 
-    const mod = Sugar.String.capitalize(collection);
+    const mod = Sugar.String.dasherize(collection);
     if (!this.__modules[mod]) {
       this._addModule(collection);
     }
