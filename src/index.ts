@@ -39,6 +39,7 @@ export interface ButtressOptions {
   schema?: any[],
   version: number,
   update?: boolean,
+  useLocalSchema?: boolean,
   allowUnauthorized?: boolean,
 }
 
@@ -68,6 +69,7 @@ export class Buttress {
     schema: [],
     version: 1,
     update: false,
+    useLocalSchema: false,
     allowUnauthorized: false
   };
 
@@ -105,6 +107,7 @@ export class Buttress {
     if (options.version) this.options.version = options.version;
     if (options.update) this.options.update = options.update;
     if (options.allowUnauthorized) this.options.allowUnauthorized = options.allowUnauthorized;
+    if (options.useLocalSchema) this.options.useLocalSchema = options.useLocalSchema;
 
     this.options.url = options.buttressUrl;
 
@@ -112,12 +115,45 @@ export class Buttress {
 
     this.__initCoreModules();
 
-    if (this.options.update) await this.initSchema();
+    // Control if to build the schema from a local one provided or draw one from the server.
+    if (this.options.useLocalSchema) {
+      this.options.compiledSchema = options.schema;
+      if (Array.isArray(this.options.compiledSchema)) {
+        this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
+      }
+    } else {
+      if (this.options.update) await this.initSchema();
 
-    this.options.compiledSchema = await (this.getCollection('app') as App).getSchema();
-    this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
+      this.options.compiledSchema = await (this.getCollection('app') as App).getSchema();
+      this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
+    }
 
     return true;
+  }
+
+  get initialised() {
+    return this.__initialised;
+  }
+
+  clean() {
+    // Destory all modules which have been setup.
+    Object.keys(this.__modules).forEach((key) => {
+      delete this.__modules[key];
+    });
+    this.__modules = {};
+
+    // Reset options
+    this.options = {
+      isolated: false,
+      apiPath: '',
+      schema: [],
+      version: 1,
+      update: false,
+      useLocalSchema: false,
+      allowUnauthorized: false
+    };
+
+    this.__initialised = false;
   }
 
   /**
