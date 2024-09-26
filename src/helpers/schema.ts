@@ -13,6 +13,7 @@
  * You should have received a copy of the GNU Affero General Public Licence along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
+import Sugar from 'sugar';
 
 import Helpers, { RequestOptions, RequestOptionsIn } from './';
 
@@ -53,7 +54,7 @@ export default class BaseSchema {
     this._ButtressOptions = ButtressOptions;
 
     this.core = core;
-    if (core) this.__route = collection;
+    if (core) this.__route = Sugar.String.dasherize(collection);
 
     if (!core) this.loadSchema();
   }
@@ -102,7 +103,7 @@ export default class BaseSchema {
 
     this.__schema = schema;
 
-    this.__route = schema.name;
+    this.__route = Sugar.String.dasherize(schema.name);
 
     return this.__schema;
   }
@@ -113,10 +114,10 @@ export default class BaseSchema {
    */
   createObject(path: string) {
     if (path) {
-      return Helpers.Schema.createFromPath(this.loadSchema(), path, this._ButtressOptions);
+      return Helpers.Schema.createFromPath(this.loadSchema(), path);
     }
 
-    return Helpers.Schema.create(this.loadSchema(), this._ButtressOptions);
+    return Helpers.Schema.create(this.loadSchema());
   }
 
   /**

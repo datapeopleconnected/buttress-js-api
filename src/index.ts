@@ -39,6 +39,7 @@ export interface ButtressOptions {
   schema?: any[],
   version: number,
   update?: boolean,
+  useLocalSchema?: boolean,
   allowUnauthorized?: boolean,
 }
 
@@ -68,6 +69,7 @@ export class Buttress {
     schema: [],
     version: 1,
     update: false,
+    useLocalSchema: false,
     allowUnauthorized: false
   };
 
@@ -105,6 +107,7 @@ export class Buttress {
     if (options.version) this.options.version = options.version;
     if (options.update) this.options.update = options.update;
     if (options.allowUnauthorized) this.options.allowUnauthorized = options.allowUnauthorized;
+    if (options.useLocalSchema) this.options.useLocalSchema = options.useLocalSchema;
 
     this.options.url = options.buttressUrl;
 
@@ -112,12 +115,45 @@ export class Buttress {
 
     this.__initCoreModules();
 
-    if (this.options.update) await this.initSchema();
+    // Control if to build the schema from a local one provided or draw one from the server.
+    if (this.options.useLocalSchema) {
+      this.options.compiledSchema = options.schema;
+      if (Array.isArray(this.options.compiledSchema)) {
+        this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
+      }
+    } else {
+      if (this.options.update) await this.initSchema();
 
-    this.options.compiledSchema = await (this.getCollection('app') as App).getSchema();
-    this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
+      this.options.compiledSchema = await (this.getCollection('app') as App).getSchema();
+      this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
+    }
 
     return true;
+  }
+
+  get initialised() {
+    return this.__initialised;
+  }
+
+  clean() {
+    // Destory all modules which have been setup.
+    Object.keys(this.__modules).forEach((key) => {
+      delete this.__modules[key];
+    });
+    this.__modules = {};
+
+    // Reset options
+    this.options = {
+      isolated: false,
+      apiPath: '',
+      schema: [],
+      version: 1,
+      update: false,
+      useLocalSchema: false,
+      allowUnauthorized: false
+    };
+
+    this.__initialised = false;
   }
 
   /**
@@ -241,15 +277,15 @@ export class Buttress {
    * @return {promise}
    */
   private __initCoreModules() {
-    this.App = this.__modules['App'] = new App(this.options);
-    this.Auth = this.__modules['Auth'] = new Auth(this.options);
-    this.Lambda = this.__modules['Lambda'] = new Lambda(this.options);
-    this.Policy = this.__modules['Policy'] = new Policy(this.options);
-    this.Token = this.__modules['Token'] = new Token(this.options);
-    this.User = this.__modules['User'] = new User(this.options);
-    this.SecureStore = this.__modules['SecureStore'] = new SecureStore(this.options);
-    this.AppDataSharing = this.__modules['AppDataSharing'] = new AppDataSharing(this.options);
-    this.LambdaExecution = this.__modules['LambdaExecution'] = new LambdaExecution(this.options);
+    this.App = this.__modules['app'] = new App(this.options);
+    this.Auth = this.__modules['auth'] = new Auth(this.options);
+    this.Lambda = this.__modules['lambda'] = new Lambda(this.options);
+    this.Policy = this.__modules['policy'] = new Policy(this.options);
+    this.Token = this.__modules['token'] = new Token(this.options);
+    this.User = this.__modules['user'] = new User(this.options);
+    this.SecureStore = this.__modules['secure-store'] = new SecureStore(this.options);
+    this.AppDataSharing = this.__modules['app-data-sharing'] = new AppDataSharing(this.options);
+    this.LambdaExecution = this.__modules['lambda-execution'] = new LambdaExecution(this.options);
   }
 
   /**
@@ -258,7 +294,7 @@ export class Buttress {
    * @return {void}
    */
   _addModule(mod: string) {
-    const caped = Sugar.String.capitalize(mod, true, true);
+    const caped = Sugar.String.dasherize(mod);
     this.__modules[caped] = this._loadModule(mod);
   }
 
@@ -277,7 +313,7 @@ export class Buttress {
    * @return {object} module
    */
   _findModule(mod: string) {
-    const caped = Sugar.String.capitalize(mod, true, true);
+    const caped = Sugar.String.dasherize(mod);
     return this.__modules[caped];
   }
 
@@ -289,7 +325,7 @@ export class Buttress {
   getCollection<T extends BaseSchema>(collection: string): T {
     if (!this.__initialised) throw new Error('Unable to getCollection before Buttress is initialised');
 
-    const mod = Sugar.String.capitalize(collection, true, true);
+    const mod = Sugar.String.dasherize(collection);
     if (!this.__modules[mod]) {
       this._addModule(collection);
     }
