@@ -125,10 +125,10 @@ export class Buttress {
       if (this.options.update) await this.initSchema();
 
       this.options.compiledSchema = await (this.getCollection('app') as App).getSchema();
-      this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
-    }
+      this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(Sugar.String.dasherize(s.name)));
 
-    return true;
+      return true;
+    }
   }
 
   get initialised() {
@@ -224,7 +224,7 @@ export class Buttress {
     await this.getCollection<App>('app').updateSchema(this.options.schema);
 
     this.options.compiledSchema = await this.getCollection<App>('app').getSchema();
-    this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
+    this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(Sugar.String.dasherize(s.name)));
 
     return true;
   }
@@ -326,6 +326,7 @@ export class Buttress {
     if (!this.__initialised) throw new Error('Unable to getCollection before Buttress is initialised');
 
     const mod = Sugar.String.dasherize(collection);
+    if (mod !== collection) throw new Error(`Make sure that your collection: ${collection} is following the correct naming convention ${mod}`);
     if (!this.__modules[mod]) {
       this._addModule(collection);
     }

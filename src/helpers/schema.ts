@@ -96,7 +96,7 @@ export default class BaseSchema {
       throw new Helpers.Errors.NotYetInitiated('Attempting to load schema before buttress init');
     }
 
-    const schema = this._ButtressOptions.compiledSchema.find((s) => s.name === this.collection);
+    const schema = this._ButtressOptions.compiledSchema.find((s) => Sugar.String.dasherize(s.name) === this.collection);
     if (!schema) {
       throw new Helpers.Errors.SchemaNotFound(`Unable to find the schema with the name '${this.collection}'`);
     }

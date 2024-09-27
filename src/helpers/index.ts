@@ -329,18 +329,6 @@ class Schema {
       break;
     case 'string':
       res = config.__default !== undefined ? config.__default : '';
-      if (config.__default === 'randomString') {
-        res = '';
-        const length = 36;
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        const mask = 0x3d;
-
-        const bytes = crypto.randomBytes(length);
-        for (let x = 0; x < bytes.length; x++) {
-          const byte = bytes[x];
-          res += chars[byte & mask];
-        }
-      }
       break;
     case 'number':
       res = config.__default !== undefined ? config.__default : 0;
