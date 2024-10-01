@@ -16,10 +16,28 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+require('source-map-support').install();
+
 const {default: Buttress} = require('../dist/index');
 const TestSchema = require('./data/schema');
-const TestAppRoles = require('./data/appRoles.json');
+const TestPolicies = require('./data/policy/index.js');
 const ObjectId = require('bson-objectid');
+
+// TODO: Update AppRoles to Policy.
+
+const PolicyPropertiesList = Object.values(TestPolicies).reduce((list, policy) => {
+  if (policy.selection) {
+    Object.keys(policy.selection).forEach((key) => {
+      if (!list[key]) list[key] = [];
+      if (typeof policy.selection[key] === 'object') {
+        list[key].push(...Object.values(policy.selection[key]));
+      } else {
+        list[key].push(policy.selection[key]);
+      }
+    });
+  }
+  return list;
+}, {});
 
 /**
  * @class Config
@@ -33,6 +51,8 @@ class Config {
 
     this.endpoint = process.env.BUTTRESS_TEST_API_URL;
     this.token = process.env.BUTTRESS_TEST_SUPER_APP_KEY;
+
+    this.token_super = process.env.BUTTRESS_TEST_SUPER_APP_KEY;
   }
 
   /**
@@ -44,15 +64,13 @@ class Config {
     this._initialised = true;
 
     console.log(`BUTTRESS_TEST_API_URL: `, this.endpoint);
-    console.log(`BUTTRESS_TEST_SUPER_APP_KEY: `, this.token);
+    console.log(`BUTTRESS_TEST_SUPER_APP_KEY: `, this.token_super);
 
     before(async () => {
       await Buttress.init({
         buttressUrl: this.endpoint,
-        appToken: this.token,
+        appToken: this.token_super,
         allowUnauthorized: true,
-        schema: TestSchema,
-        roles: TestAppRoles,
         apiPath: 'bjs',
         version: 1,
         update: true,
@@ -60,18 +78,48 @@ class Config {
 
       await Promise.all([
         // Remove all existing apps, this should clear out any existing data.
-        await Buttress.App.removeAll(),
+        await Buttress.getCollection('app').removeAll(),
         // Buttress.getCollection('service').removeAll(),
         // Buttress.getCollection('company').removeAll(),
         // Buttress.getCollection('board').removeAll(),
         // Buttress.getCollection('post').removeAll(),
       ]);
       console.log('Cleared out existing local data.');
+
+      // Create a test app
+      const testApp = await Buttress.getCollection('app').save({
+        name: 'Test App',
+        apiPath: 'test',
+        policyPropertiesList: PolicyPropertiesList
+      });
+
+      this.token = testApp.token;
+
+      Buttress.setAuthToken(testApp.token);
+      Buttress.setAPIPath(testApp.apiPath);
+
+      Buttress.getCollection('app').updateSchema(TestSchema);
+
+      // Add the policies
+      const TestData = Object.values(TestPolicies);
+      for await (const policy of TestData) {
+        await Buttress.getCollection('policy').createPolicy(policy);
+        console.log(`Added policy: ${policy.name}`);
+      }
     });
 
     after(function(done) {
       done();
     });
+  }
+
+  configureSuper() {
+    Buttress.setAuthToken(this.token_super);
+    Buttress.setAPIPath('bjs');
+  }
+  configureTest() {
+    Buttress.setAuthToken(this.token);
+    Buttress.setAPIPath('test');
   }
 
   createCompanies() {
@@ -180,18 +228,16 @@ class Config {
   createUser() {
     return Buttress.Auth.findOrCreateUser({
       app: 'google',
-      id: '12345678987654321',
+      appId: '12345678987654321',
       name: 'Chris Bates-Keegan',
       token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
       email: 'test@test.com',
       profileUrl: 'http://test.com/thisisatest',
       profileImgUrl: 'http://test.com/thisisatest.png'
     }, {
-      domains: [Buttress.options.url.host]
-    })
-      .catch(err => {
-        console.log(err);
-      });
+      domains: [Buttress.options.url.host],
+      policyProperties: {}
+    });
   }
 
 }

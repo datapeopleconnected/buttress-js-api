@@ -29,11 +29,13 @@ Config.init();
  */
 describe('@company-basics', function() {
   before(function(done) {
+    Config.configureTest();
     Buttress.getCollection('company').removeAll()
       .then(() => done()).catch(done);
   });
 
   after(function(done) {
+    Config.configureTest();
     done();
     // Buttress.getCollection('company').removeAll()
     //   .then(() => done()).catch(done);

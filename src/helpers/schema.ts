@@ -151,7 +151,14 @@ export default class BaseSchema {
         return `${key}=${options.params[key]}`;
       }).join('&');
 
-      url = `${url}?${params}`;
+      url = (params !== '') ? `${url}?${params}` : url;
+    }
+
+    if (options.token) {
+      options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${options.token}`,
+      };
     }
 
     /*
@@ -169,6 +176,7 @@ export default class BaseSchema {
     if (options.body && typeof options.body !== 'string') {
       options.body = JSON.stringify(options.body);
       options.headers = {
+        ...options.headers,
         'Content-Type': 'application/json',
         'Content-Length': options.body.length,
       };
@@ -224,7 +232,24 @@ export default class BaseSchema {
         return response.body;
       }
 
-      return response.json();
+      const results = await response.json();
+
+      if (options.combineResults === true && Array.isArray(results)) {
+        for (let i = 0; i < results.length; i++) {
+          const item = results[i];
+          for (let j = i + 1; j < results.length; j++) {
+            if (!item.id || !item.sourceId) continue;
+            const nextItem = results[j];
+            if (item.id === nextItem.id && item.sourceId === nextItem.sourceId) {
+              Object.assign(item, nextItem);
+              results.splice(j, 1);
+              j--;
+            }
+          }
+        }
+      }
+
+      return results;
     } catch (err: any) {
       let error = err;
 

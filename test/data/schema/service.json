@@ -67,6 +67,7 @@
         "value": {
           "__type": "string",
           "__required": false,
+          "__default": null,
           "__allowUpdate": false
         },
         "status": {
@@ -108,7 +109,7 @@
               "__enum": ["pending", "approved", "rejected"],
               "__allowUpdate": true
             }
-          }    
+          }
         }
       },
       "companyId": {
@@ -119,6 +120,7 @@
       "test": {
         "__type": "string",
         "__required": false,
+        "__default": null,
         "__allowUpdate": false
       },
       "bool": {
