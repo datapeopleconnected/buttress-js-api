@@ -29,14 +29,14 @@ describe('@app', function() {
   const testApps = [];
 
   before(async function() {
-    Buttress.setAuthToken(Config.token);
+    Config.configureSuper();
   });
 
   after(async function() {
-    Buttress.setAuthToken(Config.token);
     for await (const testApp of testApps) {
-      await Buttress.App.remove(testApp.id);
+      await Buttress.getCollection('app').remove(testApp.id);
     }
+    Config.configureTest();
   });
 
   describe('Basic', function() {
@@ -47,7 +47,7 @@ describe('@app', function() {
         apiPath: 'test-app',
       };
 
-      const testApp = await Buttress.App.save(testAppData);
+      const testApp = await Buttress.getCollection('app').save(testAppData);
 
       testApp.name.should.equal(testAppData.name);
       testApp.version.should.equal(testAppData.version);
@@ -68,21 +68,16 @@ describe('@app-schema', function() {
   });
 
   after(async function() {
-    Buttress.setAuthToken(Config.token);
-    // Buttress.options.schema = Schemas;
-    // Buttress.initSchema()
-    //   .then(() => done())
-    //   .catch(function(err) {
-    //     done(err);
-    //   });
+    Config.configureSuper();
     for await (const testApp of testApps) {
-      await Buttress.App.remove(testApp.id);
+      await Buttress.getCollection('app').remove(testApp.id);
     }
+    Config.configureTest();
   });
 
   describe('Basic', function() {
     it('should return the app schema', function(done) {
-      Buttress.App
+      Buttress.getCollection('app')
         .getSchema()
         .then(function(schema) {
           schema.length.should.equal(Schemas.length);
@@ -165,7 +160,7 @@ describe('@app-schema', function() {
   //       }
   //     };
 
-  //     const res = await Buttress.App.save(testData);
+  //     const res = await Buttress.getCollection('app').save(testData);
 
   //     res.name.should.equal(testData.name);
   //     res.apiPath.should.equal(testData.apiPath);
@@ -250,9 +245,9 @@ describe('@app-relationship', function() {
   let testApp2User = null;
 
   before(async function() {
-    Buttress.setAuthToken(Config.token);
+    Config.configureSuper();
 
-    testApps.push(await Buttress.App.save({
+    testApps.push(await Buttress.getCollection('app').save({
       name: 'Test App 1',
       apiPath: 'test-app1'
     }));
@@ -277,9 +272,9 @@ describe('@app-relationship', function() {
 
     const car = await Buttress.getCollection('car').save({name: 'A red car'});
 
-    Buttress.setAuthToken(Config.token);
+    Config.configureSuper();
 
-    testApps.push(await Buttress.App.save({
+    testApps.push(await Buttress.getCollection('app').save({
       name: 'Test App 2',
       apiPath: 'test-app2',
       policyPropertiesList: {
@@ -292,7 +287,7 @@ describe('@app-relationship', function() {
 
     await Buttress.setSchema(testApp2Schema);
 
-    await Buttress.getCollection('Policy').createPolicy({
+    await Buttress.getCollection('policy').createPolicy({
       name: "test-policy",
       selection: {
         role: {
@@ -300,11 +295,11 @@ describe('@app-relationship', function() {
         }
       },
       config: [{
-        endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
-        query: [{
-          schema: ['%ALL%'],
+        verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+        schema: ['%ALL%'],
+        query: {
           access: '%FULL_ACCESS%',
-        }],
+        },
       }]
     });
 
@@ -318,7 +313,7 @@ describe('@app-relationship', function() {
     // Create user
     testApp2User = await Buttress.Auth.findOrCreateUser({
       app: 'app-test2',
-      id: '12345678987654321',
+      appId: '12345678987654321',
       name: 'Joe Bloggs',
       token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
       email: 'test@test.com',
@@ -333,12 +328,13 @@ describe('@app-relationship', function() {
   });
 
   after(async function() {
-    Buttress.setAuthToken(Config.token);
-    Buttress.setAPIPath('bjs');
+    Config.configureSuper();
 
     for await (const testApp of testApps) {
-      await Buttress.App.remove(testApp.id);
+      await Buttress.getCollection('app').remove(testApp.id);
     }
+
+    Config.configureTest();
   });
 
   describe('Basic', function() {
@@ -364,11 +360,11 @@ describe('@app-relationship', function() {
         },
 
         policyConfig: [{
-          endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
-          query: [{
-            schema: ['%ALL%'],
+          verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+          schema: ['%ALL%'],
+          query: {
             access: '%FULL_ACCESS%',
-          }],
+          },
         }]
       });
 
@@ -400,11 +396,11 @@ describe('@app-relationship', function() {
         },
 
         policyConfig: [{
-          endpoints: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
-          query: [{
-            schema: ['%ALL%'],
+          verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+          schema: ['%ALL%'],
+          query: {
             access: '%FULL_ACCESS%',
-          }],
+          },
         }]
       });
 

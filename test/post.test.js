@@ -25,14 +25,13 @@ Config.init();
 describe('@posts', function() {
   this.timeout(2000);
 
-  before(function(done) {
-    Buttress.getCollection('posts').removeAll()
-      .then(() => done()).catch(done);
+  before(async function() {
+    Config.configureTest();
   });
 
-  after(function(done) {
-    Buttress.getCollection('posts').removeAll()
-      .then(() => done()).catch(done);
+  after(async function() {
+    Config.configureTest();
+    await Buttress.getCollection('post').removeAll();
   });
 
   describe('Post Basics', function() {
@@ -46,7 +45,7 @@ describe('@posts', function() {
     };
 
     it('should return no posts', function(done) {
-      Buttress.getCollection('posts').getAll()
+      Buttress.getCollection('post').getAll()
         .then(function(posts) {
           posts.length.should.equal(0);
           done();
@@ -57,7 +56,7 @@ describe('@posts', function() {
     });
 
     it('should add a post', function(done) {
-      Buttress.getCollection('posts').save(_savePostData)
+      Buttress.getCollection('post').save(_savePostData)
         .then(function(post) {
           post.id.should.equal(_savePostData.id);
           return post;
@@ -77,7 +76,7 @@ describe('@posts', function() {
     });
 
     it('should return 1 post', function(done) {
-      Buttress.getCollection('posts').getAll()
+      Buttress.getCollection('post').getAll()
         .then(function(posts) {
           posts.should.have.length(1);
           posts[0].id.should.equal(_savePostData.id);
@@ -89,7 +88,7 @@ describe('@posts', function() {
     });
 
     it('should not accept invalid value', function(done) {
-      Buttress.getCollection('posts').update(_savePostData.id, {
+      Buttress.getCollection('post').update(_savePostData.id, {
         path: 'kudos',
         value: 'EDITED: Hello world',
       })
@@ -103,7 +102,7 @@ describe('@posts', function() {
     });
 
     it('should update the post', function(done) {
-      Buttress.getCollection('posts').update(_savePostData.id, {
+      Buttress.getCollection('post').update(_savePostData.id, {
         path: 'kudos',
         value: 1,
       })
@@ -121,14 +120,14 @@ describe('@posts', function() {
       const increment = 12;
       let startCount = null;
 
-      Buttress.getCollection('posts').get(_savePostData.id)
+      Buttress.getCollection('post').get(_savePostData.id)
         .then((post) => startCount = post.views)
-        .then(() => Buttress.getCollection('posts').update(_savePostData.id, {path: 'views.__increment__', value: increment}))
+        .then(() => Buttress.getCollection('post').update(_savePostData.id, {path: 'views.__increment__', value: increment}))
         .then((results) => {
           results[0].path.should.equal('views.__increment__');
           results[0].value.should.equal(increment);
         })
-        .then(() => Buttress.getCollection('posts').get(_savePostData.id))
+        .then(() => Buttress.getCollection('post').get(_savePostData.id))
         .then((post) => {
           post.views.should.equal(startCount + increment);
           done();
@@ -140,14 +139,14 @@ describe('@posts', function() {
       const increment = 5;
       let startCount = null;
 
-      Buttress.getCollection('posts').get(_savePostData.id)
+      Buttress.getCollection('post').get(_savePostData.id)
         .then((post) => startCount = post.views)
-        .then(() => Buttress.getCollection('posts').update(_savePostData.id, {path: 'views.__increment__', value: increment}))
+        .then(() => Buttress.getCollection('post').update(_savePostData.id, {path: 'views.__increment__', value: increment}))
         .then((results) => {
           results[0].path.should.equal('views.__increment__');
           results[0].value.should.equal(increment);
         })
-        .then(() => Buttress.getCollection('posts').get(_savePostData.id))
+        .then(() => Buttress.getCollection('post').get(_savePostData.id))
         .then((post) => {
           post.views.should.equal(startCount + increment);
           done();
@@ -159,14 +158,14 @@ describe('@posts', function() {
       const increment = -2;
       let startCount = null;
 
-      Buttress.getCollection('posts').get(_savePostData.id)
+      Buttress.getCollection('post').get(_savePostData.id)
         .then((post) => startCount = post.views)
-        .then(() => Buttress.getCollection('posts').update(_savePostData.id, {path: 'views.__increment__', value: increment}))
+        .then(() => Buttress.getCollection('post').update(_savePostData.id, {path: 'views.__increment__', value: increment}))
         .then((results) => {
           results[0].path.should.equal('views.__increment__');
           results[0].value.should.equal(increment);
         })
-        .then(() => Buttress.getCollection('posts').get(_savePostData.id))
+        .then(() => Buttress.getCollection('post').get(_savePostData.id))
         .then((post) => {
           post.views.should.equal(startCount + increment);
           done();
@@ -177,7 +176,7 @@ describe('@posts', function() {
     it('should respond 400 when incrementing a stirng', function(done) {
       const increment = 2;
 
-      Buttress.getCollection('posts').update(_savePostData.id, {path: 'content.__increment__', value: increment})
+      Buttress.getCollection('post').update(_savePostData.id, {path: 'content.__increment__', value: increment})
         .catch((err) => {
           err.statusCode.should.be.equal(400);
           done();
@@ -187,7 +186,7 @@ describe('@posts', function() {
     it('should respond 400 passing a string', function(done) {
       const increment = 'string';
 
-      Buttress.getCollection('posts').update(_savePostData.id, {path: 'views.__increment__', value: increment})
+      Buttress.getCollection('post').update(_savePostData.id, {path: 'views.__increment__', value: increment})
         .catch((err) => {
           err.statusCode.should.be.equal(400);
           done();
@@ -195,7 +194,7 @@ describe('@posts', function() {
     });
 
     it('should remove the post', function(done) {
-      Buttress.getCollection('posts').remove(_savePostData.id)
+      Buttress.getCollection('post').remove(_savePostData.id)
         .then(function(res) {
           res.should.equal(true);
           done();
@@ -224,7 +223,7 @@ describe('@posts', function() {
 
       const _posts = __gen(1000);
 
-      Buttress.getCollection('posts')
+      Buttress.getCollection('post')
         .bulkSave(_posts)
         .then(function(posts) {
           posts.length.should.equal(1000);
