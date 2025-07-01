@@ -125,7 +125,7 @@ export class Buttress {
       if (this.options.update) await this.initSchema();
 
       this.options.compiledSchema = await (this.getCollection('app') as App).getSchema();
-      this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(Sugar.String.dasherize(s.name)));
+      this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
 
       return true;
     }
@@ -224,7 +224,7 @@ export class Buttress {
     await this.getCollection<App>('app').updateSchema(this.options.schema);
 
     this.options.compiledSchema = await this.getCollection<App>('app').getSchema();
-    this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(Sugar.String.dasherize(s.name)));
+    this.options.compiledSchema?.forEach((s: ModelSchema) => this.getCollection(s.name));
 
     return true;
   }
@@ -283,9 +283,9 @@ export class Buttress {
     this.Policy = this.__modules['policy'] = new Policy(this.options);
     this.Token = this.__modules['token'] = new Token(this.options);
     this.User = this.__modules['user'] = new User(this.options);
-    this.SecureStore = this.__modules['secure-store'] = new SecureStore(this.options);
-    this.AppDataSharing = this.__modules['app-data-sharing'] = new AppDataSharing(this.options);
-    this.LambdaExecution = this.__modules['lambda-execution'] = new LambdaExecution(this.options);
+    this.SecureStore = this.__modules['secureStore'] = new SecureStore(this.options);
+    this.AppDataSharing = this.__modules['appDataSharing'] = new AppDataSharing(this.options);
+    this.LambdaExecution = this.__modules['lambdaExecution'] = new LambdaExecution(this.options);
   }
 
   /**
@@ -294,7 +294,7 @@ export class Buttress {
    * @return {void}
    */
   _addModule(mod: string) {
-    const caped = Sugar.String.dasherize(mod);
+    const caped = Sugar.String.camelize(mod, false);
     this.__modules[caped] = this._loadModule(mod);
   }
 
@@ -313,7 +313,7 @@ export class Buttress {
    * @return {object} module
    */
   _findModule(mod: string) {
-    const caped = Sugar.String.dasherize(mod);
+    const caped = Sugar.String.camelize(mod, false);
     return this.__modules[caped];
   }
 
@@ -325,7 +325,7 @@ export class Buttress {
   getCollection<T extends BaseSchema>(collection: string): T {
     if (!this.__initialised) throw new Error('Unable to getCollection before Buttress is initialised');
 
-    const mod = Sugar.String.dasherize(collection);
+    const mod = Sugar.String.camelize(collection, false);
     if (mod !== collection) throw new Error(`Make sure that your collection: ${collection} is following the correct naming convention ${mod}`);
     if (!this.__modules[mod]) {
       this._addModule(collection);
