@@ -1,0 +1,15 @@
+{
+  "name": "data-filter-admin",
+  "selection": {
+    "role": {
+      "@eq": "admin"
+    }
+  },
+  "config": [{
+    "verbs": ["GET", "SEARCH", "PUT", "POST", "DELETE"],
+    "schema": ["%ALL%"],
+    "query": {
+      "access": "%FULL_ACCESS%"
+    }
+  }]
+}

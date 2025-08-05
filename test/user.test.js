@@ -35,7 +35,7 @@ Config.init();
 
 const USERS = [{
   app: 'google',
-  id: '12345678987654321',
+  appId: '12345678987654321',
   name: 'Chris Bates-Keegan',
   token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
   email: 'test@test.com',
@@ -43,7 +43,7 @@ const USERS = [{
   profileImgUrl: 'http://test.com/thisisatest.png',
 }, {
   app: 'google',
-  id: '98765432109876543210',
+  appId: '98765432109876543210',
   name: 'Chris Bates-Keegan',
   token: 'testisathistestisathistestisathistestisathistestisathis',
   email: 'test@test.com',
@@ -52,15 +52,14 @@ const USERS = [{
 }];
 
 describe('@users', function() {
-  before(function(done) {
-    Promise.all([
-      Buttress.User.removeAll(),
-      Buttress.Token.removeAllUserTokens(),
-    ])
-      .then(() => done());
+  before(async function() {
+    Config.configureTest();
+    await Buttress.User.removeAll();
+    await Buttress.Token.removeAllUserTokens();
   });
 
   after(function(done) {
+    Config.configureTest();
     done();
   });
 
@@ -84,6 +83,7 @@ describe('@users', function() {
       Buttress.Auth
         .findOrCreateUser(USERS[0], {
           domains: [Buttress.options.url.host],
+          policyProperties: {}
         })
         .then(function(user) {
           user.should.not.equal(false);
@@ -91,8 +91,7 @@ describe('@users', function() {
           user.auth[0].appId.should.equal('12345678987654321');
           user.should.not.have.property('token');
 
-          const hasPublicToken = user.tokens.some((t) => t.role === 'public');
-          hasPublicToken.should.equal(true);
+          user.tokens.length.should.equal(1);
 
           _users[0] = user;
           done();
@@ -126,31 +125,8 @@ describe('@users', function() {
           user.auth.length.should.equal(1);
           user.auth[0].appId.should.equal('12345678987654321');
 
-          const hasPublicToken = user.tokens.some((t) => t.role === 'public');
-          hasPublicToken.should.equal(true);
+          user.tokens.length.should.equal(1);
 
-          done();
-        })
-        .catch(function(err) {
-          done(err);
-        });
-    });
-
-    it('should create a another user (default role)', function(done) {
-      Buttress.Auth
-        .findOrCreateUser(USERS[1], {
-          domains: [Buttress.options.url.host],
-        })
-        .then(function(user) {
-          user.should.not.equal(false);
-          user.id.should.not.equal(_userId);
-          user.auth.length.should.equal(1);
-          user.auth[0].appId.should.equal('98765432109876543210');
-
-          const hasPublicToken = user.tokens.some((t) => t.role === 'user.member');
-          hasPublicToken.should.equal(true);
-
-          _users[1] = user;
           done();
         })
         .catch(function(err) {
@@ -164,10 +140,10 @@ describe('@users', function() {
       Buttress.Auth
         .createToken(user.id, {
           domains: [Buttress.options.url.host],
+          policyProperties: {}
         })
         .then(function(token) {
           token.should.not.equal(false);
-          token.role.should.equal('user.member');
           done();
         })
         .catch(function(err) {
@@ -179,7 +155,7 @@ describe('@users', function() {
       const userData = USERS[0];
 
       Buttress.User
-        .findUser(userData.app, userData.id)
+        .findUser(userData.app, userData.appId)
         .then((u) => {
           u.tokens.should.have.length(2);
           done();

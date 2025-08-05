@@ -27,24 +27,31 @@ import ButtressOptionsInternal from '../types/ButtressOptionsInternal';
 declare var lambda: any;
 
 export interface RequestOptions {
-  method: string
+  method: string,
   params: {
     [key: string]: any
-    token: string
   };
+  token: string;
   data: any
   body: any
-  headers: any
+  headers: {
+    [key: string]: any
+  };
   stream: boolean
+  combineResults: boolean;
 }
 export interface RequestOptionsIn {
+  headers?: {
+    [key: string]: any
+  };
   params?: {
     [key: string]: any
-    token?: string
   };
-  project?: string
+  token?: string;
+  project?: string;
   data?: any;
-  stream?: boolean
+  stream?: boolean;
+  combineResults?: boolean;
 }
 
 const Errors = {
@@ -329,18 +336,6 @@ class Schema {
       break;
     case 'string':
       res = config.__default !== undefined ? config.__default : '';
-      if (config.__default === 'randomString') {
-        res = '';
-        const length = 36;
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        const mask = 0x3d;
-
-        const bytes = crypto.randomBytes(length);
-        for (let x = 0; x < bytes.length; x++) {
-          const byte = bytes[x];
-          res += chars[byte & mask];
-        }
-      }
       break;
     case 'number':
       res = config.__default !== undefined ? config.__default : 0;
@@ -377,15 +372,18 @@ const _checkOptions = (options?: RequestOptionsIn, defaultToken?: string): Reque
 
   const requestOptions: RequestOptions = {
     method: '',
-    params: {
-      token: defaultToken,
-    },
+    params: {},
+    token: defaultToken,
     data: {},
     headers: {},
     body: {},
     stream: false,
+    combineResults: true,
   };
 
+  if (options.token) requestOptions.token = options.token;
+
+  if (options.headers) requestOptions.headers = {...requestOptions.headers, ...options.headers};
   if (options.params) requestOptions.params = {...requestOptions.params, ...options.params};
   if (options.data) requestOptions.data = {...requestOptions.data, ...options.data};
   if (options.stream) requestOptions.stream = options.stream;
