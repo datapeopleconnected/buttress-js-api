@@ -27,6 +27,7 @@ export default interface ButtressOptionsInternal {
   update: boolean;
   useLocalSchema: boolean
   allowUnauthorized: boolean;
+  clientSessionId?: string;
   url?: string;
   urls?: {
     core: string;

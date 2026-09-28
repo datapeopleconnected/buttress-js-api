@@ -20,6 +20,7 @@ import Helpers from './helpers';
 import BaseSchema from './helpers/schema';
 
 import ModelSchema from './model/Schema';
+import ButtressOptions from './types/ButtressOptions';
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 import App from './app';
@@ -32,16 +33,7 @@ import SecureStore from './secure-store';
 import AppDataSharing from './app-data-sharing';
 import LambdaExecution from './lambda-execution';
 
-export interface ButtressOptions {
-  buttressUrl: string,
-  appToken: string,
-  apiPath: string,
-  schema?: any[],
-  version: number,
-  update?: boolean,
-  useLocalSchema?: boolean,
-  allowUnauthorized?: boolean,
-}
+export type {ButtressOptions};
 
 type Modules = {
   [key: string]: BaseSchema;
@@ -123,6 +115,7 @@ export class Buttress {
     if (options.update) this.options.update = options.update;
     if (options.allowUnauthorized) this.options.allowUnauthorized = options.allowUnauthorized;
     if (options.useLocalSchema) this.options.useLocalSchema = options.useLocalSchema;
+    if (options.clientSessionId) this.options.clientSessionId = options.clientSessionId;
 
     this.options.url = options.buttressUrl;
 
@@ -219,6 +212,13 @@ export class Buttress {
    */
   setAuthToken(token: string) {
     this.options.authToken = token;
+  }
+
+  /**
+   * @param {string} clientSessionId - a UUID v4, sent as x-client-session-id
+   */
+  setClientSessionId(clientSessionId?: string) {
+    this.options.clientSessionId = clientSessionId;
   }
 
   /**

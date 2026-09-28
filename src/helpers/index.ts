@@ -52,6 +52,10 @@ export interface RequestOptionsIn {
   data?: any;
   stream?: boolean;
   combineResults?: boolean;
+  // Used by update to target an entity held in a remote datastore
+  sourceId?: string;
+  // Used by count to sum a count per matching policy instead of one count of the combined query
+  actualCount?: boolean;
 }
 
 const Errors = {

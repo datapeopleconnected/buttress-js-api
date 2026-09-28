@@ -161,6 +161,13 @@ export default class BaseSchema {
       };
     }
 
+    if (this._ButtressOptions.clientSessionId && !options.headers['x-client-session-id']) {
+      options.headers = {
+        ...options.headers,
+        'x-client-session-id': this._ButtressOptions.clientSessionId,
+      };
+    }
+
     /*
      * NOTE: Check to see if our options.data is JSON,
      * Checking type is faster than parsing the property,
@@ -324,7 +331,7 @@ export default class BaseSchema {
   /**
    * @param {string} id
    * @param {object} details
-   * @param {object} options
+   * @param {object} options - pass sourceId to update an entity held in a remote datastore
    * @return {promise}
    */
   update(id: string, details: any, options: RequestOptionsIn = {}) {
@@ -332,7 +339,9 @@ export default class BaseSchema {
 
     if (details) opts.data = details;
 
-    return this._request('put', id, opts);
+    const path = (options.sourceId) ? `${options.sourceId}/${id}` : id;
+
+    return this._request('put', path, opts);
   }
 
   /**
@@ -452,9 +461,9 @@ export default class BaseSchema {
   }
 
   /**
-  * @param {object} query
-  * @param {object} sort
-  * @param {object} options
+   * @param {object} query
+   * @param {object} sort
+   * @param {object} options - pass actualCount to sum a count per matching policy instead of one count of the combined query
    * @return {promise}
    */
   count(query: any, sort: any, options: RequestOptionsIn = {}) {
@@ -464,6 +473,10 @@ export default class BaseSchema {
       query,
       sort,
     };
+
+    if (options.actualCount) {
+      opts.data.actualCount = true;
+    }
 
     return this._request('search', 'count', opts);
   }
