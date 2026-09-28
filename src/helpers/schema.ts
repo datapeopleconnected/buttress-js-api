@@ -148,7 +148,7 @@ export default class BaseSchema {
 
     if (options.params) {
       const params = Object.keys(options.params).map((key) => {
-        return `${key}=${options.params[key]}`;
+        return `${encodeURIComponent(key)}=${encodeURIComponent(options.params[key])}`;
       }).join('&');
 
       url = (params !== '') ? `${url}?${params}` : url;
@@ -175,10 +175,10 @@ export default class BaseSchema {
 
     if (options.body && typeof options.body !== 'string') {
       options.body = JSON.stringify(options.body);
+      // Content-Length is left for fetch to work out from the bytes, the string length is wrong for non-ASCII bodies
       options.headers = {
         ...options.headers,
         'Content-Type': 'application/json',
-        'Content-Length': options.body.length,
       };
     }
 
@@ -203,7 +203,7 @@ export default class BaseSchema {
 
       if (!response.ok) {
         response.data = response.body;
-        throw new Helpers.Errors.ResponseError(response);
+        throw new Helpers.Errors.ResponseError(response, response.body);
       }
 
       return response.body;
@@ -220,12 +220,13 @@ export default class BaseSchema {
       }
 
       if (!response.ok) {
+        let body;
         try {
-          const body = await response.json();
-          throw new Helpers.Errors.ResponseError({...response, body});
+          body = await response.json();
         } catch {
-          throw new Helpers.Errors.ResponseError(response);
+          // The error body isn't JSON, fall back to the status text
         }
+        throw new Helpers.Errors.ResponseError(response, body);
       }
 
       if (options.stream === true) {
@@ -253,9 +254,8 @@ export default class BaseSchema {
     } catch (err: any) {
       let error = err;
 
-      if (err.response) {
-        error = new Helpers.Errors.ResponseError(err.response);
-      } else if (err.request) {
+      // fetch rejects with a coded error (ECONNREFUSED, ECONNRESET...) when the request never got a response
+      if (!(err instanceof Helpers.Errors.ResponseError) && err.code) {
         error = new Helpers.Errors.RequestError(err, err.code);
       }
 

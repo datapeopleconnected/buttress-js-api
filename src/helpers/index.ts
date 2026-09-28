@@ -76,24 +76,28 @@ const Errors = {
   ResponseError: class extends Error {
     code: number;
     statusCode: number;
-    statusMessage: string
+    statusMessage: string;
+    body?: any;
     /**
      * @param {Object} response
+     * @param {Object} [body] - parsed error body, buttress responds with {statusMessage, message}
      */
-    constructor(response: Response) {
+    constructor(response: {status: number, statusText?: string}, body?: any) {
       super();
       this.name = 'ResponseError';
       this.code = this.statusCode = response.status;
-      this.statusMessage = response.statusText;
-      this.message = response.statusText;
+      this.statusMessage = response.statusText || '';
+      this.body = body;
+      this.message = (body && typeof body.message === 'string') ? body.message : this.statusMessage;
     }
   },
   RequestError: class extends Error {
     code: number | string;
     /**
      * @param {Error} err
+     * @param {number|string} code
      */
-    constructor(err: Error, code: number) {
+    constructor(err: Error, code: number | string) {
       super(err.message);
       this.code = code;
       this.name = 'RequestError';
@@ -387,6 +391,7 @@ const _checkOptions = (options?: RequestOptionsIn, defaultToken?: string): Reque
   if (options.params) requestOptions.params = {...requestOptions.params, ...options.params};
   if (options.data) requestOptions.data = {...requestOptions.data, ...options.data};
   if (options.stream) requestOptions.stream = options.stream;
+  if (options.combineResults !== undefined) requestOptions.combineResults = options.combineResults;
 
   return requestOptions;
 };
