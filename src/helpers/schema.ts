@@ -380,14 +380,17 @@ export default class BaseSchema {
   }
 
   /**
-   * @param {object} details
+   * Removes every entity in the collection, use bulkRemove to remove a set of ids
+   * @param {null} details - no longer supported, buttress ignores it and removes everything
    * @param {object} options
    * @return {promise}
    */
-  removeAll(details: any, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  removeAll(details: null = null, options: RequestOptionsIn = {}) {
+    if (details !== null && details !== undefined) {
+      throw new Error(`removeAll removes every ${this.collection} and doesn't accept a filter, use bulkRemove(ids) instead`);
+    }
 
-    if (details) opts.data = details;
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     return this._request('delete', '', opts);
   }
