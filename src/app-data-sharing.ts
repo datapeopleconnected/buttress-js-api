@@ -63,7 +63,8 @@ export default class AppDataSharing extends BaseSchema {
    */
   activate(registrationToken: string, newToken: string, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
-    opts.params.token = registrationToken;
+    // Buttress only reads tokens from the Authorization header, the registration token authenticates this call
+    opts.token = registrationToken;
     opts.data = {newToken};
     return this._request('post', `activate`, opts);
   };
@@ -76,7 +77,7 @@ export default class AppDataSharing extends BaseSchema {
    */
   reactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
-    return this._request('post', `reactivate/${dataSharingId}`, opts);
+    return this._request('put', `reactivate/${dataSharingId}`, opts);
   };
 
   /**
@@ -87,6 +88,6 @@ export default class AppDataSharing extends BaseSchema {
    */
   deactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
-    return this._request('post', `deactivate/${dataSharingId}`, opts);
+    return this._request('put', `deactivate/${dataSharingId}`, opts);
   };
 }

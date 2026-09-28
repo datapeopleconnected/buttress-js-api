@@ -407,7 +407,7 @@
 //   it('should create a socket room for admin policy', async() => {
 //     const user1 = testUsers.find((u) => u.auth[0].username === 'Test User 1');
 //     const userToken = user1.tokens[0].value;
-//     const socket = io.connect(`${socketUrl}/socket-test-app`, {query: `token=${userToken}`});
+//     const socket = io.connect(`${socketUrl}/socket-test-app`, {auth: {token: userToken}});
 //     // add a promise to resolve with socket is connected
 //     await new Promise((resolve) => {
 //       socket.on('connect', () => {
@@ -421,7 +421,7 @@
 //   it('should create a socket room for a policy that gives full access to organisation', async () => {
 //     const user2 = testUsers.find((u) => u.auth[0].username === 'Test User 2');
 //     const userToken = user2.tokens[0].value;
-//     const socket = io.connect(`${socketUrl}/socket-test-app`, {query: `token=${userToken}`});
+//     const socket = io.connect(`${socketUrl}/socket-test-app`, {auth: {token: userToken}});
 //     // add a promise to resolve with socket is connected
 //     await new Promise((resolve) => {
 //       socket.on('connect', async () => {
@@ -437,7 +437,7 @@
 //   it('should create a socket room for a policy that gives access to organisation with a filter', async() => {
 //     const user3 = testUsers.find((u) => u.auth[0].username === 'Test User 3');
 //     const userToken = user3.tokens[0].value;
-//     const socket = io.connect(`${socketUrl}/socket-test-app`, {query: `token=${userToken}`});
+//     const socket = io.connect(`${socketUrl}/socket-test-app`, {auth: {token: userToken}});
 //     // add a promise to resolve with socket is connected
 //     await new Promise((resolve) => {
 //       socket.on('connect', () => {
@@ -451,7 +451,7 @@
 //   it(`should create a socket room for a policy that gives access to organisations' name`, async() => {
 //     const user4 = testUsers.find((u) => u.auth[0].username === 'Test User 4');
 //     const userToken = user4.tokens[0].value;
-//     const socket = io.connect(`${socketUrl}/socket-test-app`, {query: `token=${userToken}`});
+//     const socket = io.connect(`${socketUrl}/socket-test-app`, {auth: {token: userToken}});
 //     // add a promise to resolve with socket is connected
 //     await new Promise((resolve) => {
 //       socket.on('connect', () => {
@@ -465,7 +465,7 @@
 //   it(`should create a socket room for a policy that gives access to box's height`, async() => {
 //     const user5 = testUsers.find((u) => u.auth[0].username === 'Test User 5');
 //     const userToken = user5.tokens[0].value;
-//     const socket = io.connect(`${socketUrl}/socket-test-app`, {query: `token=${userToken}`});
+//     const socket = io.connect(`${socketUrl}/socket-test-app`, {auth: {token: userToken}});
 //     // add a promise to resolve with socket is connected
 //     await new Promise((resolve) => {
 //       socket.on('connect', async () => {
@@ -494,7 +494,7 @@
 //   it(`should create a socket room for a policy that gives based on override switch and then close it`, async() => {
 //     const user6 = testUsers.find((u) => u.auth[0].username === 'Test User 6');
 //     const userToken = user6.tokens[0].value;
-//     const socket = io.connect(`${socketUrl}/socket-test-app`, {query: `token=${userToken}`});
+//     const socket = io.connect(`${socketUrl}/socket-test-app`, {auth: {token: userToken}});
 //     // add a promise to resolve with socket is connected
 //     await new Promise((resolve) => {
 //       socket.on('connect', async () => {
