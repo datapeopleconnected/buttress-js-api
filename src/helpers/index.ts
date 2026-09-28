@@ -15,31 +15,31 @@
  */
 
 import Sugar from 'sugar';
-import {v4 as uuidv4} from 'uuid';
+import {randomUUID} from 'node:crypto';
 import ObjectId from 'bson-objectid';
 
 import SchemaModel, {Property, Properties} from '../model/Schema';
 
 export interface RequestOptions {
-  method: string,
+  method: string;
   params: {
-    [key: string]: any
+    [key: string]: any;
   };
   token: string;
-  data: any
-  body: any
+  data: any;
+  body: any;
   headers: {
-    [key: string]: any
+    [key: string]: any;
   };
-  stream: boolean
+  stream: boolean;
   combineResults: boolean;
 }
 export interface RequestOptionsIn {
   headers?: {
-    [key: string]: any
+    [key: string]: any;
   };
   params?: {
-    [key: string]: any
+    [key: string]: any;
   };
   token?: string;
   project?: string;
@@ -80,13 +80,13 @@ const Errors = {
      * @param {Object} response
      * @param {Object} [body] - parsed error body, buttress responds with {statusMessage, message}
      */
-    constructor(response: {status: number, statusText?: string}, body?: any) {
+    constructor(response: {status: number; statusText?: string}, body?: any) {
       super();
       this.name = 'ResponseError';
       this.code = this.statusCode = response.status;
       this.statusMessage = response.statusText || '';
       this.body = body;
-      this.message = (body && typeof body.message === 'string') ? body.message : this.statusMessage;
+      this.message = body && typeof body.message === 'string' ? body.message : this.statusMessage;
     }
   },
   RequestError: class extends Error {
@@ -166,7 +166,7 @@ class Schema {
    * @return {string} id
    */
   static get id() {
-    return (new ObjectId()).toHexString();
+    return new ObjectId().toHexString();
   }
 
   /**
@@ -200,7 +200,7 @@ class Schema {
    * @param {string} path
    * @return {object} schemaPart
    */
-  static getSubSchema(schema: SchemaModel, path: string) {
+  static getSubSchema(schema: SchemaModel, path: string): SchemaModel | undefined {
     return path.split('.').reduce((out: SchemaModel | undefined, path: string) => {
       if (!out) return; // Skip all paths if we hit a false
 
@@ -225,15 +225,20 @@ class Schema {
    * @return {object} flatSchema
    */
   static getFlattened(schema: SchemaModel): {[key: string]: Property} {
-    const __buildFlattenedSchema = (property: string, parent: Properties, path: string[], flattened: {[key: string]: Property}) => {
+    const __buildFlattenedSchema = (
+      property: string,
+      parent: Properties,
+      path: string[],
+      flattened: {[key: string]: Property},
+    ) => {
       path.push(property);
 
-      const isProps = (parent[property].__type) ? false : true;
+      const isProps = parent[property].__type ? false : true;
 
       let isRoot = true;
       if (isProps) {
         for (const childProp in parent[property]) {
-          if (!parent[property].hasOwnProperty(childProp)) continue;
+          if (!Object.hasOwn(parent[property], childProp)) continue;
           if (/^__/.test(childProp)) {
             continue;
           }
@@ -256,7 +261,7 @@ class Schema {
     const flattened = {};
     const path: string[] = [];
     for (const property in schema.properties) {
-      if (!schema.properties.hasOwnProperty(property)) continue;
+      if (!Object.hasOwn(schema.properties, property)) continue;
       __buildFlattenedSchema(property, schema.properties, path, flattened);
     }
 
@@ -292,7 +297,7 @@ class Schema {
     const res: {[key: string]: any} = {};
     const objects: {[key: string]: any} = {};
     for (const property in flattenedSchema) {
-      if (!flattenedSchema.hasOwnProperty(property)) continue;
+      if (!Object.hasOwn(flattenedSchema, property)) continue;
       const config = flattenedSchema[property];
       const propVal = {
         path: property,
@@ -332,36 +337,36 @@ class Schema {
   static getPropDefault(config: Property) {
     let res;
     switch (config.__type) {
-    default:
-    case 'boolean':
-      res = config.__default !== undefined ? config.__default : false;
-      break;
-    case 'string':
-      res = config.__default !== undefined ? config.__default : '';
-      break;
-    case 'number':
-      res = config.__default !== undefined ? config.__default : 0;
-      break;
-    case 'array':
-      res = [];
-      break;
-    case 'object':
-      res = {};
-      break;
-    case 'id':
-      res = config.__default === 'new' ? Schema.id : null;
-      break;
-    case 'uuid':
-      res = config.__default === 'new' ? uuidv4() : null;
-      break;
-    case 'date':
-      if (config.__default === null) {
-        res = null;
-      } else if (config.__default) {
-        res = Sugar.Date.create(config.__default);
-      } else {
-        res = new Date();
-      }
+      default:
+      case 'boolean':
+        res = config.__default !== undefined ? config.__default : false;
+        break;
+      case 'string':
+        res = config.__default !== undefined ? config.__default : '';
+        break;
+      case 'number':
+        res = config.__default !== undefined ? config.__default : 0;
+        break;
+      case 'array':
+        res = [];
+        break;
+      case 'object':
+        res = {};
+        break;
+      case 'id':
+        res = config.__default === 'new' ? Schema.id : null;
+        break;
+      case 'uuid':
+        res = config.__default === 'new' ? randomUUID() : null;
+        break;
+      case 'date':
+        if (config.__default === null) {
+          res = null;
+        } else if (config.__default) {
+          res = Sugar.Date.create(config.__default);
+        } else {
+          res = new Date();
+        }
     }
     return res;
   }
@@ -399,7 +404,7 @@ const sleep = (ms: number) => {
 };
 const backOff = (attempt: number) => {
   const delay = Math.pow(2, attempt) * 200;
-  return sleep(delay + (delay * 0.2 * Math.random()));
+  return sleep(delay + delay * 0.2 * Math.random());
 };
 
 export default {

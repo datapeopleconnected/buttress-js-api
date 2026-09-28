@@ -41,7 +41,7 @@ export default class Lambda extends BaseSchema {
    */
   createLambda(lambda: LambdaModel, auth: any) {
     return this.save({lambda, auth});
-  };
+  }
 
   /**
    * Add a new lambda to the database
@@ -69,11 +69,11 @@ export default class Lambda extends BaseSchema {
   }
 
   /**
-     * @param {Object} lambdaId - lambda id
-     * @param {array} data - request data
-     * @param {Object} options - request options
-     * @return {Promise}
-     */
+   * @param {Object} lambdaId - lambda id
+   * @param {array} data - request data
+   * @param {Object} options - request options
+   * @return {Promise}
+   */
   updatePolicyProperty(lambdaId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;

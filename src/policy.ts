@@ -20,33 +20,33 @@ import BaseSchema from './helpers/schema';
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 /**
-* @class Policy
-*/
+ * @class Policy
+ */
 export default class Policy extends BaseSchema {
   /**
-  * Instance of Policy
-  * @param {object} ButtressOptions
-  */
+   * Instance of Policy
+   * @param {object} ButtressOptions
+   */
   constructor(ButtressOptions: ButtressOptionsInternal) {
     super('policy', ButtressOptions, true);
   }
 
   /**
-  * Add a new policy to the database
-  * @param {Object} policy
-  * @return {Promise}
-  */
+   * Add a new policy to the database
+   * @param {Object} policy
+   * @return {Promise}
+   */
   createPolicy(policy: any) {
     return this.save(policy);
-  };
+  }
 
   /**
-  * Retrieve all policies linked to the auth app
-  * @return {Promise}
-  */
+   * Retrieve all policies linked to the auth app
+   * @return {Promise}
+   */
   getAllPolicies() {
     return this.getAll();
-  };
+  }
 
   /**
    * Retrieve policy by name
@@ -70,5 +70,5 @@ export default class Policy extends BaseSchema {
     const opts = Helpers.checkOptions(options, this.token);
     if (policies) opts.data = policies;
     return this._request('post', 'sync', opts);
-  };
+  }
 }

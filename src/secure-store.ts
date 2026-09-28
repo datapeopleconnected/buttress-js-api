@@ -39,7 +39,7 @@ export default class SecureStore extends BaseSchema {
    */
   _secureStoreInterface(secureStore: SecureStoreModel) {
     return {
-      'getValue': (key: string) => {
+      getValue: (key: string) => {
         const output = secureStore.storeData[key];
         if (!output) {
           throw new Error(`${key} does not exist on the secure store ${secureStore.name}`);
@@ -47,14 +47,16 @@ export default class SecureStore extends BaseSchema {
 
         return output;
       },
-      'setValue': (key: string, value: any) => {
-        return this.update(secureStore.id, [{
-          path: `storeData.${key}`,
-          value: value,
-        }]);
+      setValue: (key: string, value: any) => {
+        return this.update(secureStore.id, [
+          {
+            path: `storeData.${key}`,
+            value: value,
+          },
+        ]);
       },
     };
-  };
+  }
 
   /**
    * Add a new secure store to the database
@@ -64,7 +66,7 @@ export default class SecureStore extends BaseSchema {
   async createSecureStore(details: any) {
     const store = await this.save(details);
     return this._secureStoreInterface(store);
-  };
+  }
 
   /**
    * Add a new secure store to the database

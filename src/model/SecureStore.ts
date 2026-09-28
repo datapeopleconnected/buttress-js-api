@@ -19,5 +19,5 @@ export default interface SecureStore {
   name: string;
   storeData: {
     [key: string]: any;
-  }
+  };
 }

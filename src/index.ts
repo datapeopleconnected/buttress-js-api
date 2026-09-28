@@ -270,7 +270,6 @@ export class Buttress {
     await this.User.updatePolicyProperty(userId, tokenId, {[policy.name]: true});
   }
 
-
   /**
    * Delete user transient policy
    * @param {String} userId
@@ -279,7 +278,8 @@ export class Buttress {
    * @return {Promise}
    */
   async removeUserTransientPolicy(userId: string, tokenId: string, policyName: string) {
-    if (!this.Policy || !this.User) throw new Error('Unable to remove user transient policy before Buttress is initialised');
+    if (!this.Policy || !this.User)
+      throw new Error('Unable to remove user transient policy before Buttress is initialised');
 
     await this.User.removePolicyProperty(userId, tokenId, {[policyName]: true});
     await this.Policy.deletePolicyByName({name: policyName});
@@ -348,7 +348,10 @@ export class Buttress {
     if (!this.__initialised) throw new Error('Unable to getCollection before Buttress is initialised');
 
     const mod = Sugar.String.camelize(collection, false);
-    if (mod !== collection) throw new Error(`Make sure that your collection: ${collection} is following the correct naming convention ${mod}`);
+    if (mod !== collection)
+      throw new Error(
+        `Make sure that your collection: ${collection} is following the correct naming convention ${mod}`,
+      );
     if (!this.__modules[mod]) {
       this._addModule(collection);
     }

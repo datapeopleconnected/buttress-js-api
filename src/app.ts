@@ -42,26 +42,26 @@ export default class App extends BaseSchema {
     const opts = Helpers.checkOptions(options, this.token);
     if (rawSchema) opts.params.rawSchema = true;
     return this._request('get', 'schema', opts);
-  };
+  }
 
   /**
-  * @param {array} schema
-  * @param {object} [options={}] options
-  */
+   * @param {array} schema
+   * @param {object} [options={}] options
+   */
   async updateSchema(schema: Schema[], options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (schema) opts.data = schema;
     const res = await this._request('put', 'schema', opts);
 
     this._ButtressOptions.compiledSchema = res;
-  };
+  }
 
   /**
-  * @param {array} list
-  * @param {string} appId
-  * @param {object} [options={}] options
-  * @return {promise} - response
-  */
+   * @param {array} list
+   * @param {string} appId
+   * @param {object} [options={}] options
+   * @return {promise} - response
+   */
   setPolicyPropertyList(list: any[], appId = null, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (list) opts.data = list;
@@ -72,11 +72,11 @@ export default class App extends BaseSchema {
   }
 
   /**
-  * @param {array} list
-  * @param {string} appId
-  * @param {object} [options={}] options
-  * @return {promise} - response
-  */
+   * @param {array} list
+   * @param {string} appId
+   * @param {object} [options={}] options
+   * @return {promise} - response
+   */
   updatePolicyPropertyList(list: any[], appId = null, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (list) opts.data = list;
@@ -91,7 +91,7 @@ export default class App extends BaseSchema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  getPolicyPropertiesList(apiPath: string, options={}) {
+  getPolicyPropertiesList(apiPath: string, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     let path = `policy-property-list`;
     if (apiPath) path = `policy-property-list/${apiPath}`;

@@ -51,12 +51,12 @@ await Buttress.removeUserTransientPolicy(userId, tokenId, policyName);
 
 **Where to get a `tokenId`**
 
-| Call | What its tokens include |
-|---|---|
-| `Buttress.User.get(userId)` | `tokens[].id` and `tokens[].value` |
-| `Buttress.User.findUser(app, appUserId)` | `tokens[].value` |
-| `Buttress.Auth.findOrCreateUser(...)` | `tokens[].value`, plus `id` when the user was found by id |
-| `Buttress.User.createToken(...)` | `value` |
+| Call                                     | What its tokens include                                   |
+| ---------------------------------------- | --------------------------------------------------------- |
+| `Buttress.User.get(userId)`              | `tokens[].id` and `tokens[].value`                        |
+| `Buttress.User.findUser(app, appUserId)` | `tokens[].value`                                          |
+| `Buttress.Auth.findOrCreateUser(...)`    | `tokens[].value`, plus `id` when the user was found by id |
+| `Buttress.User.createToken(...)`         | `value`                                                   |
 
 Use the token **id** where you have it. The `tokenId` is part of the request path, so a token value used there can end up in proxy and access logs.
 
@@ -64,9 +64,9 @@ Use the token **id** where you have it. The `tokenId` is part of the request pat
 
 Both methods called routes that Buttress doesn't have, so every call already failed. Delete the calls.
 
-| Removed | Notes |
-|---|---|
-| `Token.updateRole(details)` | Called `PUT token/roles`, which doesn't exist. |
+| Removed                               | Notes                                                                                                          |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `Token.updateRole(details)`           | Called `PUT token/roles`, which doesn't exist.                                                                 |
 | `Auth.addAuthToUser(userId, appAuth)` | Called `PUT auth/:id/auth`, which doesn't exist. It also read `response.data`, which the client never returns. |
 
 ### `removeAll` no longer accepts a filter
@@ -92,12 +92,12 @@ Buttress replies to a failed request with a JSON body, `{statusMessage, message}
 
 `ResponseError` now has:
 
-| Property | Before | After |
-|---|---|---|
-| `message` | HTTP status text (`Unauthorized`) | Buttress's message (`invalid_token`). Falls back to the status text when the body has none. |
-| `statusMessage` | HTTP status text | HTTP status text (unchanged) |
-| `statusCode` / `code` | HTTP status | HTTP status (unchanged) |
-| `body` | – | The parsed error body, or `undefined` if it wasn't JSON |
+| Property              | Before                            | After                                                                                       |
+| --------------------- | --------------------------------- | ------------------------------------------------------------------------------------------- |
+| `message`             | HTTP status text (`Unauthorized`) | Buttress's message (`invalid_token`). Falls back to the status text when the body has none. |
+| `statusMessage`       | HTTP status text                  | HTTP status text (unchanged)                                                                |
+| `statusCode` / `code` | HTTP status                       | HTTP status (unchanged)                                                                     |
+| `body`                | –                                 | The parsed error body, or `undefined` if it wasn't JSON                                     |
 
 If you compared `err.message` to a status text, compare `err.statusCode` or `err.statusMessage` instead:
 
@@ -111,6 +111,7 @@ if (err.message === 'invalid_token') { ... }   // or match the specific reason
 ```
 
 If you construct errors yourself, for example in test mocks:
+
 - The `ResponseError` constructor is now `(response: {status, statusText?}, body?)`.
 - `RequestError`'s `code` accepts a string, such as `ECONNREFUSED`.
 
@@ -136,17 +137,17 @@ io.connect(url, {auth: {token}});
 
 ## Behaviour changes that need no code changes
 
-| Change | What you'll notice |
-|---|---|
-| `AppDataSharing.activate()` sends the registration token in the `Authorization` header | Activation works again. Before, it sent the token in the query string and got a 401. |
-| `AppDataSharing.reactivate()` and `deactivate()` use `PUT` | They work again. Before, they sent `POST` and got a 404. |
-| `App.getPolicyPropertiesList()` with no argument calls `app/policy-property-list` | It works again. Before, it hit `app/:id`, which only a system token can call. |
-| Request bodies no longer set `Content-Length` by hand | Bodies with non-ASCII characters (`é`, emoji) arrive intact. Before, the header counted characters rather than bytes and cut the body short. |
-| Query params are URL-encoded | Values containing `&`, `=`, `#` or spaces reach the server as sent. |
-| Network errors are retried | `GET`, `HEAD` and `OPTIONS` requests that fail without a response (`ECONNREFUSED`, `ECONNRESET`, …) retry up to 10 times with exponential back-off. This retry code already existed but never ran. **If the server is unreachable, a GET now takes about 3½ minutes to fail instead of failing straight away**, and that includes the schema fetch in `init()`. |
-| `combineResults: false` is respected | The default is still `true`. Before, passing `false` was ignored. |
-| A failed `init()` can be retried | If fetching the schema fails, the instance is reset with `clean()` and the error is rethrown. Before, the instance stayed marked as initialised with no schema, and calling `init()` again did nothing. |
-| `clean()` clears the core module properties | After `clean()`, `Buttress.App`, `Buttress.User` and the other core modules are `undefined` until the next `init()`. |
+| Change                                                                                 | What you'll notice                                                                                                                                                                                                                                                                                                                                              |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AppDataSharing.activate()` sends the registration token in the `Authorization` header | Activation works again. Before, it sent the token in the query string and got a 401.                                                                                                                                                                                                                                                                            |
+| `AppDataSharing.reactivate()` and `deactivate()` use `PUT`                             | They work again. Before, they sent `POST` and got a 404.                                                                                                                                                                                                                                                                                                        |
+| `App.getPolicyPropertiesList()` with no argument calls `app/policy-property-list`      | It works again. Before, it hit `app/:id`, which only a system token can call.                                                                                                                                                                                                                                                                                   |
+| Request bodies no longer set `Content-Length` by hand                                  | Bodies with non-ASCII characters (`é`, emoji) arrive intact. Before, the header counted characters rather than bytes and cut the body short.                                                                                                                                                                                                                    |
+| Query params are URL-encoded                                                           | Values containing `&`, `=`, `#` or spaces reach the server as sent.                                                                                                                                                                                                                                                                                             |
+| Network errors are retried                                                             | `GET`, `HEAD` and `OPTIONS` requests that fail without a response (`ECONNREFUSED`, `ECONNRESET`, …) retry up to 10 times with exponential back-off. This retry code already existed but never ran. **If the server is unreachable, a GET now takes about 3½ minutes to fail instead of failing straight away**, and that includes the schema fetch in `init()`. |
+| `combineResults: false` is respected                                                   | The default is still `true`. Before, passing `false` was ignored.                                                                                                                                                                                                                                                                                               |
+| A failed `init()` can be retried                                                       | If fetching the schema fails, the instance is reset with `clean()` and the error is rethrown. Before, the instance stayed marked as initialised with no schema, and calling `init()` again did nothing.                                                                                                                                                         |
+| `clean()` clears the core module properties                                            | After `clean()`, `Buttress.App`, `Buttress.User` and the other core modules are `undefined` until the next `init()`.                                                                                                                                                                                                                                            |
 
 ## New options
 

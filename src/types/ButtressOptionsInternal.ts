@@ -20,17 +20,17 @@ export default interface ButtressOptionsInternal {
   buttressUrl?: string;
   authToken?: string;
   compiledSchema?: Schema[];
-  isolated: boolean,
+  isolated: boolean;
   apiPath: string;
   schema: Schema[];
   version: number;
   update: boolean;
-  useLocalSchema: boolean
+  useLocalSchema: boolean;
   allowUnauthorized: boolean;
   clientSessionId?: string;
   url?: string;
   urls?: {
     core: string;
     app: string;
-  }
+  };
 }

@@ -72,7 +72,7 @@ export default class BaseSchema {
    * @return {string} url
    */
   getEndpoint() {
-    const endpoint = (this.core) ? this._ButtressOptions.urls?.core : this._ButtressOptions.urls?.app;
+    const endpoint = this.core ? this._ButtressOptions.urls?.core : this._ButtressOptions.urls?.app;
     return endpoint || '';
   }
 
@@ -146,17 +146,19 @@ export default class BaseSchema {
     }
 
     if (options.params) {
-      const params = Object.keys(options.params).map((key) => {
-        return `${encodeURIComponent(key)}=${encodeURIComponent(options.params[key])}`;
-      }).join('&');
+      const params = Object.keys(options.params)
+        .map((key) => {
+          return `${encodeURIComponent(key)}=${encodeURIComponent(options.params[key])}`;
+        })
+        .join('&');
 
-      url = (params !== '') ? `${url}?${params}` : url;
+      url = params !== '' ? `${url}?${params}` : url;
     }
 
     if (options.token) {
       options.headers = {
         ...options.headers,
-        'Authorization': `Bearer ${options.token}`,
+        Authorization: `Bearer ${options.token}`,
       };
     }
 
@@ -266,19 +268,19 @@ export default class BaseSchema {
       }
 
       // Handle error type and retry if necessary
-      if (error instanceof Helpers.Errors.RequestError &&
+      if (
+        error instanceof Helpers.Errors.RequestError &&
         Boolean(error.code) &&
         error.code !== 'ECONNABORTED' &&
         BaseSchema.Constants.RETRY_METHODS.includes(type)
       ) {
         if (attempt >= BaseSchema.Constants.MAX_RETRIES) throw error;
 
-        return Helpers.backOff(attempt)
-          .then(() => this._request(type, path, options, attempt));
+        return Helpers.backOff(attempt).then(() => this._request(type, path, options, attempt));
       }
 
       throw error;
-    };
+    }
   }
 
   /**
@@ -291,8 +293,8 @@ export default class BaseSchema {
     const originalURL = url.match(this.__protocolRegex);
     const redirectedURL = response.url.match(this.__protocolRegex);
 
-    const originalProtocol = (originalURL !== null) ? originalURL.pop() : null;
-    const redirectedProtocol = (redirectedURL !== null) ? redirectedURL.pop() : null;
+    const originalProtocol = originalURL !== null ? originalURL.pop() : null;
+    const redirectedProtocol = redirectedURL !== null ? redirectedURL.pop() : null;
 
     const replacedOriginalURL = url.replace(this.__protocolRegex, '');
     const replacedRedirectedURL = response.url.replace(this.__protocolRegex, '');
@@ -320,11 +322,10 @@ export default class BaseSchema {
 
     if (details) opts.data = details;
 
-    return this._request('post', '', opts)
-      .then((data) => {
-        if (Array.isArray(data)) return data.slice(0, 1).shift();
-        return data;
-      });
+    return this._request('post', '', opts).then((data) => {
+      if (Array.isArray(data)) return data.slice(0, 1).shift();
+      return data;
+    });
   }
 
   /**
@@ -338,7 +339,7 @@ export default class BaseSchema {
 
     if (details) opts.data = details;
 
-    const path = (options.sourceId) ? `${options.sourceId}/${id}` : id;
+    const path = options.sourceId ? `${options.sourceId}/${id}` : id;
 
     return this._request('put', path, opts);
   }
@@ -371,7 +372,7 @@ export default class BaseSchema {
    * @param {object} options
    * @return {promise}
    */
-  search(query: any, limit=0, skip=0, sort=0, options: RequestOptionsIn = {}) {
+  search(query: any, limit = 0, skip = 0, sort = 0, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     opts.data = {
       query,
@@ -395,7 +396,9 @@ export default class BaseSchema {
    */
   removeAll(details: null = null, options: RequestOptionsIn = {}) {
     if (details !== null && details !== undefined) {
-      throw new Error(`removeAll removes every ${this.collection} and doesn't accept a filter, use bulkRemove(ids) instead`);
+      throw new Error(
+        `removeAll removes every ${this.collection} and doesn't accept a filter, use bulkRemove(ids) instead`,
+      );
     }
 
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);

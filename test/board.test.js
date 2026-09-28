@@ -23,27 +23,30 @@ const Schemas = require('./data/schema');
 
 Config.init();
 
-describe('@boards', function() {
+describe('@boards', function () {
   this.timeout(2000);
 
-  before(async function() {
+  before(async function () {
     Config.configureTest();
     await Buttress.setSchema(Schemas);
   });
 
-  after(function(done) {
-    Buttress.getCollection('board').removeAll()
-      .then(() => done()).catch(done);
+  after(function (done) {
+    Buttress.getCollection('board')
+      .removeAll()
+      .then(() => done())
+      .catch(done);
   });
 
-  describe('Post Basics', function() {
-    it('should return no boards', function(done) {
-      Buttress.getCollection('board').getAll()
-        .then(function(boards) {
+  describe('Post Basics', function () {
+    it('should return no boards', function (done) {
+      Buttress.getCollection('board')
+        .getAll()
+        .then(function (boards) {
           boards.length.should.equal(0);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });

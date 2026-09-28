@@ -33,7 +33,13 @@ const startServer = async () => {
     req.on('data', (chunk) => chunks.push(chunk));
     req.on('end', () => {
       const raw = Buffer.concat(chunks).toString('utf8');
-      const request = {method: req.method, url: req.url, headers: req.headers, raw, body: raw ? JSON.parse(raw) : undefined};
+      const request = {
+        method: req.method,
+        url: req.url,
+        headers: req.headers,
+        raw,
+        body: raw ? JSON.parse(raw) : undefined,
+      };
       state.requests.push(request);
 
       const reply = state.reply(request, state.requests.length);
@@ -105,7 +111,10 @@ describe('Requests', () => {
   });
 
   it('should let combineResults be turned off', async () => {
-    const duplicates = [{id: '1', sourceId: 'a', name: 'x'}, {id: '1', sourceId: 'a', name: 'y'}];
+    const duplicates = [
+      {id: '1', sourceId: 'a', name: 'x'},
+      {id: '1', sourceId: 'a', name: 'y'},
+    ];
     server.reply = () => ({status: 200, body: duplicates});
 
     assert.strictEqual((await instance.getCollection('thing').getAll()).length, 1);
@@ -151,10 +160,10 @@ describe('Requests', () => {
     await instance.AppDataSharing.reactivate('DS_ID');
     await instance.AppDataSharing.deactivate('DS_ID');
 
-    assert.deepStrictEqual(server.requests.map((r) => `${r.method} ${r.url}`), [
-      'PUT /api/v1/app-data-sharing/reactivate/DS_ID',
-      'PUT /api/v1/app-data-sharing/deactivate/DS_ID',
-    ]);
+    assert.deepStrictEqual(
+      server.requests.map((r) => `${r.method} ${r.url}`),
+      ['PUT /api/v1/app-data-sharing/reactivate/DS_ID', 'PUT /api/v1/app-data-sharing/deactivate/DS_ID'],
+    );
   });
 
   it('should target the user token when changing policy properties', async () => {
@@ -163,12 +172,15 @@ describe('Requests', () => {
     await instance.User.removePolicyProperty('USER_ID', 'TOKEN_ID', {role: 'admin'});
     await instance.User.clearPolicyProperty('USER_ID', 'TOKEN_ID');
 
-    assert.deepStrictEqual(server.requests.map((r) => r.url), [
-      '/api/v1/user/USER_ID/policy-property/TOKEN_ID',
-      '/api/v1/user/USER_ID/update-policy-property/TOKEN_ID',
-      '/api/v1/user/USER_ID/remove-policy-property/TOKEN_ID',
-      '/api/v1/user/USER_ID/clear-policy-property/TOKEN_ID',
-    ]);
+    assert.deepStrictEqual(
+      server.requests.map((r) => r.url),
+      [
+        '/api/v1/user/USER_ID/policy-property/TOKEN_ID',
+        '/api/v1/user/USER_ID/update-policy-property/TOKEN_ID',
+        '/api/v1/user/USER_ID/remove-policy-property/TOKEN_ID',
+        '/api/v1/user/USER_ID/clear-policy-property/TOKEN_ID',
+      ],
+    );
   });
 
   it('should get the policy property list for the authenticated app', async () => {
@@ -178,23 +190,31 @@ describe('Requests', () => {
   });
 
   it('should set policy properties on the token of an existing user', async () => {
-    server.reply = (req) => (req.method === 'GET' ?
-      {status: 200, body: {id: 'USER_ID', auth: [], tokens: [{value: 'TOKEN_VALUE', policyProperties: null}]}} :
-      {status: 200, body: true});
+    server.reply = (req) =>
+      req.method === 'GET'
+        ? {status: 200, body: {id: 'USER_ID', auth: [], tokens: [{value: 'TOKEN_VALUE', policyProperties: null}]}}
+        : {status: 200, body: true};
 
-    const user = await instance.Auth.findOrCreateUser({app: 'google', appId: 'G1', policyProperties: {role: 'user'}}, {domains: []});
+    const user = await instance.Auth.findOrCreateUser(
+      {app: 'google', appId: 'G1', policyProperties: {role: 'user'}},
+      {domains: []},
+    );
 
-    assert.deepStrictEqual(server.requests.map((r) => `${r.method} ${r.url}`), [
-      'GET /api/v1/user/google/G1',
-      'PUT /api/v1/user/USER_ID/policy-property/TOKEN_VALUE',
-    ]);
+    assert.deepStrictEqual(
+      server.requests.map((r) => `${r.method} ${r.url}`),
+      ['GET /api/v1/user/google/G1', 'PUT /api/v1/user/USER_ID/policy-property/TOKEN_VALUE'],
+    );
     assert.deepStrictEqual(user.tokens[0].policyProperties, {role: 'user'});
   });
 
   it('should create a user token carrying the policy properties', async () => {
     server.reply = (req) => {
-      if (req.method === 'GET') return {status: 404, body: {statusMessage: 'user_not_found', message: 'user_not_found'}};
-      return {status: 200, body: {id: 'USER_ID', auth: [], tokens: [{value: 'TOKEN_VALUE', policyProperties: {role: 'user'}}]}};
+      if (req.method === 'GET')
+        return {status: 404, body: {statusMessage: 'user_not_found', message: 'user_not_found'}};
+      return {
+        status: 200,
+        body: {id: 'USER_ID', auth: [], tokens: [{value: 'TOKEN_VALUE', policyProperties: {role: 'user'}}]},
+      };
     };
 
     await instance.Auth.findOrCreateUser({app: 'google', appId: 'G1', policyProperties: {role: 'user'}}, {domains: []});
@@ -212,7 +232,10 @@ describe('Init', () => {
 
     const instance = Buttress.new();
     try {
-      await assert.rejects(instance.init({buttressUrl: 'http://127.0.0.1:1', appToken: 'APP_TOKEN', apiPath: 'test-app'}), /unreachable/);
+      await assert.rejects(
+        instance.init({buttressUrl: 'http://127.0.0.1:1', appToken: 'APP_TOKEN', apiPath: 'test-app'}),
+        /unreachable/,
+      );
       assert.strictEqual(instance.initialised, false);
 
       App.prototype.getSchema = () => Promise.resolve(schema);

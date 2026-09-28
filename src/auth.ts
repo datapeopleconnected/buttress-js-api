@@ -22,14 +22,14 @@ import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 import User from './user';
 
 export interface UserData {
-  app: string
-  appId: string
-  policyProperties?: any
+  app: string;
+  appId: string;
+  policyProperties?: any;
 }
 export interface AuthData {
-  domains?: string[]
-  policyProperties?: any
-  [key: string]: any
+  domains?: string[];
+  policyProperties?: any;
+  [key: string]: any;
 }
 
 /**
@@ -55,10 +55,12 @@ export default class Auth extends BaseSchema {
    */
   async findOrCreateUser(userData: UserData, authData: AuthData) {
     // Policy properties are held on the user's token, buttress only creates one when it has some.
-    const tokenData = (!authData.policyProperties && userData.policyProperties) ?
-      {...authData, policyProperties: userData.policyProperties} : authData;
+    const tokenData =
+      !authData.policyProperties && userData.policyProperties
+        ? {...authData, policyProperties: userData.policyProperties}
+        : authData;
 
-    let user = null;
+    let user;
     try {
       user = await this.User.findUser(userData.app, userData.appId);
     } catch (err: any) {
@@ -85,7 +87,7 @@ export default class Auth extends BaseSchema {
     }
 
     return user;
-  };
+  }
 
   /**
    * @param {String} userId - user id
@@ -95,5 +97,5 @@ export default class Auth extends BaseSchema {
    */
   createToken(userId: string, token: AuthData, options?: RequestOptionsIn) {
     return this.User.createToken(userId, token, options);
-  };
+  }
 }

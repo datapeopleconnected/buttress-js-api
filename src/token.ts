@@ -59,5 +59,5 @@ export default class Token extends BaseSchema {
   removeAllUserTokens(options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('delete', `user`, opts);
-  };
+  }
 }

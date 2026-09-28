@@ -30,11 +30,12 @@ const COMPOSE = ['compose', '--file', '.docker/docker-compose.e2e.yml'];
 const DOWN = ['down', '--volumes', '--timeout', '0'];
 
 // Resolves with the command's exit code. Its output goes straight to the terminal.
-const run = (command, args, options) => new Promise((resolve, reject) => {
-  spawn(command, args, {stdio: 'inherit', ...options})
-    .on('error', reject)
-    .on('close', (code) => resolve(code ?? 1));
-});
+const run = (command, args, options) =>
+  new Promise((resolve, reject) => {
+    spawn(command, args, {stdio: 'inherit', ...options})
+      .on('error', reject)
+      .on('close', (code) => resolve(code ?? 1));
+  });
 
 const compose = async (...args) => {
   const code = await run('docker', [...COMPOSE, ...args]);

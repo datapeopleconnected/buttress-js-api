@@ -1,130 +1,146 @@
 {
   "name": "post",
   "type": "collection",
-  "extends": [
-    "timestamps"
-  ],
-  "roles": [{
-    "name": "public",
-    "endpointDisposition": {
-      "GET": "allow",
-      "PUT": "deny",
-      "POST": "deny",
-      "DELETE": "deny",
-      "SEARCH": "allow"
-    },
-    "dataDisposition": {
-      "READ": "deny",
-      "UPDATE": "deny"
-    },
-    "authFilter" : {
-      "env": {
-        "boardIds": {
-          "schema.boards.subscribed" : {
-            "eq": "env.authUserId"
+  "extends": ["timestamps"],
+  "roles": [
+    {
+      "name": "public",
+      "endpointDisposition": {
+        "GET": "allow",
+        "PUT": "deny",
+        "POST": "deny",
+        "DELETE": "deny",
+        "SEARCH": "allow"
+      },
+      "dataDisposition": {
+        "READ": "deny",
+        "UPDATE": "deny"
+      },
+      "authFilter": {
+        "env": {
+          "boardIds": {
+            "schema.boards.subscribed": {
+              "eq": "env.authUserId"
+            }
+          }
+        },
+        "query": {
+          "boardId": {
+            "in": "env.boardIds"
           }
         }
+      }
+    },
+    {
+      "name": "user.member",
+      "endpointDisposition": {
+        "GET": "allow",
+        "PUT": "allow",
+        "POST": "allow",
+        "DELETE": "deny",
+        "SEARCH": "allow"
       },
-      "query": {
-        "boardId": {
-          "in": "env.boardIds"
-        }
+      "dataDisposition": {
+        "READ": "allow",
+        "UPDATE": "deny"
+      }
+    },
+    {
+      "name": "admin.super",
+      "endpointDisposition": {
+        "GET": "allow",
+        "PUT": "allow",
+        "POST": "allow",
+        "DELETE": "allow",
+        "SEARCH": "allow"
+      },
+      "dataDisposition": {
+        "READ": "allow",
+        "UPDATE": "allow"
       }
     }
-  }, {
-    "name": "user.member",
-    "endpointDisposition": {
-      "GET": "allow",
-      "PUT": "allow",
-      "POST": "allow",
-      "DELETE": "deny",
-      "SEARCH": "allow"
-    },
-    "dataDisposition": {
-      "READ": "allow",
-      "UPDATE": "deny"
-    }
-  }, {
-    "name": "admin.super",
-    "endpointDisposition": {
-      "GET": "allow",
-      "PUT": "allow",
-      "POST": "allow",
-      "DELETE": "allow",
-      "SEARCH": "allow"
-    },
-    "dataDisposition": {
-      "READ": "allow",
-      "UPDATE": "allow"
-    }
-  }],
+  ],
   "properties": {
     "content": {
       "__type": "string",
       "__required": true,
       "__allowUpdate": true,
-      "__permissions": [{
-        "role": "public",
-        "READ": "allow"
-      }]
+      "__permissions": [
+        {
+          "role": "public",
+          "READ": "allow"
+        }
+      ]
     },
     "memberSecretContent": {
       "__type": "string",
       "__required": true,
       "__allowUpdate": true,
-      "__permissions": [{
-        "role": "user.member",
-        "READ": "allow",
-        "UPDATE": "deny"
-      }]
+      "__permissions": [
+        {
+          "role": "user.member",
+          "READ": "allow",
+          "UPDATE": "deny"
+        }
+      ]
     },
     "adminSecretContent": {
       "__type": "string",
       "__required": true,
       "__allowUpdate": true,
-      "__permissions": [{
-        "role": "user.member",
-        "READ": "deny",
-        "UPDATE": "deny"
-      }]
+      "__permissions": [
+        {
+          "role": "user.member",
+          "READ": "deny",
+          "UPDATE": "deny"
+        }
+      ]
     },
     "kudos": {
       "__type": "number",
       "__default": 0,
       "__required": false,
       "__allowUpdate": true,
-      "__permissions": [{
-        "role": "public",
-        "READ": "allow"
-      }]
+      "__permissions": [
+        {
+          "role": "public",
+          "READ": "allow"
+        }
+      ]
     },
     "views": {
       "__type": "number",
       "__default": 0,
       "__required": false,
       "__allowUpdate": true,
-      "__permissions": [{
-        "role": "public",
-        "READ": "allow"
-      }]
+      "__permissions": [
+        {
+          "role": "public",
+          "READ": "allow"
+        }
+      ]
     },
     "boardId": {
       "__type": "id",
       "__required": false,
       "__allowUpdate": false,
-      "__permissions": [{
-        "role": "public",
-        "READ": "allow"
-      }]
+      "__permissions": [
+        {
+          "role": "public",
+          "READ": "allow"
+        }
+      ]
     },
     "parentPostId": {
       "__type": "id",
       "__required": true,
       "__allowUpdate": false,
-      "__permissions": [{
-        "role": "public",
-        "READ": "allow"
-      }]
+      "__permissions": [
+        {
+          "role": "public",
+          "READ": "allow"
+        }
+      ]
     },
     "someArray": {
       "__type": "array",
@@ -141,11 +157,13 @@
           "__default": "",
           "__required": true,
           "__allowUpdate": true,
-          "__permissions": [{
-            "role": "user.member",
-            "READ": "deny",
-            "UPDATE": "deny"
-          }]
+          "__permissions": [
+            {
+              "role": "user.member",
+              "READ": "deny",
+              "UPDATE": "deny"
+            }
+          ]
         }
       }
     },
@@ -156,22 +174,26 @@
           "__required": false,
           "__default": "someValue",
           "__allowUpdate": true,
-          "__permissions": [{
-            "role": "user.member",
-            "READ": "allow",
-            "UPDATE": "deny"
-          }]
+          "__permissions": [
+            {
+              "role": "user.member",
+              "READ": "allow",
+              "UPDATE": "deny"
+            }
+          ]
         },
         "stringProperty": {
           "__type": "string",
           "__required": false,
           "__default": "sometest",
           "__allowUpdate": true,
-          "__permissions": [{
-            "role": "user.member",
-            "READ": "deny",
-            "UPDATE": "deny"
-          }]
+          "__permissions": [
+            {
+              "role": "user.member",
+              "READ": "deny",
+              "UPDATE": "deny"
+            }
+          ]
         }
       }
     },
@@ -179,10 +201,12 @@
       "__type": "id",
       "__required": true,
       "__allowUpdate": false,
-      "__permissions": [{
-        "role": "public",
-        "READ": "allow"
-      }]
+      "__permissions": [
+        {
+          "role": "public",
+          "READ": "allow"
+        }
+      ]
     }
   }
 }

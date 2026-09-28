@@ -40,7 +40,7 @@ export default class AppDataSharing extends BaseSchema {
    */
   createDataSharing(dataShare: AppDataSharingModel) {
     return this.save(dataShare, {});
-  };
+  }
 
   // TODO: Replace data with policy type
   /**
@@ -53,7 +53,7 @@ export default class AppDataSharing extends BaseSchema {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
     return this._request('put', `${dataSharingId}/policy`, opts);
-  };
+  }
 
   /**
    * @param {string} registrationToken
@@ -67,7 +67,7 @@ export default class AppDataSharing extends BaseSchema {
     opts.token = registrationToken;
     opts.data = {newToken};
     return this._request('post', `activate`, opts);
-  };
+  }
 
   /**
    * @param {string} dataSharingId
@@ -77,7 +77,7 @@ export default class AppDataSharing extends BaseSchema {
   reactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('put', `reactivate/${dataSharingId}`, opts);
-  };
+  }
 
   /**
    * @param {string} dataSharingId
@@ -87,5 +87,5 @@ export default class AppDataSharing extends BaseSchema {
   deactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('put', `deactivate/${dataSharingId}`, opts);
-  };
+  }
 }

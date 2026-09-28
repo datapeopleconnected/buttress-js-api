@@ -18,23 +18,26 @@ npm install @buttress/api
 ```
 
 ## Usage
+
 Words and examples to be written here soon.
 
 ## Contributing
+
 Contributions are welcome! Please open an issue or submit a pull request.
 
 Development needs Node 24 or later (`nvm use` picks it up from `.nvmrc`).
 
-| Script                  | What it does                                                            |
-| ----------------------- | ----------------------------------------------------------------------- |
-| `npm run build`         | Compiles `src/` to `dist/`.                                             |
-| `npm run lint`          | Runs ESLint on `src/`.                                                  |
+| Script                  | What it does                                                                |
+| ----------------------- | --------------------------------------------------------------------------- |
+| `npm run build`         | Compiles `src/` to `dist/`.                                                 |
+| `npm run lint`          | Runs ESLint over the project. `lint:fix` fixes what it can.                 |
+| `npm run format`        | Formats the project with Prettier. `format:check` only reports.             |
 | `npm run licence-check` | Checks every file in `src/`, `scripts/` and `test/` has the licence header. |
-| `npm run test:unit`     | Runs the unit tests. No Buttress needed.                                |
-| `npm run test:e2e`      | Builds, then runs the end-to-end tests against a Buttress in Docker.    |
+| `npm run test:unit`     | Runs the unit tests. No Buttress needed.                                    |
+| `npm run test:e2e`      | Builds, then runs the end-to-end tests against a Buttress in Docker.        |
 
-The pre-commit hook runs `lint`, `build` and `licence-check`. CI runs the same checks and the unit tests on every
-push to `main` and `develop`, and on pull requests.
+The pre-commit hook runs `lint`, `format:check`, `build` and `licence-check`. CI runs the same checks and the unit
+tests on every push to `main` and `develop`, and on pull requests.
 
 ### End-to-end tests
 
@@ -62,4 +65,5 @@ The workflow runs CI and checks that the tag matches `package.json`. It then pub
 to `next` if the release is marked as a pre-release.
 
 ## License
+
 This project is licensed under the AGPL-3.0-or-later License. See the LICENSE or COPYING file for details.

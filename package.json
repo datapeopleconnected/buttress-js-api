@@ -25,7 +25,10 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "lint": "eslint 'src/**/*.ts'",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "licence-check": "./.husky/licence-check",
     "test:unit": "NODE_ENV=test mocha --recursive --parallel test/unit/**/*",
     "test": "mocha --require should --reporter spec --bail",
@@ -36,7 +39,7 @@
     "test-posts": "mocha --require should --reporter spec --bail -g @posts",
     "test-users": "mocha --require should --reporter spec --bail -g @users",
     "test-policy": "mocha --require should --reporter spec --bail -g @policy",
-    "test-lambda": "mocha --require should --reporter spec --bail --bail -g @lambda",
+    "test-lambda": "mocha --require should --reporter spec --bail -g @lambda",
     "test-boards": "mocha --require should --reporter spec --bail -g @boards",
     "test-data-filter": "mocha --require should --reporter spec --bail -g @data-filter",
     "test-socket": "mocha --require should --reporter spec --bail -g @socket",
@@ -50,23 +53,23 @@
     "COPYING"
   ],
   "dependencies": {
-    "bson-objectid": "^2.0.2",
-    "cross-fetch": "^3.1.5",
-    "sugar": "^2.0.6",
-    "uuid": "^9.0.0"
+    "bson-objectid": "^2.0.4",
+    "cross-fetch": "^4.1.0",
+    "sugar": "^2.0.6"
   },
   "devDependencies": {
-    "@types/node": "^20.8.7",
-    "@types/uuid": "^9.0.6",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "eslint": "^8.7.0",
-    "eslint-config-google": "^0.14.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^18.19.130",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.12.0",
     "husky": "^9.1.7",
-    "mocha": "^9.2.0",
+    "mocha": "^12.0.2",
+    "prettier": "^3.9.9",
     "should": "^13.2.3",
-    "socket.io-client": "^4.4.1",
+    "socket.io-client": "^4.8.4",
     "source-map-support": "^0.5.21",
-    "typescript": "^5.2.2"
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.1"
   }
 }
