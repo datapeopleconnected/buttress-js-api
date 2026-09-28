@@ -97,7 +97,22 @@ export class Buttress {
   async init(options: ButtressOptions, isolated = false) {
     if (this.__initialised === true) return;
 
+    // Modules can only be created once initialised, reset if the schema can't be fetched so init can be retried.
     this.__initialised = true;
+    try {
+      return await this.__init(options, isolated);
+    } catch (err) {
+      this.clean();
+      throw err;
+    }
+  }
+
+  /**
+   * @param {object} options
+   * @param {boolean} isolated
+   * @return {promise}
+   */
+  private async __init(options: ButtressOptions, isolated: boolean) {
     this.options.isolated = isolated;
 
     if (options.buttressUrl) this.options.buttressUrl = options.buttressUrl;
@@ -152,6 +167,9 @@ export class Buttress {
       useLocalSchema: false,
       allowUnauthorized: false
     };
+
+    this.App = this.Auth = this.Lambda = this.Policy = this.Token = this.User = undefined;
+    this.SecureStore = this.AppDataSharing = this.LambdaExecution = undefined;
 
     this.__initialised = false;
   }
