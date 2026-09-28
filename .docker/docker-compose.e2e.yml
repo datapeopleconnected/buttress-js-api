@@ -1,0 +1,52 @@
+# A throwaway Buttress for the end-to-end tests. scripts/e2e.js starts it, runs the tests against it and removes it
+# again: see "Tests" in the README.
+name: buttress-js-api-e2e
+
+services:
+  mongo:
+    image: mongo:8
+    # In memory: every run starts from an empty database.
+    tmpfs: /data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping')"]
+      interval: 2s
+      retries: 30
+
+  redis:
+    image: redis:8-alpine
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      retries: 30
+
+  buttress:
+    image: ${BUTTRESS_IMAGE:-dpcltd/buttress:develop}
+    # The image is only published for amd64. Without this, Arm machines such as Apple silicon Macs fail to pull it,
+    # rather than running it emulated.
+    platform: linux/amd64
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      BUTTRESS_APP_PROTOCOL: http
+      BUTTRESS_HOST_URL: localhost:8000
+      # On first start Buttress writes the super token to $BUTTRESS_APP_PATH/app_data/super.json.
+      BUTTRESS_APP_PATH: /opt/buttress
+      BUTTRESS_DATASTORE_CONNECTION_STRING: mongodb://mongo:27017
+      BUTTRESS_REDIS_URL: redis://redis:6379
+    # A free port on loopback only. scripts/e2e.js looks it up with `docker compose port`.
+    ports:
+      - 127.0.0.1::8000
+    healthcheck:
+      # Ready once the REST server has created the super app. The image has no curl or wget.
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch('http://localhost:8000/api/v1/check/admin')
+            .then((res) => process.exit(res.ok ? 0 : 1), () => process.exit(1))
+      interval: 2s
+      retries: 30

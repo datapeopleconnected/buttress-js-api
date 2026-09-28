@@ -36,7 +36,6 @@ export interface AuthData {
  * @class Auth
  */
 export default class Auth extends BaseSchema {
-
   private User: User;
 
   /**
@@ -50,8 +49,8 @@ export default class Auth extends BaseSchema {
   }
 
   /**
-   * @param {Object} user - user details
-   * @param {Object} auth - auth details
+   * @param {Object} userData - user details
+   * @param {Object} authData - auth details
    * @return {Promise} - resolves to the serialized User object
    */
   async findOrCreateUser(userData: UserData, authData: AuthData) {

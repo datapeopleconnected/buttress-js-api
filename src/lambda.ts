@@ -14,7 +14,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Helpers, { RequestOptionsIn } from './helpers';
+import Helpers, {RequestOptionsIn} from './helpers';
 import BaseSchema from './helpers/schema';
 
 import LambdaModel from './model/Lambda';

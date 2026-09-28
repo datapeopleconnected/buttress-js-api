@@ -39,3 +39,6 @@ dist
 .node_repl_history
 .idea/
 .vscode
+
+## Claude Code worktrees
+.claude/worktrees/

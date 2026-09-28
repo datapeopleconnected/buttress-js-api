@@ -14,7 +14,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Helpers, { RequestOptionsIn } from './helpers';
+import Helpers, {RequestOptionsIn} from './helpers';
 import BaseSchema from './helpers/schema';
 
 import SecureStoreModel from './model/SecureStore';
@@ -33,6 +33,10 @@ export default class SecureStore extends BaseSchema {
     super('secure-store', ButtressOptions, true);
   }
 
+  /**
+   * @param {SecureStoreModel} secureStore
+   * @return {object} - getValue and setValue for the store
+   */
   _secureStoreInterface(secureStore: SecureStoreModel) {
     return {
       'getValue': (key: string) => {
@@ -40,7 +44,7 @@ export default class SecureStore extends BaseSchema {
         if (!output) {
           throw new Error(`${key} does not exist on the secure store ${secureStore.name}`);
         }
-  
+
         return output;
       },
       'setValue': (key: string, value: any) => {
@@ -48,7 +52,7 @@ export default class SecureStore extends BaseSchema {
           path: `storeData.${key}`,
           value: value,
         }]);
-      }
+      },
     };
   };
 
@@ -59,7 +63,7 @@ export default class SecureStore extends BaseSchema {
    */
   async createSecureStore(details: any) {
     const store = await this.save(details);
-    return this._secureStoreInterface(store)
+    return this._secureStoreInterface(store);
   };
 
   /**

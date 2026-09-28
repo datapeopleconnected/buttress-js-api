@@ -14,7 +14,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Helpers, { RequestOptionsIn } from './helpers';
+import Helpers, {RequestOptionsIn} from './helpers';
 import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
@@ -42,13 +42,13 @@ export default class AppDataSharing extends BaseSchema {
     return this.save(dataShare, {});
   };
 
+  // TODO: Replace data with policy type
   /**
    * @param {number} dataSharingId
    * @param {array} data
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  // TODO: Replace data with policy type
   updateDataSharingPolicy(dataSharingId: string, data: any[], options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
@@ -71,7 +71,6 @@ export default class AppDataSharing extends BaseSchema {
 
   /**
    * @param {string} dataSharingId
-   * @param {object} data
    * @param {object} [options={}] options
    * @return {promise} - response
    */
@@ -82,7 +81,6 @@ export default class AppDataSharing extends BaseSchema {
 
   /**
    * @param {string} dataSharingId
-   * @param {object} data
    * @param {object} [options={}] options
    * @return {promise} - response
    */

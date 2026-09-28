@@ -12,6 +12,16 @@
     "sourceType": "module"
   },
   "overrides": [
-    {"files": ["*.ts"], "parser": "@typescript-eslint/parser"}
+    {
+      "files": ["*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "rules": {
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "error",
+        "semi": "off",
+        "@typescript-eslint/semi": "error"
+      }
+    }
   ]
 }

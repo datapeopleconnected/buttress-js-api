@@ -15,7 +15,7 @@
  */
 import Sugar from 'sugar';
 
-import Helpers, { RequestOptions, RequestOptionsIn } from './';
+import Helpers, {RequestOptions, RequestOptionsIn} from './';
 
 import ModelSchema from '../model/Schema';
 import ButtressOptionsInternal from '../types/ButtressOptionsInternal';
@@ -24,15 +24,14 @@ import fetch from 'cross-fetch';
 import APIResponse from '../types/Response';
 
 // Used by buttress internally
-declare var lambda: any;
+declare const lambda: any;
 
 /**
  * @class BaseSchema
  */
 export default class BaseSchema {
-
   collection: string;
-  
+
   core: boolean = false;
 
   protected _ButtressOptions: ButtressOptionsInternal;
@@ -286,7 +285,7 @@ export default class BaseSchema {
    * Redirects post http requests to https
    * @param {object} response
    * @param {object} url
-   * @returns {promise}
+   * @return {promise}
    */
   _postRedirect(response: APIResponse, url: string) {
     const originalURL = url.match(this.__protocolRegex);

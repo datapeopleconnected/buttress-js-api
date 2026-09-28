@@ -14,7 +14,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Schema from "../model/Schema";
+import Schema from '../model/Schema';
 
 export default interface ButtressOptionsInternal {
   buttressUrl?: string;

@@ -62,7 +62,7 @@ export class Buttress {
     version: 1,
     update: false,
     useLocalSchema: false,
-    allowUnauthorized: false
+    allowUnauthorized: false,
   };
 
   // private __coreModules = { App, AppDataSharing, Auth, Lambda, Policy, Token, User, SecureStore };
@@ -71,6 +71,9 @@ export class Buttress {
 
   private __initialised = false;
 
+  /**
+   * Creates an instance of Buttress.
+   */
   constructor() {}
 
   /**
@@ -139,10 +142,16 @@ export class Buttress {
     }
   }
 
+  /**
+   * @return {boolean} - whether init has completed
+   */
   get initialised() {
     return this.__initialised;
   }
 
+  /**
+   * Removes every module that has been set up.
+   */
   clean() {
     // Destory all modules which have been setup.
     Object.keys(this.__modules).forEach((key) => {
@@ -158,7 +167,7 @@ export class Buttress {
       version: 1,
       update: false,
       useLocalSchema: false,
-      allowUnauthorized: false
+      allowUnauthorized: false,
     };
 
     this.App = this.Auth = this.Lambda = this.Policy = this.Token = this.User = undefined;
@@ -288,7 +297,6 @@ export class Buttress {
 
   /**
    * Init core modules
-   * @return {promise}
    */
   private __initCoreModules() {
     this.App = this.__modules['app'] = new App(this.options);

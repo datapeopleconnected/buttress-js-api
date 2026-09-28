@@ -15,6 +15,13 @@
   "engines": {
     "node": ">=18.x.x"
   },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=24",
+      "onFail": "error"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
@@ -22,6 +29,7 @@
     "licence-check": "./.husky/licence-check",
     "test:unit": "NODE_ENV=test mocha --recursive --parallel test/unit/**/*",
     "test": "mocha --require should --reporter spec --bail",
+    "test:e2e": "npm run build && node ./scripts/e2e.js npm test",
     "test-app": "mocha --require should --reporter spec --bail -g @app",
     "test-company": "mocha --require should --reporter spec --bail -g company",
     "test-service": "mocha --require should --reporter spec -g service",
@@ -32,11 +40,14 @@
     "test-boards": "mocha --require should --reporter spec --bail -g @boards",
     "test-data-filter": "mocha --require should --reporter spec --bail -g @data-filter",
     "test-socket": "mocha --require should --reporter spec --bail -g @socket",
-    "prepare": "husky install && ./.husky/nvm-fix"
+    "prepack": "npm run build",
+    "prepare": "husky"
   },
   "main": "./dist/index.js",
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "COPYING"
   ],
   "dependencies": {
     "bson-objectid": "^2.0.2",
@@ -47,10 +58,11 @@
   "devDependencies": {
     "@types/node": "^20.8.7",
     "@types/uuid": "^9.0.6",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^8.7.0",
     "eslint-config-google": "^0.14.0",
-    "husky": "^8.0.3",
+    "husky": "^9.1.7",
     "mocha": "^9.2.0",
     "should": "^13.2.3",
     "socket.io-client": "^4.4.1",

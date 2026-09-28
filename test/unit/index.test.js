@@ -197,7 +197,7 @@ describe('Unit tests for index.js', () => {
       assert(typeof Buttress._addModule === 'function');
     });
   
-    it(`check that modules are called 'example', 'example-schema' and 'example-schema-example'`, async () => {
+    it(`check that modules are called 'example', 'exampleSchema' and 'exampleSchemaExample'`, async () => {
       const names = Object.keys(Buttress.__modules).reduce((arr, schemaName) => {
         if (Buttress.__modules[schemaName].core) return arr;
   
@@ -206,8 +206,8 @@ describe('Unit tests for index.js', () => {
       }, []);
   
       assert(names.some((n) => n === 'example'));
-      assert(names.some((n) => n === 'example-schema'));
-      assert(names.some((n) => n === 'example-schema-example'));
+      assert(names.some((n) => n === 'exampleSchema'));
+      assert(names.some((n) => n === 'exampleSchemaExample'));
     });
   
     it (`should have function Buttress.getCollection.createObject`, async () => {

@@ -15,16 +15,10 @@
  */
 
 import Sugar from 'sugar';
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 import ObjectId from 'bson-objectid';
-import crypto from 'crypto';
 
-import SchemaModel, { Property, Properties } from '../model/Schema';
-
-import ButtressOptionsInternal from '../types/ButtressOptionsInternal';
-
-// Used by buttress internally
-declare var lambda: any;
+import SchemaModel, {Property, Properties} from '../model/Schema';
 
 export interface RequestOptions {
   method: string,
