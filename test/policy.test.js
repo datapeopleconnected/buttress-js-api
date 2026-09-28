@@ -121,7 +121,7 @@ describe('@policy', function() {
     });
 
     // Update the users policies properies.
-    await Buttress.User.setPolicyProperty(testUser.id, {
+    await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
       policyTests: 2,
     });
 
@@ -266,7 +266,7 @@ describe('@policy', function() {
 //     it('Should fail accessing app companies using grade 0 policy', async function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 0,
 //       });
 
@@ -285,7 +285,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 1,
 //       });
 
@@ -299,7 +299,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 2,
 //       });
 
@@ -319,7 +319,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 3,
 //       });
 //       Buttress.setAuthToken(testUser.tokens[0].value);
@@ -335,7 +335,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 3,
 //       });
 
@@ -361,7 +361,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 4,
 //       });
 
@@ -382,7 +382,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 5,
 //       });
 
@@ -408,7 +408,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 5,
 //       });
 
@@ -427,7 +427,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 5,
 //       });
 
@@ -443,7 +443,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 6,
 //         securityClearance: 1,
 //       });
@@ -465,7 +465,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         securityClearance: 100,
 //       });
 
@@ -500,7 +500,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         policyProjection: 2,
 //       });
 
@@ -521,7 +521,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         policyMergeQuery: 2,
 //       });
 

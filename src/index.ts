@@ -20,6 +20,7 @@ import Helpers from './helpers';
 import BaseSchema from './helpers/schema';
 
 import ModelSchema from './model/Schema';
+import ButtressOptions from './types/ButtressOptions';
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 import App from './app';
@@ -32,16 +33,7 @@ import SecureStore from './secure-store';
 import AppDataSharing from './app-data-sharing';
 import LambdaExecution from './lambda-execution';
 
-export interface ButtressOptions {
-  buttressUrl: string,
-  appToken: string,
-  apiPath: string,
-  schema?: any[],
-  version: number,
-  update?: boolean,
-  useLocalSchema?: boolean,
-  allowUnauthorized?: boolean,
-}
+export type {ButtressOptions};
 
 type Modules = {
   [key: string]: BaseSchema;
@@ -97,7 +89,22 @@ export class Buttress {
   async init(options: ButtressOptions, isolated = false) {
     if (this.__initialised === true) return;
 
+    // Modules can only be created once initialised, reset if the schema can't be fetched so init can be retried.
     this.__initialised = true;
+    try {
+      return await this.__init(options, isolated);
+    } catch (err) {
+      this.clean();
+      throw err;
+    }
+  }
+
+  /**
+   * @param {object} options
+   * @param {boolean} isolated
+   * @return {promise}
+   */
+  private async __init(options: ButtressOptions, isolated: boolean) {
     this.options.isolated = isolated;
 
     if (options.buttressUrl) this.options.buttressUrl = options.buttressUrl;
@@ -108,6 +115,7 @@ export class Buttress {
     if (options.update) this.options.update = options.update;
     if (options.allowUnauthorized) this.options.allowUnauthorized = options.allowUnauthorized;
     if (options.useLocalSchema) this.options.useLocalSchema = options.useLocalSchema;
+    if (options.clientSessionId) this.options.clientSessionId = options.clientSessionId;
 
     this.options.url = options.buttressUrl;
 
@@ -152,6 +160,9 @@ export class Buttress {
       useLocalSchema: false,
       allowUnauthorized: false
     };
+
+    this.App = this.Auth = this.Lambda = this.Policy = this.Token = this.User = undefined;
+    this.SecureStore = this.AppDataSharing = this.LambdaExecution = undefined;
 
     this.__initialised = false;
   }
@@ -204,6 +215,13 @@ export class Buttress {
   }
 
   /**
+   * @param {string} clientSessionId - a UUID v4, sent as x-client-session-id
+   */
+  setClientSessionId(clientSessionId?: string) {
+    this.options.clientSessionId = clientSessionId;
+  }
+
+  /**
    * @param {string} apiPath
    */
   setAPIPath(apiPath: string) {
@@ -232,33 +250,29 @@ export class Buttress {
   /**
    * Create user transient policy
    * @param {String} userId
+   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
    * @param {Object} policy
    * @return {Promise}
    */
-  async createUserTransientPolicy(userId: string, policy: any) {
+  async createUserTransientPolicy(userId: string, tokenId: string, policy: any) {
     if (!this.Policy || !this.User) throw new Error('Unable to create transient policy before Buttress is initialised');
 
     await this.Policy.createPolicy(policy);
-    await this.User.updatePolicyProperty(userId, {[policy.name]: true});
+    await this.User.updatePolicyProperty(userId, tokenId, {[policy.name]: true});
   }
 
 
   /**
    * Delete user transient policy
    * @param {String} userId
+   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
    * @param {String} policyName
    * @return {Promise}
    */
-  async removeUserTransientPolicy(userId: string, policyName: string) {
+  async removeUserTransientPolicy(userId: string, tokenId: string, policyName: string) {
     if (!this.Policy || !this.User) throw new Error('Unable to remove user transient policy before Buttress is initialised');
 
-    const user = await this.User.get(userId);
-
-    if (user.policyProperties[policyName]) {
-      delete user.policyProperties[policyName];
-    }
-
-    await this.User.setPolicyProperty(userId, user.policyProperties);
+    await this.User.removePolicyProperty(userId, tokenId, {[policyName]: true});
     await this.Policy.deletePolicyByName({name: policyName});
   }
 

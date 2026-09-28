@@ -148,7 +148,7 @@ export default class BaseSchema {
 
     if (options.params) {
       const params = Object.keys(options.params).map((key) => {
-        return `${key}=${options.params[key]}`;
+        return `${encodeURIComponent(key)}=${encodeURIComponent(options.params[key])}`;
       }).join('&');
 
       url = (params !== '') ? `${url}?${params}` : url;
@@ -158,6 +158,13 @@ export default class BaseSchema {
       options.headers = {
         ...options.headers,
         'Authorization': `Bearer ${options.token}`,
+      };
+    }
+
+    if (this._ButtressOptions.clientSessionId && !options.headers['x-client-session-id']) {
+      options.headers = {
+        ...options.headers,
+        'x-client-session-id': this._ButtressOptions.clientSessionId,
       };
     }
 
@@ -175,10 +182,10 @@ export default class BaseSchema {
 
     if (options.body && typeof options.body !== 'string') {
       options.body = JSON.stringify(options.body);
+      // Content-Length is left for fetch to work out from the bytes, the string length is wrong for non-ASCII bodies
       options.headers = {
         ...options.headers,
         'Content-Type': 'application/json',
-        'Content-Length': options.body.length,
       };
     }
 
@@ -203,7 +210,7 @@ export default class BaseSchema {
 
       if (!response.ok) {
         response.data = response.body;
-        throw new Helpers.Errors.ResponseError(response);
+        throw new Helpers.Errors.ResponseError(response, response.body);
       }
 
       return response.body;
@@ -220,12 +227,13 @@ export default class BaseSchema {
       }
 
       if (!response.ok) {
+        let body;
         try {
-          const body = await response.json();
-          throw new Helpers.Errors.ResponseError({...response, body});
+          body = await response.json();
         } catch {
-          throw new Helpers.Errors.ResponseError(response);
+          // The error body isn't JSON, fall back to the status text
         }
+        throw new Helpers.Errors.ResponseError(response, body);
       }
 
       if (options.stream === true) {
@@ -253,9 +261,8 @@ export default class BaseSchema {
     } catch (err: any) {
       let error = err;
 
-      if (err.response) {
-        error = new Helpers.Errors.ResponseError(err.response);
-      } else if (err.request) {
+      // fetch rejects with a coded error (ECONNREFUSED, ECONNRESET...) when the request never got a response
+      if (!(err instanceof Helpers.Errors.ResponseError) && err.code) {
         error = new Helpers.Errors.RequestError(err, err.code);
       }
 
@@ -324,7 +331,7 @@ export default class BaseSchema {
   /**
    * @param {string} id
    * @param {object} details
-   * @param {object} options
+   * @param {object} options - pass sourceId to update an entity held in a remote datastore
    * @return {promise}
    */
   update(id: string, details: any, options: RequestOptionsIn = {}) {
@@ -332,7 +339,9 @@ export default class BaseSchema {
 
     if (details) opts.data = details;
 
-    return this._request('put', id, opts);
+    const path = (options.sourceId) ? `${options.sourceId}/${id}` : id;
+
+    return this._request('put', path, opts);
   }
 
   /**
@@ -380,14 +389,17 @@ export default class BaseSchema {
   }
 
   /**
-   * @param {object} details
+   * Removes every entity in the collection, use bulkRemove to remove a set of ids
+   * @param {null} details - no longer supported, buttress ignores it and removes everything
    * @param {object} options
    * @return {promise}
    */
-  removeAll(details: any, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  removeAll(details: null = null, options: RequestOptionsIn = {}) {
+    if (details !== null && details !== undefined) {
+      throw new Error(`removeAll removes every ${this.collection} and doesn't accept a filter, use bulkRemove(ids) instead`);
+    }
 
-    if (details) opts.data = details;
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     return this._request('delete', '', opts);
   }
@@ -449,9 +461,9 @@ export default class BaseSchema {
   }
 
   /**
-  * @param {object} query
-  * @param {object} sort
-  * @param {object} options
+   * @param {object} query
+   * @param {object} sort
+   * @param {object} options - pass actualCount to sum a count per matching policy instead of one count of the combined query
    * @return {promise}
    */
   count(query: any, sort: any, options: RequestOptionsIn = {}) {
@@ -461,6 +473,10 @@ export default class BaseSchema {
       query,
       sort,
     };
+
+    if (options.actualCount) {
+      opts.data.actualCount = true;
+    }
 
     return this._request('search', 'count', opts);
   }
