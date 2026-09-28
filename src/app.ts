@@ -93,7 +93,7 @@ export default class App extends BaseSchema {
    */
   getPolicyPropertiesList(apiPath: string, options={}) {
     const opts = Helpers.checkOptions(options, this.token);
-    let path = `policyPropertyList`;
+    let path = `policy-property-list`;
     if (apiPath) path = `policy-property-list/${apiPath}`;
     return this._request('get', path, opts);
   }

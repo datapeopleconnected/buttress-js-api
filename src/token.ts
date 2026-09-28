@@ -60,15 +60,4 @@ export default class Token extends BaseSchema {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('delete', `user`, opts);
   };
-
-  /**
-   * @param {object} details
-   * @param {object} options
-   * @return {promise}
-   */
-  updateRole(details: any, options?: RequestOptionsIn) {
-    const opts = Helpers.checkOptions(options, this.token);
-    if (details) opts.data = details;
-    return this._request('put', `roles`, opts);
-  };
 }

@@ -250,33 +250,29 @@ export class Buttress {
   /**
    * Create user transient policy
    * @param {String} userId
+   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
    * @param {Object} policy
    * @return {Promise}
    */
-  async createUserTransientPolicy(userId: string, policy: any) {
+  async createUserTransientPolicy(userId: string, tokenId: string, policy: any) {
     if (!this.Policy || !this.User) throw new Error('Unable to create transient policy before Buttress is initialised');
 
     await this.Policy.createPolicy(policy);
-    await this.User.updatePolicyProperty(userId, {[policy.name]: true});
+    await this.User.updatePolicyProperty(userId, tokenId, {[policy.name]: true});
   }
 
 
   /**
    * Delete user transient policy
    * @param {String} userId
+   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
    * @param {String} policyName
    * @return {Promise}
    */
-  async removeUserTransientPolicy(userId: string, policyName: string) {
+  async removeUserTransientPolicy(userId: string, tokenId: string, policyName: string) {
     if (!this.Policy || !this.User) throw new Error('Unable to remove user transient policy before Buttress is initialised');
 
-    const user = await this.User.get(userId);
-
-    if (user.policyProperties[policyName]) {
-      delete user.policyProperties[policyName];
-    }
-
-    await this.User.setPolicyProperty(userId, user.policyProperties);
+    await this.User.removePolicyProperty(userId, tokenId, {[policyName]: true});
     await this.Policy.deletePolicyByName({name: policyName});
   }
 
