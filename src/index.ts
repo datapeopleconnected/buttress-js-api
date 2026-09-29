@@ -23,6 +23,7 @@ import ModelSchema from './model/Schema';
 import ButtressOptions from './types/ButtressOptions';
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 import {Policy as PolicyModel} from './types/Policy';
+import {Entity} from './types/Entity';
 
 import App from './app';
 import Auth from './auth';
@@ -39,8 +40,11 @@ export type {BulkUpdateItem, BulkUpdateResult, Entity, UpdateOperation, UpdateRe
 export type {Policy, PolicyConfig} from './types/Policy';
 export type {DateOperand, LooseQuery, Projection, Query, QueryOperators, Sort, TypedQuery} from './types/Query';
 
+// Any collection module, whatever its entities and bulkSave result
+type AnyModule = BaseSchema<Entity, unknown>;
+
 type Modules = {
-  [key: string]: BaseSchema;
+  [key: string]: AnyModule;
 };
 
 export const Errors = Helpers.Errors;
@@ -331,7 +335,7 @@ export class Buttress {
    * @param {string} name - the module's property name on Buttress, for the error message
    * @return {object} module
    */
-  private __getCoreModule<T extends BaseSchema>(key: string, name: string): T {
+  private __getCoreModule<T extends AnyModule>(key: string, name: string): T {
     const mod = this.__modules[key];
     if (!mod) throw new Helpers.Errors.NotYetInitiated(`Attempting to use Buttress.${name} before buttress init`);
 
@@ -372,7 +376,7 @@ export class Buttress {
    * @param {string} collection
    * @return {object} collection
    */
-  getCollection<T extends BaseSchema>(collection: string): T {
+  getCollection<T extends AnyModule = BaseSchema>(collection: string): T {
     if (!this.__initialised) throw new Error('Unable to getCollection before Buttress is initialised');
 
     const mod = Sugar.String.camelize(collection, false);

@@ -32,8 +32,10 @@ declare const lambda: any;
 
 /**
  * @class BaseSchema
+ * @template T - the collection's entities
+ * @template BulkSaveResult - what bulkSave resolves to: the added entities, but `true` for a core collection
  */
-export default class BaseSchema<T extends object = Entity> {
+export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]> {
   collection: string;
 
   core: boolean = false;
@@ -345,7 +347,7 @@ export default class BaseSchema<T extends object = Entity> {
   ): Promise<UpdateResult[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    // Buttress's core collections (user, policy...) only accept an array of updates, a single one gets a 500
+    // Buttress before 29 September 2026 only took an array of updates on its core collections (user, policy...)
     if (details) opts.data = Array.isArray(details) ? details : [details];
 
     const path = options.sourceId ? `${options.sourceId}/${id}` : id;
@@ -457,9 +459,9 @@ export default class BaseSchema<T extends object = Entity> {
   /**
    * @param {object[]} details - the entities to add
    * @param {object} options
-   * @return {promise}
+   * @return {promise} - the added entities, or `true` for a core collection such as SecureStore
    */
-  bulkSave(details: Partial<T>[], options: RequestOptionsIn = {}): Promise<T[]> {
+  bulkSave(details: Partial<T>[], options: RequestOptionsIn = {}): Promise<BulkSaveResult> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;

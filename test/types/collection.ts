@@ -17,7 +17,7 @@
 // Compiled by `npm run test:types`, never run. Each @ts-expect-error fails the check if its line starts compiling.
 import type {Readable} from 'stream';
 
-import Buttress, {BaseSchema} from '../../src/index';
+import Buttress, {BaseSchema, Entity} from '../../src/index';
 
 interface Post {
   id: string;
@@ -87,4 +87,16 @@ export async function policies() {
   await Buttress.Policy.createPolicy({name: 'admin', version: '1', selection, config});
   // @ts-expect-error Buttress refuses a policy without a version
   await Buttress.Policy.createPolicy({name: 'admin', selection, config});
+}
+
+export async function bulkSave() {
+  const posts = Buttress.getCollection<BaseSchema<Post>>('post');
+  const added: Post[] = await posts.bulkSave([{content: 'x'}]);
+  const untyped: Entity[] = await Buttress.getCollection('post').bulkSave([{content: 'x'}]);
+
+  const stored: true = await Buttress.SecureStore.bulkSave([{name: 'a', storeData: {}}]);
+  // @ts-expect-error Buttress answers a bulk add of secure stores with true, not the stores
+  const stores: unknown[] = await Buttress.SecureStore.bulkSave([{name: 'a', storeData: {}}]);
+
+  return [added, untyped, stored, stores];
 }
