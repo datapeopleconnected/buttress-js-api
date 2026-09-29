@@ -125,7 +125,7 @@ If you construct errors yourself, for example in test mocks:
 
 ### Tokens are only read from the `Authorization` header
 
-The Buttress server no longer accepts `?token=` in the query string or `query.token` on a socket handshake. The client always sends its token in the `Authorization` header, so this only affects code that adds a token itself.
+The Buttress server no longer accepts `?token=` in the query string. It still accepts `query.token` on a socket handshake, but that's deprecated, logs a warning naming the token, and stops working in the next tagged Buttress release. The client always sends its token in the `Authorization` header, so this only affects code that adds a token itself.
 
 ```js
 // No longer authenticates
@@ -165,6 +165,7 @@ if (Buttress.initialised) { ... }
 | Request bodies no longer set `Content-Length` by hand                                  | Bodies with non-ASCII characters (`é`, emoji) arrive intact. Before, the header counted characters rather than bytes and cut the body short.                                                                                                                                                                                                                    |
 | Query params are URL-encoded                                                           | Values containing `&`, `=`, `#` or spaces reach the server as sent.                                                                                                                                                                                                                                                                                             |
 | Network errors are retried                                                             | `GET`, `HEAD` and `OPTIONS` requests that fail without a response (`ECONNREFUSED`, `ECONNRESET`, …) retry up to 10 times with exponential back-off. This retry code already existed but never ran. **If the server is unreachable, a GET now takes about 3½ minutes to fail instead of failing straight away**, and that includes the schema fetch in `init()`. |
+| `update` and `bulkUpdate` always send an array of updates                              | A single `{path, value}` update works on the core modules (`Buttress.User`, `Policy`, `SecureStore`…). Before, Buttress answered it with a 500, as its core routes only handle an array. Collections of your own schema accepted either, and still do.                                                                                                          |
 | `combineResults: false` is respected                                                   | The default is still `true`. Before, passing `false` was ignored.                                                                                                                                                                                                                                                                                               |
 | A failed `init()` can be retried                                                       | If fetching the schema fails, the instance is reset with `clean()` and the error is rethrown. Before, the instance stayed marked as initialised with no schema, and calling `init()` again did nothing.                                                                                                                                                         |
 
@@ -205,6 +206,7 @@ When a request matches more than one policy, Buttress normally counts the combin
 
 - `ButtressOptions` is defined once, in `types/ButtressOptions`, and still exported from the package root (`import {ButtressOptions} from '@buttress/api'`). It now includes `useLocalSchema` and `clientSessionId`. It's exported as a type only, which makes no difference for an interface.
 - `RequestOptionsIn` gains `sourceId` and `actualCount`.
+- `Policy.createPolicy`, `Policy.syncAppPolicy` and `createUserTransientPolicy` take a `Policy` instead of `any`. It requires a `version`, which Buttress has refused to create a policy without (400 `invalid_policy_no_version`) since November 2024. `Policy` and `PolicyConfig` are exported from the package root.
 - `count`'s `query` and `sort` are optional. With no `query` it counts everything. Buttress ignores `sort`.
 - The collection methods are typed instead of returning `any`. Nothing changes at runtime, but these calls no longer compile:
 

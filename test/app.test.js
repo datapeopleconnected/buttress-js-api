@@ -298,6 +298,7 @@ describe('@app-relationship', function () {
 
     await Buttress.getCollection('policy').createPolicy({
       name: 'test-policy',
+      version: '1',
       selection: {
         role: {
           '@eq': 'TEST',
@@ -359,7 +360,7 @@ describe('@app-relationship', function () {
         name: 'test-app2',
 
         remoteApp: {
-          endpoint: Config.endpoint,
+          endpoint: Config.remoteEndpoint,
           apiPath: testApps[1].apiPath,
           token: null,
         },
@@ -383,7 +384,7 @@ describe('@app-relationship', function () {
       });
 
       res.name.should.equal('test-app2');
-      res.remoteApp.endpoint.should.equal(Config.endpoint);
+      res.remoteApp.endpoint.should.equal(Config.remoteEndpoint);
       res.remoteApp.apiPath.should.equal(testApps[1].apiPath);
       testAppRelationships.push(res);
     });
@@ -395,7 +396,7 @@ describe('@app-relationship', function () {
         name: 'test-app1',
 
         remoteApp: {
-          endpoint: Config.endpoint,
+          endpoint: Config.remoteEndpoint,
           apiPath: testApps[0].apiPath,
           token: testAppRelationships[0].registrationToken,
         },
@@ -420,7 +421,7 @@ describe('@app-relationship', function () {
 
       res.name.should.equal('test-app1');
       res.active.should.equal(true);
-      res.remoteApp.endpoint.should.equal(Config.endpoint);
+      res.remoteApp.endpoint.should.equal(Config.remoteEndpoint);
       res.remoteApp.apiPath.should.equal(testApps[0].apiPath);
       res.remoteApp.token.should.not.equal(testAppRelationships[0].registrationToken);
       testAppRelationships.push(res);

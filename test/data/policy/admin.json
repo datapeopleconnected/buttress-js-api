@@ -1,5 +1,6 @@
 {
   "name": "data-filter-admin",
+  "version": "1",
   "selection": {
     "role": {
       "@eq": "admin"

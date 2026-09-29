@@ -136,6 +136,25 @@ describe('Requests', () => {
     assert.strictEqual(server.requests[0].url, '/test-app/api/v1/thing/SOURCE/ID');
   });
 
+  it('should send a single update as an array, as the core collections need', async () => {
+    await instance.Policy.update('ID', {path: 'priority', value: 1});
+
+    assert.strictEqual(server.requests[0].url, '/api/v1/policy/ID');
+    assert.deepStrictEqual(server.requests[0].body, [{path: 'priority', value: 1}]);
+  });
+
+  it('should send each bulk update body as an array', async () => {
+    await instance.getCollection('thing').bulkUpdate([
+      {id: '1', body: {path: 'name', value: 'x'}},
+      {id: '2', sourceId: 'SOURCE', body: [{path: 'name', value: 'y'}]},
+    ]);
+
+    assert.deepStrictEqual(server.requests[0].body, [
+      {id: '1', body: [{path: 'name', value: 'x'}]},
+      {id: '2', sourceId: 'SOURCE', body: [{path: 'name', value: 'y'}]},
+    ]);
+  });
+
   it('should send actualCount with a count', async () => {
     await instance.getCollection('thing').count({}, {}, {actualCount: true});
 

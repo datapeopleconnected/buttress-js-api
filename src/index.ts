@@ -22,6 +22,7 @@ import BaseSchema from './helpers/schema';
 import ModelSchema from './model/Schema';
 import ButtressOptions from './types/ButtressOptions';
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
+import {Policy as PolicyModel} from './types/Policy';
 
 import App from './app';
 import Auth from './auth';
@@ -35,6 +36,7 @@ import LambdaExecution from './lambda-execution';
 
 export type {ButtressOptions, BaseSchema};
 export type {BulkUpdateItem, BulkUpdateResult, Entity, UpdateOperation, UpdateResult} from './types/Entity';
+export type {Policy, PolicyConfig} from './types/Policy';
 export type {DateOperand, LooseQuery, Projection, Query, QueryOperators, Sort, TypedQuery} from './types/Query';
 
 type Modules = {
@@ -281,7 +283,7 @@ export class Buttress {
    * @param {Object} policy
    * @return {Promise}
    */
-  async createUserTransientPolicy(userId: string, tokenId: string, policy: any) {
+  async createUserTransientPolicy(userId: string, tokenId: string, policy: PolicyModel) {
     await this.Policy.createPolicy(policy);
     await this.User.updatePolicyProperty(userId, tokenId, {[policy.name]: true});
   }

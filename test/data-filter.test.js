@@ -53,7 +53,7 @@ describe('@data-filter', function () {
             profileImgUrl: 'http://test.com/thisisatest.png',
           },
           {
-            domains: [Buttress.options.url.host],
+            domains: [Config.endpoint],
             policyProperties: {
               role,
             },

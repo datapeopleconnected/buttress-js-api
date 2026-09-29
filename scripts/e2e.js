@@ -81,6 +81,8 @@ const main = async () => {
           ...process.env,
           BUTTRESS_TEST_API_URL: endpoint,
           BUTTRESS_TEST_SUPER_APP_KEY: superApp.token,
+          // Buttress calls itself for data shares, from inside its container.
+          BUTTRESS_TEST_REMOTE_API_URL: 'http://localhost:8000',
         },
       });
     }

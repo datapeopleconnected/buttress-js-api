@@ -79,3 +79,12 @@ export async function typedCollection() {
 
   return {results, all, stream, searchStream, result, bulkResult, removed};
 }
+
+export async function policies() {
+  const selection = {role: {'@eq': 'admin'}};
+  const config = [{verbs: ['GET'], schema: ['post']}];
+
+  await Buttress.Policy.createPolicy({name: 'admin', version: '1', selection, config});
+  // @ts-expect-error Buttress refuses a policy without a version
+  await Buttress.Policy.createPolicy({name: 'admin', selection, config});
+}

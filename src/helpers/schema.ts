@@ -345,7 +345,8 @@ export default class BaseSchema<T extends object = Entity> {
   ): Promise<UpdateResult[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) opts.data = details;
+    // Buttress's core collections (user, policy...) only accept an array of updates, a single one gets a 500
+    if (details) opts.data = Array.isArray(details) ? details : [details];
 
     const path = options.sourceId ? `${options.sourceId}/${id}` : id;
 
@@ -474,7 +475,9 @@ export default class BaseSchema<T extends object = Entity> {
   bulkUpdate(details: BulkUpdateItem[], options: RequestOptionsIn = {}): Promise<BulkUpdateResult[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) opts.data = details;
+    // Sent as an array of updates, as update does
+    if (details)
+      opts.data = details.map((item) => ({...item, body: Array.isArray(item.body) ? item.body : [item.body]}));
 
     return this._request('post', 'bulk/update', opts);
   }

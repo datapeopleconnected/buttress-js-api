@@ -1,5 +1,6 @@
 {
   "name": "data-filter-user",
+  "version": "1",
   "selection": {
     "role": {
       "@eq": "user"

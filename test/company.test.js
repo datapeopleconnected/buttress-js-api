@@ -565,6 +565,7 @@ describe('@company-locations', function () {
         .update(_companyId, {
           path: 'locations.1',
           value: {
+            id: _locationIds[1],
             name: 'Distribution Depot',
             address: '24 East Street, Feniscowles',
             city: 'Whiteburn',
