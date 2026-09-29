@@ -1,39 +1,41 @@
 {
   "name": "board",
   "type": "collection",
-  "extends": [
-    "timestamps"
-  ],
-  "roles": [{
-    "name": "public",
-    "endpointDisposition": {
-      "GET": "allow",
-      "PUT": "deny",
-      "POST": "deny",
-      "DELETE": "deny",
-      "SEARCH": "allow"
-    },
-    "dataDisposition": {
-      "READ": "deny",
-      "UPDATE": "deny"
-    },
-    "authFilter" : {
-      "query": {
-        "subscribed": {
-          "eq": "env.authUserId"
+  "extends": ["timestamps"],
+  "roles": [
+    {
+      "name": "public",
+      "endpointDisposition": {
+        "GET": "allow",
+        "PUT": "deny",
+        "POST": "deny",
+        "DELETE": "deny",
+        "SEARCH": "allow"
+      },
+      "dataDisposition": {
+        "READ": "deny",
+        "UPDATE": "deny"
+      },
+      "authFilter": {
+        "query": {
+          "subscribed": {
+            "eq": "env.authUserId"
+          }
         }
       }
     }
-  }],
+  ],
   "properties": {
     "name": {
       "__type": "string",
       "__required": true,
       "__allowUpdate": true,
-      "__permissions": [{
-        "role": "public",
-        "READ": "allow"
-      }]
+      "__permissions": [
+        {
+          "role": "public",
+          "READ": "allow"
+        }
+      ]
     },
     "subscribed": {
       "__type": "array",

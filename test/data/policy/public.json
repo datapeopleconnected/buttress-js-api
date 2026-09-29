@@ -1,5 +1,6 @@
 {
   "name": "data-filter-public",
+  "version": "1",
   "selection": {
     "role": {
       "@eq": "public"
@@ -8,37 +9,40 @@
   "env": {
     "userId": "user.id"
   },
-  "config": [{
-    "verbs": ["GET", "SEARCH"],
-    "schema": ["board"],
-    "query": {
-      "subscribed": {
-        "@eq": "env.userId"
-      }
-    }
-  }, {
-    "verbs": ["GET", "SEARCH"],
-    "schema": ["post"],
-    "env": {
-      "userId": "user.id",
-      "boardIds": {
-        "collection": "board",
-        "type": "array",
-        "query": {
-          "subscribed": {
-            "@eq": "user.id"
-          }
-        },
-        "output": {
-          "key": "id",
-          "type": "id"
+  "config": [
+    {
+      "verbs": ["GET", "SEARCH"],
+      "schema": ["board"],
+      "query": {
+        "subscribed": {
+          "@eq": "env.userId"
         }
       }
     },
-    "query": {
-      "boardId": {
-        "@in": "env.boardIds"
+    {
+      "verbs": ["GET", "SEARCH"],
+      "schema": ["post"],
+      "env": {
+        "userId": "user.id",
+        "boardIds": {
+          "collection": "board",
+          "type": "array",
+          "query": {
+            "subscribed": {
+              "@eq": "user.id"
+            }
+          },
+          "output": {
+            "key": "id",
+            "type": "id"
+          }
+        }
+      },
+      "query": {
+        "boardId": {
+          "@in": "env.boardIds"
+        }
       }
     }
-  }]
+  ]
 }

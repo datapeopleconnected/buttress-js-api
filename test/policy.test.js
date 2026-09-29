@@ -28,106 +28,116 @@ let testPosts = [];
 // Create a test to handle the creation of a policy.
 // Create a test to handle mutiple results coming back due to the policy.
 
-describe('@policy', function() {
-  before(async function() {
+describe('@policy', function () {
+  before(async function () {
     Config.configureTest();
 
     await Buttress.getCollection('app').updatePolicyPropertyList({
       policyTests: [1, 2],
     });
 
-    testUser = await Buttress.Auth.findOrCreateUser({
-      app: 'google',
-      appId: '12345678987654321',
-      username: 'Test User',
-      token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-      email: 'test@test.com',
-      profileUrl: 'http://test.com/thisisatest',
-      profileImgUrl: 'http://test.com/thisisatest.png',
-    }, { domains: [Config.endpoint], policyProperties: {} });
+    testUser = await Buttress.Auth.findOrCreateUser(
+      {
+        app: 'google',
+        appId: '12345678987654321',
+        username: 'Test User',
+        token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
+        email: 'test@test.com',
+        profileUrl: 'http://test.com/thisisatest',
+        profileImgUrl: 'http://test.com/thisisatest.png',
+      },
+      {domains: [Config.endpoint], policyProperties: {}},
+    );
 
     for await (const i of Array.from({length: 10}, (_, i) => i)) {
-      testPosts.push(await Buttress.getCollection('post').save({
-        content: `Test content ${i}`,
-        memberSecretContent: `super secret content ${i}`,
-        adminSecretContent: '',
-        parentPostId: null,
-        userId: null
-      }));
+      testPosts.push(
+        await Buttress.getCollection('post').save({
+          content: `Test content ${i}`,
+          memberSecretContent: `super secret content ${i}`,
+          adminSecretContent: '',
+          parentPostId: null,
+          userId: null,
+        }),
+      );
     }
   });
 
-  after(async function() {
+  after(async function () {
     Config.configureTest();
     await Buttress.User.remove(testUser.id);
     await Buttress.getCollection('post').removeAll();
   });
 
-  it('should create a policy', async function() {
+  it('should create a policy', async function () {
     const policy = {
       name: 'admin-access',
+      version: '1',
       selection: {
         policyTests: {
           '@eq': 1,
         },
       },
-      config: [{
-        verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
-        schema: ['%ALL%'],
-        query: {
-          access: '%FULL_ACCESS%',
+      config: [
+        {
+          verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+          schema: ['%ALL%'],
+          query: {
+            access: '%FULL_ACCESS%',
+          },
         },
-      }],
+      ],
     };
 
     const res = await Buttress.getCollection('policy').createPolicy(policy);
     res.name.should.equal('admin-access');
   });
 
-  it ('Should create mutiple policies, api should handle merging results', async function() {
+  it('Should create mutiple policies, api should handle merging results', async function () {
     await Buttress.getCollection('policy').createPolicy({
       name: 'policy-test-2-1',
-      selection: { policyTests: { '@eq': 2 } },
-      config: [{
-        verbs: ['GET', 'SEARCH'],
-        schema: ['post'],
-        query: {
-          content: {
-            '@rex': 'Test content'
-          }
+      version: '1',
+      selection: {policyTests: {'@eq': 2}},
+      config: [
+        {
+          verbs: ['GET', 'SEARCH'],
+          schema: ['post'],
+          query: {
+            content: {
+              '@rex': 'Test content',
+            },
+          },
+          projection: {
+            keys: ['memberSecretContent'],
+          },
         },
-        projection: {
-          keys: [
-            'memberSecretContent'
-          ]
-        },
-      }],
+      ],
     });
     await Buttress.getCollection('policy').createPolicy({
       name: 'policy-test-2-2',
-      selection: { policyTests: { '@eq': 2 } },
-      config: [{
-        verbs: ['GET', 'SEARCH'],
-        schema: ['post'],
-        query: {
-          access: '%FULL_ACCESS%',
+      version: '1',
+      selection: {policyTests: {'@eq': 2}},
+      config: [
+        {
+          verbs: ['GET', 'SEARCH'],
+          schema: ['post'],
+          query: {
+            access: '%FULL_ACCESS%',
+          },
+          projection: {
+            keys: ['content'],
+          },
         },
-        projection: {
-          keys: [
-            'content'
-          ]
-        },
-      }],
+      ],
     });
 
     // Update the users policies properies.
-    await Buttress.User.setPolicyProperty(testUser.id, {
+    await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
       policyTests: 2,
     });
 
     // Check the results
     Buttress.setAuthToken(testUser.tokens[0].value);
-    const res = await Buttress.getCollection('post').getAll({ combineResults: true });
+    const res = await Buttress.getCollection('post').getAll({combineResults: true});
     res.length.should.equal(10);
   });
 });
@@ -266,7 +276,7 @@ describe('@policy', function() {
 //     it('Should fail accessing app companies using grade 0 policy', async function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 0,
 //       });
 
@@ -285,7 +295,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 1,
 //       });
 
@@ -299,7 +309,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 2,
 //       });
 
@@ -319,7 +329,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 3,
 //       });
 //       Buttress.setAuthToken(testUser.tokens[0].value);
@@ -335,7 +345,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 3,
 //       });
 
@@ -361,7 +371,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 4,
 //       });
 
@@ -382,7 +392,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 5,
 //       });
 
@@ -408,7 +418,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 5,
 //       });
 
@@ -427,7 +437,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 5,
 //       });
 
@@ -443,7 +453,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         grade: 6,
 //         securityClearance: 1,
 //       });
@@ -465,7 +475,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         securityClearance: 100,
 //       });
 
@@ -500,7 +510,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         policyProjection: 2,
 //       });
 
@@ -521,7 +531,7 @@ describe('@policy', function() {
 //       // update user policy proerty to change the user's policy
 //       Buttress.setAuthToken(testApp.token);
 
-//       await Buttress.User.setPolicyProperty(testUser.id, {
+//       await Buttress.User.setPolicyProperty(testUser.id, testUser.tokens[0].value, {
 //         policyMergeQuery: 2,
 //       });
 

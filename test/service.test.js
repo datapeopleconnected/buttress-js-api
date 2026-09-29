@@ -23,18 +23,18 @@ const should = require('should');
 
 Config.init();
 
-describe('@service-basics', function() {
+describe('@service-basics', function () {
   this.timeout(2000);
   let _companies = [];
   let _user = null;
 
-  before(async function() {
+  before(async function () {
     Config.configureTest();
     _user = await Config.createUser();
     _companies = await Config.createCompanies();
   });
 
-  after(async function() {
+  after(async function () {
     Config.configureTest();
     await Promise.all([
       Buttress.getCollection('company').removeAll(),
@@ -43,21 +43,21 @@ describe('@service-basics', function() {
     ]);
   });
 
-  describe('Basics', function() {
-    const _serviceId = (new ObjectId()).toHexString();
+  describe('Basics', function () {
+    const _serviceId = new ObjectId().toHexString();
     let _service = null;
-    it('should return no services', function(done) {
+    it('should return no services', function (done) {
       Buttress.getCollection('service')
         .getAll()
-        .then(function(services) {
+        .then(function (services) {
           services.length.should.equal(0);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
-    it('should add a service', function(done) {
+    it('should add a service', function (done) {
       Buttress.getCollection('service')
         .save({
           id: _serviceId,
@@ -97,7 +97,7 @@ describe('@service-basics', function() {
             },
           ],
         })
-        .then(function(service) {
+        .then(function (service) {
           _service = service;
           _service.id.should.equal(_serviceId);
           _service.companyId.should.equal(_companies[0].id);
@@ -128,11 +128,11 @@ describe('@service-basics', function() {
           _service.appProp7[0].nestedInteresting.nestedString.should.equal('pending');
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
-    it('should not add a service with invalid properties', function(done) {
+    it('should not add a service with invalid properties', function (done) {
       Buttress.getCollection('service')
         .save({
           ownerUserId: _user.id,
@@ -140,17 +140,17 @@ describe('@service-basics', function() {
           name: 'Open Source (Extended)',
           description: 'Open source development consultancy',
           serviceType: 'consultancy',
-          appProp2: 'This isn\'t a number',
+          appProp2: "This isn't a number",
         })
-        .then(function(service) {
+        .then(function () {
           done(new Error('Should not succeed'));
         })
-        .catch(function(err) {
+        .catch(function (err) {
           err.statusCode.should.equal(400);
           done();
         });
     });
-    it('should not add a service with missing required properties', function(done) {
+    it('should not add a service with missing required properties', function (done) {
       Buttress.getCollection('service')
         .save({
           ownerUserId: _user.id,
@@ -160,18 +160,18 @@ describe('@service-basics', function() {
           serviceType: 'consultancy',
           appProp2: 123,
         })
-        .then(function(service) {
+        .then(function () {
           done(new Error('Should not succeed'));
         })
-        .catch(function(err) {
+        .catch(function (err) {
           err.statusCode.should.equal(400);
           done();
         });
     });
-    it('should get a specific service', function(done) {
+    it('should get a specific service', function (done) {
       Buttress.getCollection('service')
         .get(_serviceId)
-        .then(function(service) {
+        .then(function (service) {
           _service = service;
           _service.id.should.equal(_serviceId);
           _service.companyId.should.equal(_companies[0].id);
@@ -181,60 +181,61 @@ describe('@service-basics', function() {
           _service.ownerUserId.should.equal(_user.id);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
-    it('should update an app schema property', function(done) {
+    it('should update an app schema property', function (done) {
       if (!_service) {
         return done(new Error('No Service!'));
       }
-      Buttress.getCollection('service').update(_service.id, [
-        {
-          path: 'appProp6.date',
-          value: new Date('2017-07-31'),
-        },
-        {
-          path: 'appProp4.1',
-          value: 'from',
-        },
-        {
-          path: 'appProp7.0.name',
-          value: 'name#2',
-        },
-        {
-          path: 'appProp7.0.nestedInteresting.nestedBool',
-          value: true,
-        },
-        {
-          path: 'appProp7',
-          value: {
-            name: 'name#inserted',
-            isInteresting: false,
-            invalidProp: 'hello!',
-            nestedInteresting: {
-              nestedBool: false,
+      Buttress.getCollection('service')
+        .update(_service.id, [
+          {
+            path: 'appProp6.date',
+            value: new Date('2017-07-31'),
+          },
+          {
+            path: 'appProp4.1',
+            value: 'from',
+          },
+          {
+            path: 'appProp7.0.name',
+            value: 'name#2',
+          },
+          {
+            path: 'appProp7.0.nestedInteresting.nestedBool',
+            value: true,
+          },
+          {
+            path: 'appProp7',
+            value: {
+              name: 'name#inserted',
+              isInteresting: false,
+              invalidProp: 'hello!',
+              nestedInteresting: {
+                nestedBool: false,
+              },
             },
           },
-        },
-        // {
-        //   path: 'appProp6.nested.approvals.0.status',
-        //   value: 'approved',
-        // },
-        // {
-        //   path: 'appProp6.nested.approvals.0.approverId',
-        //   value: _user.id,
-        // },
-        // {
-        //   path: 'appProp6.nested.approvals',
-        //   value: {
-        //     status: 'approved',
-        //     approverId: _user.id,
-        //     // approverId: null
-        //   },
-        // },
-      ])
-        .then(function(updates) {
+          // {
+          //   path: 'appProp6.nested.approvals.0.status',
+          //   value: 'approved',
+          // },
+          // {
+          //   path: 'appProp6.nested.approvals.0.approverId',
+          //   value: _user.id,
+          // },
+          // {
+          //   path: 'appProp6.nested.approvals',
+          //   value: {
+          //     status: 'approved',
+          //     approverId: _user.id,
+          //     // approverId: null
+          //   },
+          // },
+        ])
+        .then(function (updates) {
           updates.length.should.equal(5);
           updates[0].type.should.equal('scalar');
           updates[0].path.should.equal('appProp6.date');
@@ -259,76 +260,78 @@ describe('@service-basics', function() {
 
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
-    it('should update an app schema id property', function(done) {
-      const _newCompanyId = (new ObjectId()).toHexString();
+    it('should update an app schema id property', function (done) {
+      const _newCompanyId = new ObjectId().toHexString();
       if (!_service) {
         return done(new Error('No Service!'));
       }
-      Buttress.getCollection('service').update(_service.id, {
-        path: 'appProp6.companyId',
-        value: _newCompanyId,
-      })
-        .then(function(updates) {
+      Buttress.getCollection('service')
+        .update(_service.id, {
+          path: 'appProp6.companyId',
+          value: _newCompanyId,
+        })
+        .then(function (updates) {
           updates.length.should.equal(1);
           updates[0].value.should.equal(_newCompanyId);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
-    it('should not update an app schema property', function(done) {
+    it('should not update an app schema property', function (done) {
       if (!_service) {
         return done(new Error('No Service!'));
       }
-      Buttress.getCollection('service').update(_service.id, {
-        path: 'appProp6.test',
-        value: 'don\'t change this',
-      })
-        .then(function(updates) {
+      Buttress.getCollection('service')
+        .update(_service.id, {
+          path: 'appProp6.test',
+          value: "don't change this",
+        })
+        .then(function () {
           done(new Error('Should not succeed'));
         })
-        .catch(function(err) {
+        .catch(function (err) {
           err.statusCode.should.equal(400);
           done();
         });
     });
 
-    it('should return 1 service', function(done) {
+    it('should return 1 service', function (done) {
       Buttress.getCollection('service')
         .getAll()
-        .then(function(services) {
+        .then(function (services) {
           services.should.have.length(1);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
-    it('should remove a service', function(done) {
+    it('should remove a service', function (done) {
       if (!_service) {
         return done(new Error('No Service!'));
       }
       Buttress.getCollection('service')
         .remove(_service.id)
-        .then(function(res) {
+        .then(function (res) {
           res.should.equal(true);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
-    it('should add several services', function(done) {
+    it('should add several services', function (done) {
       const __gen = (num) => {
         const arr = [];
         for (let x = 0; x < num; x++) {
           arr.push({
-            id: (new ObjectId()).toHexString(),
+            id: new ObjectId().toHexString(),
             ownerUserId: _user.id,
             companyId: _companies[0].id,
             statusCode: 1,
@@ -344,11 +347,11 @@ describe('@service-basics', function() {
 
       Buttress.getCollection('service')
         .bulkSave(__gen(300))
-        .then(function(services) {
+        .then(function (services) {
           services.length.should.equal(300);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });

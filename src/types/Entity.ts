@@ -14,23 +14,33 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Schema from '../model/Schema';
+// The other properties depend on the schema. They're `any` rather than `unknown` so untyped callers can still read them.
+export interface Entity {
+  id: string;
+  [key: string]: any;
+}
 
-export default interface ButtressOptionsInternal {
-  buttressUrl?: string;
-  authToken?: string;
-  compiledSchema?: Schema[];
-  isolated: boolean;
-  apiPath: string;
-  schema: Schema[];
-  version: number;
-  update: boolean;
-  useLocalSchema: boolean;
-  allowUnauthorized: boolean;
-  clientSessionId?: string;
-  url?: string;
-  urls?: {
-    core: string;
-    app: string;
-  };
+export interface UpdateOperation {
+  path: string;
+  value: unknown;
+}
+
+export interface UpdateResult {
+  type: 'scalar' | 'scalar-increment' | 'vector-add' | 'vector-rm';
+  path: string;
+  value: unknown;
+}
+
+export interface BulkUpdateItem {
+  id: string;
+  sourceId?: string;
+  body: UpdateOperation | UpdateOperation[];
+}
+
+// A refused item has null results, and validation says why.
+export interface BulkUpdateResult {
+  id: string;
+  sourceId?: string;
+  results: UpdateResult[] | null;
+  validation?: {code: number; message: string};
 }

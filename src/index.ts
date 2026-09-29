@@ -20,7 +20,10 @@ import Helpers from './helpers';
 import BaseSchema from './helpers/schema';
 
 import ModelSchema from './model/Schema';
+import ButtressOptions from './types/ButtressOptions';
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
+import {Policy as PolicyModel} from './types/Policy';
+import {Entity} from './types/Entity';
 
 import App from './app';
 import Auth from './auth';
@@ -32,19 +35,16 @@ import SecureStore from './secure-store';
 import AppDataSharing from './app-data-sharing';
 import LambdaExecution from './lambda-execution';
 
-export interface ButtressOptions {
-  buttressUrl: string,
-  appToken: string,
-  apiPath: string,
-  schema?: any[],
-  version: number,
-  update?: boolean,
-  useLocalSchema?: boolean,
-  allowUnauthorized?: boolean,
-}
+export type {ButtressOptions, BaseSchema};
+export type {BulkUpdateItem, BulkUpdateResult, Entity, UpdateOperation, UpdateResult} from './types/Entity';
+export type {Policy, PolicyConfig} from './types/Policy';
+export type {DateOperand, LooseQuery, Projection, Query, QueryOperators, Sort, TypedQuery} from './types/Query';
+
+// Any collection module, whatever its entities and bulkSave result
+type AnyModule = BaseSchema<Entity, unknown>;
 
 type Modules = {
-  [key: string]: BaseSchema;
+  [key: string]: AnyModule;
 };
 
 export const Errors = Helpers.Errors;
@@ -53,16 +53,6 @@ export const Errors = Helpers.Errors;
  * @class Buttress
  */
 export class Buttress {
-  App?: App;
-  Auth?: Auth;
-  Lambda?: Lambda;
-  Policy?: Policy;
-  Token?: Token;
-  User?: User;
-  SecureStore?: SecureStore;
-  AppDataSharing?: AppDataSharing;
-  LambdaExecution?: LambdaExecution;
-
   options: ButtressOptionsInternal = {
     isolated: false,
     apiPath: '',
@@ -70,7 +60,7 @@ export class Buttress {
     version: 1,
     update: false,
     useLocalSchema: false,
-    allowUnauthorized: false
+    allowUnauthorized: false,
   };
 
   // private __coreModules = { App, AppDataSharing, Auth, Lambda, Policy, Token, User, SecureStore };
@@ -79,6 +69,9 @@ export class Buttress {
 
   private __initialised = false;
 
+  /**
+   * Creates an instance of Buttress.
+   */
   constructor() {}
 
   /**
@@ -97,7 +90,22 @@ export class Buttress {
   async init(options: ButtressOptions, isolated = false) {
     if (this.__initialised === true) return;
 
+    // Modules can only be created once initialised, reset if the schema can't be fetched so init can be retried.
     this.__initialised = true;
+    try {
+      return await this.__init(options, isolated);
+    } catch (err) {
+      this.clean();
+      throw err;
+    }
+  }
+
+  /**
+   * @param {object} options
+   * @param {boolean} isolated
+   * @return {promise}
+   */
+  private async __init(options: ButtressOptions, isolated: boolean) {
     this.options.isolated = isolated;
 
     if (options.buttressUrl) this.options.buttressUrl = options.buttressUrl;
@@ -108,6 +116,7 @@ export class Buttress {
     if (options.update) this.options.update = options.update;
     if (options.allowUnauthorized) this.options.allowUnauthorized = options.allowUnauthorized;
     if (options.useLocalSchema) this.options.useLocalSchema = options.useLocalSchema;
+    if (options.clientSessionId) this.options.clientSessionId = options.clientSessionId;
 
     this.options.url = options.buttressUrl;
 
@@ -131,10 +140,45 @@ export class Buttress {
     }
   }
 
+  /**
+   * @return {boolean} - whether init has completed
+   */
   get initialised() {
     return this.__initialised;
   }
 
+  // The core modules are read from __modules so they're the same instances getCollection returns.
+  get App() {
+    return this.__getCoreModule<App>('app', 'App');
+  }
+  get Auth() {
+    return this.__getCoreModule<Auth>('auth', 'Auth');
+  }
+  get Lambda() {
+    return this.__getCoreModule<Lambda>('lambda', 'Lambda');
+  }
+  get Policy() {
+    return this.__getCoreModule<Policy>('policy', 'Policy');
+  }
+  get Token() {
+    return this.__getCoreModule<Token>('token', 'Token');
+  }
+  get User() {
+    return this.__getCoreModule<User>('user', 'User');
+  }
+  get SecureStore() {
+    return this.__getCoreModule<SecureStore>('secureStore', 'SecureStore');
+  }
+  get AppDataSharing() {
+    return this.__getCoreModule<AppDataSharing>('appDataSharing', 'AppDataSharing');
+  }
+  get LambdaExecution() {
+    return this.__getCoreModule<LambdaExecution>('lambdaExecution', 'LambdaExecution');
+  }
+
+  /**
+   * Removes every module that has been set up.
+   */
   clean() {
     // Destory all modules which have been setup.
     Object.keys(this.__modules).forEach((key) => {
@@ -150,7 +194,7 @@ export class Buttress {
       version: 1,
       update: false,
       useLocalSchema: false,
-      allowUnauthorized: false
+      allowUnauthorized: false,
     };
 
     this.__initialised = false;
@@ -204,6 +248,13 @@ export class Buttress {
   }
 
   /**
+   * @param {string} clientSessionId - a UUID v4, sent as x-client-session-id
+   */
+  setClientSessionId(clientSessionId?: string) {
+    this.options.clientSessionId = clientSessionId;
+  }
+
+  /**
    * @param {string} apiPath
    */
   setAPIPath(apiPath: string) {
@@ -232,33 +283,24 @@ export class Buttress {
   /**
    * Create user transient policy
    * @param {String} userId
+   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
    * @param {Object} policy
    * @return {Promise}
    */
-  async createUserTransientPolicy(userId: string, policy: any) {
-    if (!this.Policy || !this.User) throw new Error('Unable to create transient policy before Buttress is initialised');
-
+  async createUserTransientPolicy(userId: string, tokenId: string, policy: PolicyModel) {
     await this.Policy.createPolicy(policy);
-    await this.User.updatePolicyProperty(userId, {[policy.name]: true});
+    await this.User.updatePolicyProperty(userId, tokenId, {[policy.name]: true});
   }
-
 
   /**
    * Delete user transient policy
    * @param {String} userId
+   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
    * @param {String} policyName
    * @return {Promise}
    */
-  async removeUserTransientPolicy(userId: string, policyName: string) {
-    if (!this.Policy || !this.User) throw new Error('Unable to remove user transient policy before Buttress is initialised');
-
-    const user = await this.User.get(userId);
-
-    if (user.policyProperties[policyName]) {
-      delete user.policyProperties[policyName];
-    }
-
-    await this.User.setPolicyProperty(userId, user.policyProperties);
+  async removeUserTransientPolicy(userId: string, tokenId: string, policyName: string) {
+    await this.User.removePolicyProperty(userId, tokenId, {[policyName]: true});
     await this.Policy.deletePolicyByName({name: policyName});
   }
 
@@ -274,18 +316,30 @@ export class Buttress {
 
   /**
    * Init core modules
-   * @return {promise}
    */
   private __initCoreModules() {
-    this.App = this.__modules['app'] = new App(this.options);
-    this.Auth = this.__modules['auth'] = new Auth(this.options);
-    this.Lambda = this.__modules['lambda'] = new Lambda(this.options);
-    this.Policy = this.__modules['policy'] = new Policy(this.options);
-    this.Token = this.__modules['token'] = new Token(this.options);
-    this.User = this.__modules['user'] = new User(this.options);
-    this.SecureStore = this.__modules['secureStore'] = new SecureStore(this.options);
-    this.AppDataSharing = this.__modules['appDataSharing'] = new AppDataSharing(this.options);
-    this.LambdaExecution = this.__modules['lambdaExecution'] = new LambdaExecution(this.options);
+    this.__modules['app'] = new App(this.options);
+    this.__modules['auth'] = new Auth(this.options);
+    this.__modules['lambda'] = new Lambda(this.options);
+    this.__modules['policy'] = new Policy(this.options);
+    this.__modules['token'] = new Token(this.options);
+    this.__modules['user'] = new User(this.options);
+    this.__modules['secureStore'] = new SecureStore(this.options);
+    this.__modules['appDataSharing'] = new AppDataSharing(this.options);
+    this.__modules['lambdaExecution'] = new LambdaExecution(this.options);
+  }
+
+  /**
+   * Get a core module, which only exists between init() and clean()
+   * @param {string} key - the module's key in __modules
+   * @param {string} name - the module's property name on Buttress, for the error message
+   * @return {object} module
+   */
+  private __getCoreModule<T extends AnyModule>(key: string, name: string): T {
+    const mod = this.__modules[key];
+    if (!mod) throw new Helpers.Errors.NotYetInitiated(`Attempting to use Buttress.${name} before buttress init`);
+
+    return mod as T;
   }
 
   /**
@@ -322,11 +376,14 @@ export class Buttress {
    * @param {string} collection
    * @return {object} collection
    */
-  getCollection<T extends BaseSchema>(collection: string): T {
+  getCollection<T extends AnyModule = BaseSchema>(collection: string): T {
     if (!this.__initialised) throw new Error('Unable to getCollection before Buttress is initialised');
 
     const mod = Sugar.String.camelize(collection, false);
-    if (mod !== collection) throw new Error(`Make sure that your collection: ${collection} is following the correct naming convention ${mod}`);
+    if (mod !== collection)
+      throw new Error(
+        `Make sure that your collection: ${collection} is following the correct naming convention ${mod}`,
+      );
     if (!this.__modules[mod]) {
       this._addModule(collection);
     }

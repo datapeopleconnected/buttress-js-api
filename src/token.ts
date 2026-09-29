@@ -14,7 +14,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Helpers, { RequestOptionsIn } from './helpers';
+import Helpers, {RequestOptionsIn} from './helpers';
 import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
@@ -59,16 +59,5 @@ export default class Token extends BaseSchema {
   removeAllUserTokens(options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('delete', `user`, opts);
-  };
-
-  /**
-   * @param {object} details
-   * @param {object} options
-   * @return {promise}
-   */
-  updateRole(details: any, options?: RequestOptionsIn) {
-    const opts = Helpers.checkOptions(options, this.token);
-    if (details) opts.data = details;
-    return this._request('put', `roles`, opts);
-  };
+  }
 }

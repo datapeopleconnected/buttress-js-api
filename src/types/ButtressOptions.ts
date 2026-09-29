@@ -15,11 +15,14 @@
  */
 
 export default interface ButtressOptions {
-  buttressUrl: string,
-  appToken: string,
-  apiPath: string,
-  schema?: any[],
-  version: number,
-  update?: boolean,
-  allowUnauthorized?: boolean,
+  buttressUrl: string;
+  appToken: string;
+  apiPath: string;
+  schema?: any[];
+  version: number;
+  update?: boolean;
+  useLocalSchema?: boolean;
+  allowUnauthorized?: boolean;
+  // A UUID v4 sent as x-client-session-id, buttress includes it on the socket activity your requests cause
+  clientSessionId?: string;
 }

@@ -1,15 +1,18 @@
 {
   "name": "data-filter-user",
+  "version": "1",
   "selection": {
     "role": {
       "@eq": "user"
     }
   },
-  "config": [{
-    "verbs": ["GET", "SEARCH", "PUT", "POST", "DELETE"],
-    "schema": ["%ALL%"],
-    "query": {
-      "access": "%FULL_ACCESS%"
+  "config": [
+    {
+      "verbs": ["GET", "SEARCH", "PUT", "POST", "DELETE"],
+      "schema": ["%ALL%"],
+      "query": {
+        "access": "%FULL_ACCESS%"
+      }
     }
-  }]
+  ]
 }

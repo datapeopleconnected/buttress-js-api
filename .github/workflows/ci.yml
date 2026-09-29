@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  # Lets the Publish workflow run these checks before it publishes a release.
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run licence-check
+      - run: npm run test:types
+      - run: npm run test:unit
+
+  # The end-to-end tests (`npm run test:e2e`) aren't run here yet: several suites fail against the current
+  # dpcltd/buttress:develop image. Add a job for them once they pass, and make Publish wait for it too.

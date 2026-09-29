@@ -1,6 +1,5 @@
 'use strict';
 
-const { Test } = require('mocha');
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -22,20 +21,20 @@ const Config = require('./config');
 const polices = require('./data/policy/index.js');
 
 const TestAppRoles = {
-  'public': polices['data-filter-public'],
+  public: polices['data-filter-public'],
   'user.member': polices['data-filter-admin'],
   'admin.super': polices['data-filter-user'],
 };
 
 Config.init();
 
-describe('@data-filter', function() {
+describe('@data-filter', function () {
   const TestUsersRoles = Object.keys(TestAppRoles);
 
   let _testUsers = [];
   let _testBoards = [];
 
-  before(async function() {
+  before(async function () {
     Config.configureTest();
 
     const addUserRoles = () => {
@@ -43,8 +42,8 @@ describe('@data-filter', function() {
         const policy = TestAppRoles[key];
         const role = policy.selection.role['@eq'];
         const id = `dft-${Math.floor(Math.random() * Math.floor(9999999999))}`;
-        return Buttress.Auth
-          .findOrCreateUser({
+        return Buttress.Auth.findOrCreateUser(
+          {
             app: 'data-filter-test',
             appId: id,
             name: key,
@@ -52,12 +51,14 @@ describe('@data-filter', function() {
             email: `${id}@example.com`,
             profileUrl: 'http://test.com/thisisatest',
             profileImgUrl: 'http://test.com/thisisatest.png',
-          }, {
-            domains: [Buttress.options.url.host],
+          },
+          {
+            domains: [Config.endpoint],
             policyProperties: {
               role,
             },
-          });
+          },
+        );
       });
     };
 
@@ -93,7 +94,7 @@ describe('@data-filter', function() {
     await Promise.all(addTestPosts());
   });
 
-  after(async function() {
+  after(async function () {
     Config.configureTest();
 
     await Buttress.getCollection('post').removeAll();
@@ -105,31 +106,33 @@ describe('@data-filter', function() {
   //     - user.id (single)  -> board.subscribed (many)
   //     - board.id (single) -> post.boardId (single)
 
-  describe('Token', function() {
-    it('should respond 401 with invalid_token', async function() {
+  describe('Token', function () {
+    it('should respond 401 with invalid_token', async function () {
       try {
         await Buttress.getCollection('board').getAll({
           token: `RANDOMTOKEN`,
-        })
+        });
         throw new Error('Request should not have succeeded');
       } catch (err) {
         err.message.should.not.be.equal('Request should not have succeeded');
 
         err.statusCode.should.equal(401);
-        err.message.should.equal('Unauthorized');
+        err.statusMessage.should.equal('Unauthorized');
+        err.message.should.equal('invalid_token');
       }
     });
   });
 
-  describe('Boards', function() {
-    it('should only return boards user is subscribed to', function(done) {
+  describe('Boards', function () {
+    it('should only return boards user is subscribed to', function (done) {
       const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
       const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
 
-      Buttress.getCollection('board').getAll({
-        token: token.value,
-      })
-        .then(function(boards) {
+      Buttress.getCollection('board')
+        .getAll({
+          token: token.value,
+        })
+        .then(function (boards) {
           boards.should.be.instanceof(Array);
           boards.should.not.be.empty();
           boards.should.be.lengthOf(1);
@@ -137,130 +140,152 @@ describe('@data-filter', function() {
 
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
   });
 
-  describe('Posts', function() {
-    it('should return posts that are part of the public board', function(done) {
+  describe('Posts', function () {
+    it('should return posts that are part of the public board', function (done) {
       const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
       const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
       const publicBoard = _testBoards.find((board) => board.name === 'public');
 
-      Buttress.getCollection('post').getAll({
-        token: token.value,
-      })
-        .then(function(posts) {
+      Buttress.getCollection('post')
+        .getAll({
+          token: token.value,
+        })
+        .then(function (posts) {
           posts.should.be.instanceof(Array);
           posts.should.not.be.empty();
 
           for (const idx in posts) {
-            if (!posts.hasOwnProperty(idx)) continue;
+            if (!Object.hasOwn(posts, idx)) continue;
             posts[idx].boardId.should.equal(publicBoard.id);
           }
 
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it('should return posts that are part of the public board with more than 5 kudos', function(done) {
+    it('should return posts that are part of the public board with more than 5 kudos', function (done) {
       const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
       const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
 
-      Buttress.getCollection('post').search({
-        kudos: {
-          gt: 5,
-        },
-      }, 0, 0, null, {
-        token: token.value,
-      })
-        .then(function(posts) {
+      Buttress.getCollection('post')
+        .search(
+          {
+            kudos: {
+              gt: 5,
+            },
+          },
+          0,
+          0,
+          null,
+          {
+            token: token.value,
+          },
+        )
+        .then(function (posts) {
           posts.should.be.instanceof(Array);
           posts.should.not.be.empty();
           posts.should.be.lengthOf(5);
 
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it('should return posts ids that are part of the public board with more than 5 kudos', function(done) {
+    it('should return posts ids that are part of the public board with more than 5 kudos', function (done) {
       const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
       const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
 
-      Buttress.getCollection('post').search({
-        kudos: {
-          gt: 5,
-        },
-      }, 0, 0, null, {
-        project: {content: 1},
-        token: token.value,
-      })
-        .then(function(posts) {
+      Buttress.getCollection('post')
+        .search(
+          {
+            kudos: {
+              gt: 5,
+            },
+          },
+          0,
+          0,
+          null,
+          {
+            project: {content: 1},
+            token: token.value,
+          },
+        )
+        .then(function (posts) {
           posts.should.be.instanceof(Array);
           posts.should.not.be.empty();
           posts.should.be.lengthOf(5);
 
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it('should return a total count of posts', function(done) {
-      Buttress.getCollection('post').count()
+    it('should return a total count of posts', function (done) {
+      Buttress.getCollection('post')
+        .count()
         .then((count) => {
           count.should.be.instanceof(Number);
           count.should.equal(30);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it('should return a count of posts that are part of the public board', function(done) {
+    it('should return a count of posts that are part of the public board', function (done) {
       const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
       const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
 
-      Buttress.getCollection('post').count({}, null, {
-        token: token.value,
-      })
+      Buttress.getCollection('post')
+        .count({}, null, {
+          token: token.value,
+        })
         .then((count) => {
           count.should.be.instanceof(Number);
           count.should.equal(10);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it('should return a count of posts that are part of the public board with more than 5 kudos', function(done) {
+    it('should return a count of posts that are part of the public board with more than 5 kudos', function (done) {
       const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
       const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
 
-      Buttress.getCollection('post').count({
-        kudos: {
-          gt: 5,
-        },
-      }, null, {
-        token: token.value,
-      })
+      Buttress.getCollection('post')
+        .count(
+          {
+            kudos: {
+              gt: 5,
+            },
+          },
+          null,
+          {
+            token: token.value,
+          },
+        )
         .then((count) => {
           count.should.be.instanceof(Number);
           count.should.equal(5);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });

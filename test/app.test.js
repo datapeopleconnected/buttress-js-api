@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Buttress API - The federated real-time open data platform
@@ -24,23 +24,23 @@ Config.init();
 
 const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
-describe('@app', function() {
+describe('@app', function () {
   this.timeout(2000);
   const testApps = [];
 
-  before(async function() {
+  before(async function () {
     Config.configureSuper();
   });
 
-  after(async function() {
+  after(async function () {
     for await (const testApp of testApps) {
       await Buttress.getCollection('app').remove(testApp.id);
     }
     Config.configureTest();
   });
 
-  describe('Basic', function() {
-    it('should create an app', async function() {
+  describe('Basic', function () {
+    it('should create an app', async function () {
       const testAppData = {
         name: 'Test App',
         version: '1.0.0',
@@ -56,18 +56,17 @@ describe('@app', function() {
       testApps.push(testApp);
     });
   });
-
 });
 
-describe('@app-schema', function() {
+describe('@app-schema', function () {
   this.timeout(2000);
   const testApps = [];
 
-  before(function(done) {
+  before(function (done) {
     done();
   });
 
-  after(async function() {
+  after(async function () {
     Config.configureSuper();
     for await (const testApp of testApps) {
       await Buttress.getCollection('app').remove(testApp.id);
@@ -75,11 +74,11 @@ describe('@app-schema', function() {
     Config.configureTest();
   });
 
-  describe('Basic', function() {
-    it('should return the app schema', function(done) {
+  describe('Basic', function () {
+    it('should return the app schema', function (done) {
       Buttress.getCollection('app')
         .getSchema()
-        .then(function(schema) {
+        .then(function (schema) {
           schema.length.should.equal(Schemas.length);
           schema[3].name.should.equal('service');
           schema[3].properties.appProp1.__type.should.equal('string');
@@ -88,12 +87,12 @@ describe('@app-schema', function() {
           schema[3].properties.appProp5.__default.should.equal('pending');
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it(`should fail when trying to interact with 'test' schema`, function(done) {
+    it(`should fail when trying to interact with 'test' schema`, function (done) {
       try {
         Buttress.getCollection('tests');
       } catch (err) {
@@ -104,30 +103,32 @@ describe('@app-schema', function() {
       }
     });
 
-    it(`should update the app schema with 'test'`, function(done) {
-      Buttress.options.schema = [{
-        "name": "test",
-        "type": "collection",
-        "properties": {
-          "name": {
-            "__type": "string",
-            "__default": null,
-            "__required": true,
-            "__allowUpdate": true
-          }
-        }
-      }];
+    it(`should update the app schema with 'test'`, function (done) {
+      Buttress.options.schema = [
+        {
+          name: 'test',
+          type: 'collection',
+          properties: {
+            name: {
+              __type: 'string',
+              __default: null,
+              __required: true,
+              __allowUpdate: true,
+            },
+          },
+        },
+      ];
 
       Buttress.initSchema()
         .then(() => {
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it(`should be able to interact with 'test' schema`, function(done) {
+    it(`should be able to interact with 'test' schema`, function (done) {
       try {
         Buttress.getCollection('test');
       } catch (err) {
@@ -140,7 +141,7 @@ describe('@app-schema', function() {
           tests.length.should.equal(0);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
@@ -217,56 +218,62 @@ describe('@app-schema', function() {
   // });
 });
 
-describe('@app-relationship', function() {
+describe('@app-relationship', function () {
   this.timeout(90000);
   const testApps = [];
 
   const testAppRelationships = [];
 
-  const testApp2Schema = [{
-    "name": "people",
-    "type": "collection",
-    "properties": {
-      "name": {
-        "__type": "string",
-        "__default": null,
-        "__required": true,
-        "__allowUpdate": true
+  const testApp2Schema = [
+    {
+      name: 'people',
+      type: 'collection',
+      properties: {
+        name: {
+          __type: 'string',
+          __default: null,
+          __required: true,
+          __allowUpdate: true,
+        },
+        carId: {
+          __type: 'id',
+          __default: null,
+          __required: true,
+          __allowUpdate: true,
+        },
       },
-      "carId": {
-        "__type": "id",
-        "__default": null,
-        "__required": true,
-        "__allowUpdate": true
-      },
-    }
-  }];
+    },
+  ];
 
   let testApp2User = null;
 
-  before(async function() {
+  before(async function () {
     Config.configureSuper();
 
-    testApps.push(await Buttress.getCollection('app').save({
-      name: 'Test App 1',
-      apiPath: 'test-app1'
-    }));
+    testApps.push(
+      await Buttress.getCollection('app').save({
+        name: 'Test App 1',
+        apiPath: 'test-app1',
+      }),
+    );
 
     Buttress.setAuthToken(testApps[0].token);
     Buttress.setAPIPath('test-app1');
 
-    await Buttress.setSchema([{
-      "name": "car",
-      "type": "collection",
-      "properties": {
-        "name": {
-          "__type": "string",
-          "__default": null,
-          "__required": true,
-          "__allowUpdate": true
+    await Buttress.setSchema([
+      {
+        name: 'car',
+        type: 'collection',
+        properties: {
+          name: {
+            __type: 'string',
+            __default: null,
+            __required: true,
+            __allowUpdate: true,
+          },
         },
-      }
-    }]);
+      },
+    ]);
 
     await sleep(100); // Give it chance for the URL's to be regenerated
 
@@ -274,13 +281,15 @@ describe('@app-relationship', function() {
 
     Config.configureSuper();
 
-    testApps.push(await Buttress.getCollection('app').save({
-      name: 'Test App 2',
-      apiPath: 'test-app2',
-      policyPropertiesList: {
-        role: ['TEST'],
-      },
-    }));
+    testApps.push(
+      await Buttress.getCollection('app').save({
+        name: 'Test App 2',
+        apiPath: 'test-app2',
+        policyPropertiesList: {
+          role: ['TEST'],
+        },
+      }),
+    );
 
     Buttress.setAuthToken(testApps[1].token);
     Buttress.setAPIPath('test-app2');
@@ -288,19 +297,22 @@ describe('@app-relationship', function() {
     await Buttress.setSchema(testApp2Schema);
 
     await Buttress.getCollection('policy').createPolicy({
-      name: "test-policy",
+      name: 'test-policy',
+      version: '1',
       selection: {
         role: {
-          "@eq": "TEST"
-        }
-      },
-      config: [{
-        verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
-        schema: ['%ALL%'],
-        query: {
-          access: '%FULL_ACCESS%',
+          '@eq': 'TEST',
         },
-      }]
+      },
+      config: [
+        {
+          verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+          schema: ['%ALL%'],
+          query: {
+            access: '%FULL_ACCESS%',
+          },
+        },
+      ],
     });
 
     await sleep(100); // Give it chance for the URL's to be regenerated
@@ -311,23 +323,26 @@ describe('@app-relationship', function() {
     });
 
     // Create user
-    testApp2User = await Buttress.Auth.findOrCreateUser({
-      app: 'app-test2',
-      appId: '12345678987654321',
-      name: 'Joe Bloggs',
-      token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-      email: 'test@test.com',
-      profileUrl: 'http://test.com/thisisatest',
-      profileImgUrl: 'http://test.com/thisisatest.png',
-    }, {
-      policyProperties: {
-        role: 'TEST',
+    testApp2User = await Buttress.Auth.findOrCreateUser(
+      {
+        app: 'app-test2',
+        appId: '12345678987654321',
+        name: 'Joe Bloggs',
+        token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
+        email: 'test@test.com',
+        profileUrl: 'http://test.com/thisisatest',
+        profileImgUrl: 'http://test.com/thisisatest.png',
       },
-      domains: ['test.local.buttressjs.com']
-    });
+      {
+        policyProperties: {
+          role: 'TEST',
+        },
+        domains: ['test.local.buttressjs.com'],
+      },
+    );
   });
 
-  after(async function() {
+  after(async function () {
     Config.configureSuper();
 
     for await (const testApp of testApps) {
@@ -337,76 +352,76 @@ describe('@app-relationship', function() {
     Config.configureTest();
   });
 
-  describe('Basic', function() {
-    it('should register a data share for app2 to connect to app1', async function() {
+  describe('Basic', function () {
+    it('should register a data share for app2 to connect to app1', async function () {
       Buttress.setAuthToken(testApps[0].token);
 
       const res = await Buttress.AppDataSharing.createDataSharing({
         name: 'test-app2',
 
         remoteApp: {
-          endpoint: Config.endpoint,
+          endpoint: Config.remoteEndpoint,
           apiPath: testApps[1].apiPath,
           token: null,
         },
 
         dataSharing: {
-          localApp: "",
+          localApp: '',
           remoteApp: JSON.stringify({
-            car: [
-              "READ"
-            ]
+            car: ['READ'],
           }),
         },
 
-        policyConfig: [{
-          verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
-          schema: ['%ALL%'],
-          query: {
-            access: '%FULL_ACCESS%',
+        policyConfig: [
+          {
+            verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+            schema: ['%ALL%'],
+            query: {
+              access: '%FULL_ACCESS%',
+            },
           },
-        }]
+        ],
       });
 
       res.name.should.equal('test-app2');
-      res.remoteApp.endpoint.should.equal(Config.endpoint);
+      res.remoteApp.endpoint.should.equal(Config.remoteEndpoint);
       res.remoteApp.apiPath.should.equal(testApps[1].apiPath);
       testAppRelationships.push(res);
     });
 
-    it('should register a data share for app1 to connect to app2', async function() {
+    it('should register a data share for app1 to connect to app2', async function () {
       Buttress.setAuthToken(testApps[1].token);
 
       const res = await Buttress.AppDataSharing.createDataSharing({
         name: 'test-app1',
 
         remoteApp: {
-          endpoint: Config.endpoint,
+          endpoint: Config.remoteEndpoint,
           apiPath: testApps[0].apiPath,
           token: testAppRelationships[0].registrationToken,
         },
 
         dataSharing: {
           localApp: JSON.stringify({
-            car: [
-              "READ"
-            ]
+            car: ['READ'],
           }),
           remoteApp: null,
         },
 
-        policyConfig: [{
-          verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
-          schema: ['%ALL%'],
-          query: {
-            access: '%FULL_ACCESS%',
+        policyConfig: [
+          {
+            verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+            schema: ['%ALL%'],
+            query: {
+              access: '%FULL_ACCESS%',
+            },
           },
-        }]
+        ],
       });
 
       res.name.should.equal('test-app1');
       res.active.should.equal(true);
-      res.remoteApp.endpoint.should.equal(Config.endpoint);
+      res.remoteApp.endpoint.should.equal(Config.remoteEndpoint);
       res.remoteApp.apiPath.should.equal(testApps[0].apiPath);
       res.remoteApp.token.should.not.equal(testAppRelationships[0].registrationToken);
       testAppRelationships.push(res);
@@ -417,56 +432,56 @@ describe('@app-relationship', function() {
 
     // });
 
-    it('should update the policy for the source relationship', async function() {
+    it('should update the policy for the source relationship', async function () {
       Buttress.setAuthToken(testApps[0].token);
 
       const res = await Buttress.AppDataSharing.updateDataSharingPolicy(testAppRelationships[0].id, {
-        "collections": [
-          "car"
-        ]
+        collections: ['car'],
       });
-      
+
       res.should.equal(true);
 
       Buttress.setAuthToken(testApps[1].token);
       Buttress.setAPIPath('test-app2');
 
       testApp2Schema.push({
-        "name": "car",
-        "type": "collection",
-        "remotes": [{
-          "name": "test-app1",
-          "schema": "car"
-        }],
-        "properties": {
-          "price": {
-            "__type": "string",
-            "__required": true,
-            "__allowUpdate": true,
+        name: 'car',
+        type: 'collection',
+        remotes: [
+          {
+            name: 'test-app1',
+            schema: 'car',
           },
-        }
+        ],
+        properties: {
+          price: {
+            __type: 'string',
+            __required: true,
+            __allowUpdate: true,
+          },
+        },
       });
 
       await Buttress.setSchema(testApp2Schema);
     });
 
-    it('should be able access data from App 1 using a App 2 token', async function() {
+    it('should be able access data from App 1 using a App 2 token', async function () {
       const [{value}] = testApp2User.tokens;
       Buttress.setAuthToken(value);
       Buttress.setAPIPath('test-app2');
 
       const people = await Buttress.getCollection('people').getAll();
 
-      people.length.should.equal(1, 'Person count doesn\'t match whats expected');
+      people.length.should.equal(1, "Person count doesn't match whats expected");
       people[0].name.should.equal('Jeff');
 
       const cars = await Buttress.getCollection('car').getAll();
 
-      cars.length.should.equal(1, 'Car count doesn\'t match whats expected');
+      cars.length.should.equal(1, "Car count doesn't match whats expected");
       cars[0].id.should.equal(people[0].carId);
     });
 
-    it('should be able to add a new car and see activity on both apps', async function() {
+    it('should be able to add a new car and see activity on both apps', async function () {
       Buttress.setAuthToken(testApps[0].token);
       Buttress.setAPIPath('test-app1');
 

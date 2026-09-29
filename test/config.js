@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * Buttress API - The federated real-time open data platform
@@ -50,6 +50,8 @@ class Config {
     this._initialised = false;
 
     this.endpoint = process.env.BUTTRESS_TEST_API_URL;
+    // The address Buttress reaches itself on, for data shares. Inside Docker that isn't the port the tests use.
+    this.remoteEndpoint = process.env.BUTTRESS_TEST_REMOTE_API_URL || this.endpoint;
     this.token = process.env.BUTTRESS_TEST_SUPER_APP_KEY;
 
     this.token_super = process.env.BUTTRESS_TEST_SUPER_APP_KEY;
@@ -90,7 +92,7 @@ class Config {
       const testApp = await Buttress.getCollection('app').save({
         name: 'Test App',
         apiPath: 'test',
-        policyPropertiesList: PolicyPropertiesList
+        policyPropertiesList: PolicyPropertiesList,
       });
 
       this.token = testApp.token;
@@ -108,7 +110,7 @@ class Config {
       }
     });
 
-    after(function(done) {
+    after(function (done) {
       done();
     });
   }
@@ -127,119 +129,140 @@ class Config {
       {
         name: 'Company 1',
         companyType: 'prospect',
-        locations: [{
-          id: (new ObjectId()).toHexString(),
-          name: 'HQ',
-          address: '123 Acacia Avenue, Brixton',
-          city: 'London',
-          postCode: 'SW9 4DW',
-          phoneNumber: '0205 123123'
-        }],
-        contacts: [{
-          id: (new ObjectId()).toHexString(),
-          name: 'Bananaman',
-          role: 'Superhero',
-          email: 'bananas@man.com',
-          mobile: '07777 777777'
-
-        }]
+        locations: [
+          {
+            id: new ObjectId().toHexString(),
+            name: 'HQ',
+            address: '123 Acacia Avenue, Brixton',
+            city: 'London',
+            postCode: 'SW9 4DW',
+            phoneNumber: '0205 123123',
+          },
+        ],
+        contacts: [
+          {
+            id: new ObjectId().toHexString(),
+            name: 'Bananaman',
+            role: 'Superhero',
+            email: 'bananas@man.com',
+            mobile: '07777 777777',
+          },
+        ],
       },
       {
         name: 'Company 2',
         companyType: 'prospect',
-        locations: [{
-          id: (new ObjectId()).toHexString(),
-          name: 'HQ',
-          address: '123 Acacia Avenue, Brixton',
-          city: 'London',
-          postCode: 'SW9 4DW',
-          phoneNumber: '0205 123123'
-        }],
-        contacts: [{
-          id: (new ObjectId()).toHexString(),
-          name: 'Bananaman',
-          role: 'Superhero',
-          email: 'bananas@man.com',
-          mobile: '07777 777777'
-        }]
+        locations: [
+          {
+            id: new ObjectId().toHexString(),
+            name: 'HQ',
+            address: '123 Acacia Avenue, Brixton',
+            city: 'London',
+            postCode: 'SW9 4DW',
+            phoneNumber: '0205 123123',
+          },
+        ],
+        contacts: [
+          {
+            id: new ObjectId().toHexString(),
+            name: 'Bananaman',
+            role: 'Superhero',
+            email: 'bananas@man.com',
+            mobile: '07777 777777',
+          },
+        ],
       },
       {
         name: 'Company 3',
         companyType: 'prospect',
-        locations: [{
-          id: (new ObjectId()).toHexString(),
-          name: 'HQ',
-          address: '123 Acacia Avenue, Brixton',
-          city: 'London',
-          postCode: 'SW9 4DW',
-          phoneNumber: '0205 123123'
-        }],
-        contacts: [{
-          id: (new ObjectId()).toHexString(),
-          name: 'Bananaman',
-          role: 'Superhero',
-          email: 'bananas@man.com',
-          mobile: '07777 777777'
-        }]
+        locations: [
+          {
+            id: new ObjectId().toHexString(),
+            name: 'HQ',
+            address: '123 Acacia Avenue, Brixton',
+            city: 'London',
+            postCode: 'SW9 4DW',
+            phoneNumber: '0205 123123',
+          },
+        ],
+        contacts: [
+          {
+            id: new ObjectId().toHexString(),
+            name: 'Bananaman',
+            role: 'Superhero',
+            email: 'bananas@man.com',
+            mobile: '07777 777777',
+          },
+        ],
       },
       {
         name: 'Company 4',
         companyType: 'prospect',
-        locations: [{
-          id: (new ObjectId()).toHexString(),
-          name: 'HQ',
-          address: '123 Acacia Avenue, Brixton',
-          city: 'London',
-          postCode: 'SW9 4DW',
-          phoneNumber: '0205 123123'
-        }],
-        contacts: [{
-          id: (new ObjectId()).toHexString(),
-          name: 'Bananaman',
-          role: 'Superhero',
-          email: 'bananas@man.com',
-          mobile: '07777 777777'
-        }]
+        locations: [
+          {
+            id: new ObjectId().toHexString(),
+            name: 'HQ',
+            address: '123 Acacia Avenue, Brixton',
+            city: 'London',
+            postCode: 'SW9 4DW',
+            phoneNumber: '0205 123123',
+          },
+        ],
+        contacts: [
+          {
+            id: new ObjectId().toHexString(),
+            name: 'Bananaman',
+            role: 'Superhero',
+            email: 'bananas@man.com',
+            mobile: '07777 777777',
+          },
+        ],
       },
       {
         name: 'Company 5',
         companyType: 'prospect',
-        locations: [{
-          id: (new ObjectId()).toHexString(),
-          name: 'HQ',
-          address: '123 Acacia Avenue, Brixton',
-          city: 'London',
-          postCode: 'SW9 4DW',
-          phoneNumber: '0205 123123'
-        }],
-        contacts: [{
-          id: (new ObjectId()).toHexString(),
-          name: 'Bananaman',
-          role: 'Superhero',
-          email: 'bananas@man.com',
-          mobile: '07777 777777'
-        }]
-      }
+        locations: [
+          {
+            id: new ObjectId().toHexString(),
+            name: 'HQ',
+            address: '123 Acacia Avenue, Brixton',
+            city: 'London',
+            postCode: 'SW9 4DW',
+            phoneNumber: '0205 123123',
+          },
+        ],
+        contacts: [
+          {
+            id: new ObjectId().toHexString(),
+            name: 'Bananaman',
+            role: 'Superhero',
+            email: 'bananas@man.com',
+            mobile: '07777 777777',
+          },
+        ],
+      },
     ];
 
     return Buttress.getCollection('company').bulkSave(companies);
   }
 
   createUser() {
-    return Buttress.Auth.findOrCreateUser({
-      app: 'google',
-      appId: '12345678987654321',
-      name: 'Chris Bates-Keegan',
-      token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-      email: 'test@test.com',
-      profileUrl: 'http://test.com/thisisatest',
-      profileImgUrl: 'http://test.com/thisisatest.png'
-    }, {
-      domains: [Buttress.options.url.host],
-      policyProperties: {}
-    });
+    return Buttress.Auth.findOrCreateUser(
+      {
+        app: 'google',
+        appId: '12345678987654321',
+        name: 'Chris Bates-Keegan',
+        token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
+        email: 'test@test.com',
+        profileUrl: 'http://test.com/thisisatest',
+        profileImgUrl: 'http://test.com/thisisatest.png',
+      },
+      {
+        domains: [this.endpoint],
+        policyProperties: {},
+      },
+    );
   }
-
 }
 
 module.exports = new Config();

@@ -1,0 +1,7 @@
+dist/
+coverage/
+.claude/
+package-lock.json
+# The licence texts are kept exactly as published.
+LICENSE
+COPYING

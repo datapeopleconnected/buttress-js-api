@@ -14,8 +14,8 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { AuthData } from './auth';
-import Helpers, { RequestOptionsIn } from './helpers';
+import {AuthData} from './auth';
+import Helpers, {RequestOptionsIn} from './helpers';
 import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
@@ -78,47 +78,51 @@ export default class User extends BaseSchema {
 
   /**
    * @param {Object} userId - user id
+   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
    * @param {array} data - request data
    * @param {Object} options - request options
    * @return {Promise}
    */
-  setPolicyProperty(userId: string, data: any, options?: RequestOptionsIn) {
+  setPolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
-    return this._request('put', `${userId}/policy-property`, opts);
+    return this._request('put', `${userId}/policy-property/${encodeURIComponent(tokenId)}`, opts);
   }
 
   /**
    * @param {Object} userId - user id
+   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
    * @param {array} data - request data
    * @param {Object} options - request options
    * @return {Promise}
    */
-  updatePolicyProperty(userId: string, data: any, options?: RequestOptionsIn) {
+  updatePolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
-    return this._request('put', `${userId}/update-policy-property`, opts);
+    return this._request('put', `${userId}/update-policy-property/${encodeURIComponent(tokenId)}`, opts);
   }
 
   /**
    * @param {Object} userId - user id
+   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
    * @param {array} data - request data
    * @param {Object} options - request options
    * @return {Promise}
    */
-  removePolicyProperty(userId: string, data: any, options?: RequestOptionsIn) {
+  removePolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
-    return this._request('put', `${userId}/remove-policy-property`, opts);
+    return this._request('put', `${userId}/remove-policy-property/${encodeURIComponent(tokenId)}`, opts);
   }
 
   /**
    * @param {Object} userId - user id
+   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
    * @param {Object} options - request options
    * @return {Promise}
    */
-  clearPolicyProperty(userId: string, options?: RequestOptionsIn) {
+  clearPolicyProperty(userId: string, tokenId: string, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
-    return this._request('put', `${userId}/clear-policy-property`, opts);
+    return this._request('put', `${userId}/clear-policy-property/${encodeURIComponent(tokenId)}`, opts);
   }
 }

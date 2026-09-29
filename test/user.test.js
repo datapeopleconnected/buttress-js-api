@@ -33,59 +33,60 @@ Config.init();
 //   ]).then(() => done());
 // });
 
-const USERS = [{
-  app: 'google',
-  appId: '12345678987654321',
-  name: 'Chris Bates-Keegan',
-  token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
-  email: 'test@test.com',
-  profileUrl: 'http://test.com/thisisatest',
-  profileImgUrl: 'http://test.com/thisisatest.png',
-}, {
-  app: 'google',
-  appId: '98765432109876543210',
-  name: 'Chris Bates-Keegan',
-  token: 'testisathistestisathistestisathistestisathistestisathis',
-  email: 'test@test.com',
-  profileUrl: 'http://test.com/thisisatest',
-  profileImgUrl: 'http://test.com/thisisatest.png',
-}];
+const USERS = [
+  {
+    app: 'google',
+    appId: '12345678987654321',
+    name: 'Chris Bates-Keegan',
+    token: 'thisisatestthisisatestthisisatestthisisatestthisisatest',
+    email: 'test@test.com',
+    profileUrl: 'http://test.com/thisisatest',
+    profileImgUrl: 'http://test.com/thisisatest.png',
+  },
+  {
+    app: 'google',
+    appId: '98765432109876543210',
+    name: 'Chris Bates-Keegan',
+    token: 'testisathistestisathistestisathistestisathistestisathis',
+    email: 'test@test.com',
+    profileUrl: 'http://test.com/thisisatest',
+    profileImgUrl: 'http://test.com/thisisatest.png',
+  },
+];
 
-describe('@users', function() {
-  before(async function() {
+describe('@users', function () {
+  before(async function () {
     Config.configureTest();
     await Buttress.User.removeAll();
     await Buttress.Token.removeAllUserTokens();
   });
 
-  after(function(done) {
+  after(function (done) {
     Config.configureTest();
     done();
   });
 
-  describe('User Basics', function() {
+  describe('User Basics', function () {
     const _users = [null, null];
     let _userId = false;
 
-    it('should return no users', function(done) {
-      Buttress.User
-        .getAll()
-        .then(function(users) {
+    it('should return no users', function (done) {
+      Buttress.User.getAll()
+        .then(function (users) {
           users.length.should.equal(0);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it('should create a user', function(done) {
-      Buttress.Auth
-        .findOrCreateUser(USERS[0], {
-          domains: [Buttress.options.url.host],
-          policyProperties: {}
-        })
-        .then(function(user) {
+    it('should create a user', function (done) {
+      Buttress.Auth.findOrCreateUser(USERS[0], {
+        domains: [Config.endpoint],
+        policyProperties: {},
+      })
+        .then(function (user) {
           user.should.not.equal(false);
           user.auth.length.should.equal(1);
           user.auth[0].appId.should.equal('12345678987654321');
@@ -96,30 +97,28 @@ describe('@users', function() {
           _users[0] = user;
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it('should return 1 user', function(done) {
-      Buttress.User
-        .getAll()
-        .then(function(users) {
+    it('should return 1 user', function (done) {
+      Buttress.User.getAll()
+        .then(function (users) {
           users.should.have.length(1);
           _userId = users[0].id;
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it('should find an existing user', function(done) {
-      Buttress.Auth
-        .findOrCreateUser(USERS[0], {
-          domains: [Buttress.options.url.host],
-        })
-        .then(function(user) {
+    it('should find an existing user', function (done) {
+      Buttress.Auth.findOrCreateUser(USERS[0], {
+        domains: [Config.endpoint],
+      })
+        .then(function (user) {
           user.should.not.equal(false);
           user.id.should.equal(_userId);
           user.auth.length.should.equal(1);
@@ -129,54 +128,51 @@ describe('@users', function() {
 
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it('should create a user token', function(done) {
+    it('should create a user token', function (done) {
       const user = _users[0];
 
-      Buttress.Auth
-        .createToken(user.id, {
-          domains: [Buttress.options.url.host],
-          policyProperties: {}
-        })
-        .then(function(token) {
+      Buttress.Auth.createToken(user.id, {
+        domains: [Config.endpoint],
+        policyProperties: {},
+      })
+        .then(function (token) {
           token.should.not.equal(false);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it('should have multiple tokens', function(done) {
+    it('should have multiple tokens', function (done) {
       const userData = USERS[0];
 
-      Buttress.User
-        .findUser(userData.app, userData.appId)
+      Buttress.User.findUser(userData.app, userData.appId)
         .then((u) => {
           u.tokens.should.have.length(2);
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });
 
-    it('should remove a user', function(done) {
+    it('should remove a user', function (done) {
       if (!_users[0]) {
         return done(new Error('No User!'));
       }
-      Buttress.User
-        .remove(_users[0].id)
-        .then(function(res) {
+      Buttress.User.remove(_users[0].id)
+        .then(function (res) {
           res.should.equal(true);
           _users[0] = null;
           done();
         })
-        .catch(function(err) {
+        .catch(function (err) {
           done(err);
         });
     });

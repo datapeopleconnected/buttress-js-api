@@ -4,7 +4,7 @@ script_path=$(dirname "$0")
 
 license_file="$script_path/licencing_header.txt"
 LICENSE_HEADER=$(cat "$license_file")
-excluded_extensions=("html" "json")
+excluded_extensions=("html" "json" "md" "sh")
 
 has_errors_file="/tmp/bjs-lc-errors"
 echo "false" > "$has_errors_file"
@@ -25,10 +25,13 @@ check_license() {
   return 0
 }
 
+excluded_files=("licence-check" "licencing_header.txt")
+
 check_dir() {
   find "$1" -type f | while read -r file; do
     ext="${file##*.}"
-    if [[ ! " ${excluded_extensions[*]} " =~ " $ext " ]]; then
+    base="${file##*/}"
+    if [[ ! " ${excluded_extensions[*]} " =~ " $ext " ]] && [[ ! " ${excluded_files[*]} " =~ " $base " ]]; then
       check_license "$file"
       if [[ $? -ne 0 ]]; then
         echo "true" > "$has_errors_file"
@@ -38,6 +41,7 @@ check_dir() {
 }
 
 check_dir "src"
+check_dir "scripts"
 check_dir "test"
 
 has_errors=$(<"$has_errors_file")
@@ -46,7 +50,7 @@ rm "$has_errors_file"
 if [[ "$has_errors" == "true" ]]; then
   echo -e "Licensing Check: \033[31mFailed\033[0m"
   echo "The above files are missing or have the incorrect license header."
-  echo "The license header can be found in the file ./.husky/licensing_header.txt"
+  echo "The license header can be found in the file ./scripts/licencing_header.txt"
   exit 1
 fi
 

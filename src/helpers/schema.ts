@@ -13,26 +13,31 @@
  * You should have received a copy of the GNU Affero General Public Licence along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
+import type {Readable} from 'stream';
+
 import Sugar from 'sugar';
 
-import Helpers, { RequestOptions, RequestOptionsIn } from './';
+import Helpers, {RequestOptions, RequestOptionsIn} from './';
 
 import ModelSchema from '../model/Schema';
 import ButtressOptionsInternal from '../types/ButtressOptionsInternal';
+import {BulkUpdateItem, BulkUpdateResult, Entity, UpdateOperation, UpdateResult} from '../types/Entity';
+import {Query, Sort} from '../types/Query';
 
 import fetch from 'cross-fetch';
 import APIResponse from '../types/Response';
 
 // Used by buttress internally
-declare var lambda: any;
+declare const lambda: any;
 
 /**
  * @class BaseSchema
+ * @template T - the collection's entities
+ * @template BulkSaveResult - what bulkSave resolves to: the added entities, but `true` for a core collection
  */
-export default class BaseSchema {
-
+export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]> {
   collection: string;
-  
+
   core: boolean = false;
 
   protected _ButtressOptions: ButtressOptionsInternal;
@@ -73,7 +78,7 @@ export default class BaseSchema {
    * @return {string} url
    */
   getEndpoint() {
-    const endpoint = (this.core) ? this._ButtressOptions.urls?.core : this._ButtressOptions.urls?.app;
+    const endpoint = this.core ? this._ButtressOptions.urls?.core : this._ButtressOptions.urls?.app;
     return endpoint || '';
   }
 
@@ -147,17 +152,26 @@ export default class BaseSchema {
     }
 
     if (options.params) {
-      const params = Object.keys(options.params).map((key) => {
-        return `${key}=${options.params[key]}`;
-      }).join('&');
+      const params = Object.keys(options.params)
+        .map((key) => {
+          return `${encodeURIComponent(key)}=${encodeURIComponent(options.params[key])}`;
+        })
+        .join('&');
 
-      url = (params !== '') ? `${url}?${params}` : url;
+      url = params !== '' ? `${url}?${params}` : url;
     }
 
     if (options.token) {
       options.headers = {
         ...options.headers,
-        'Authorization': `Bearer ${options.token}`,
+        Authorization: `Bearer ${options.token}`,
+      };
+    }
+
+    if (this._ButtressOptions.clientSessionId && !options.headers['x-client-session-id']) {
+      options.headers = {
+        ...options.headers,
+        'x-client-session-id': this._ButtressOptions.clientSessionId,
       };
     }
 
@@ -175,10 +189,10 @@ export default class BaseSchema {
 
     if (options.body && typeof options.body !== 'string') {
       options.body = JSON.stringify(options.body);
+      // Content-Length is left for fetch to work out from the bytes, the string length is wrong for non-ASCII bodies
       options.headers = {
         ...options.headers,
         'Content-Type': 'application/json',
-        'Content-Length': options.body.length,
       };
     }
 
@@ -203,7 +217,7 @@ export default class BaseSchema {
 
       if (!response.ok) {
         response.data = response.body;
-        throw new Helpers.Errors.ResponseError(response);
+        throw new Helpers.Errors.ResponseError(response, response.body);
       }
 
       return response.body;
@@ -220,12 +234,13 @@ export default class BaseSchema {
       }
 
       if (!response.ok) {
+        let body;
         try {
-          const body = await response.json();
-          throw new Helpers.Errors.ResponseError({...response, body});
+          body = await response.json();
         } catch {
-          throw new Helpers.Errors.ResponseError(response);
+          // The error body isn't JSON, fall back to the status text
         }
+        throw new Helpers.Errors.ResponseError(response, body);
       }
 
       if (options.stream === true) {
@@ -253,40 +268,39 @@ export default class BaseSchema {
     } catch (err: any) {
       let error = err;
 
-      if (err.response) {
-        error = new Helpers.Errors.ResponseError(err.response);
-      } else if (err.request) {
+      // fetch rejects with a coded error (ECONNREFUSED, ECONNRESET...) when the request never got a response
+      if (!(err instanceof Helpers.Errors.ResponseError) && err.code) {
         error = new Helpers.Errors.RequestError(err, err.code);
       }
 
       // Handle error type and retry if necessary
-      if (error instanceof Helpers.Errors.RequestError &&
+      if (
+        error instanceof Helpers.Errors.RequestError &&
         Boolean(error.code) &&
         error.code !== 'ECONNABORTED' &&
         BaseSchema.Constants.RETRY_METHODS.includes(type)
       ) {
         if (attempt >= BaseSchema.Constants.MAX_RETRIES) throw error;
 
-        return Helpers.backOff(attempt)
-          .then(() => this._request(type, path, options, attempt));
+        return Helpers.backOff(attempt).then(() => this._request(type, path, options, attempt));
       }
 
       throw error;
-    };
+    }
   }
 
   /**
    * Redirects post http requests to https
    * @param {object} response
    * @param {object} url
-   * @returns {promise}
+   * @return {promise}
    */
   _postRedirect(response: APIResponse, url: string) {
     const originalURL = url.match(this.__protocolRegex);
     const redirectedURL = response.url.match(this.__protocolRegex);
 
-    const originalProtocol = (originalURL !== null) ? originalURL.pop() : null;
-    const redirectedProtocol = (redirectedURL !== null) ? redirectedURL.pop() : null;
+    const originalProtocol = originalURL !== null ? originalURL.pop() : null;
+    const redirectedProtocol = redirectedURL !== null ? redirectedURL.pop() : null;
 
     const replacedOriginalURL = url.replace(this.__protocolRegex, '');
     const replacedRedirectedURL = response.url.replace(this.__protocolRegex, '');
@@ -299,7 +313,7 @@ export default class BaseSchema {
    * @param {object} options
    * @return {promise}
    */
-  get(id: string, options: RequestOptionsIn = {}) {
+  get(id: string, options: RequestOptionsIn = {}): Promise<T> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     return this._request('get', id, opts);
   }
@@ -309,30 +323,36 @@ export default class BaseSchema {
    * @param {object} options
    * @return {promise}
    */
-  save(details: any, options: RequestOptionsIn = {}) {
+  save(details: Partial<T>, options: RequestOptionsIn = {}): Promise<T> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
 
-    return this._request('post', '', opts)
-      .then((data) => {
-        if (Array.isArray(data)) return data.slice(0, 1).shift();
-        return data;
-      });
+    return this._request('post', '', opts).then((data) => {
+      if (Array.isArray(data)) return data.slice(0, 1).shift();
+      return data;
+    });
   }
 
   /**
    * @param {string} id
-   * @param {object} details
-   * @param {object} options
+   * @param {object|array} details - one or more {path, value} updates
+   * @param {object} options - pass sourceId to update an entity held in a remote datastore
    * @return {promise}
    */
-  update(id: string, details: any, options: RequestOptionsIn = {}) {
+  update(
+    id: string,
+    details: UpdateOperation | UpdateOperation[],
+    options: RequestOptionsIn = {},
+  ): Promise<UpdateResult[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) opts.data = details;
+    // Buttress before 29 September 2026 only took an array of updates on its core collections (user, policy...)
+    if (details) opts.data = Array.isArray(details) ? details : [details];
 
-    return this._request('put', id, opts);
+    const path = options.sourceId ? `${options.sourceId}/${id}` : id;
+
+    return this._request('put', path, opts);
   }
 
   /**
@@ -340,30 +360,52 @@ export default class BaseSchema {
    * @param {object} options
    * @return {promise}
    */
-  remove(id: string, options: RequestOptionsIn = {}) {
+  remove(id: string, options: RequestOptionsIn = {}): Promise<boolean> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     return this._request('delete', id, opts);
   }
 
+  getAll(options: RequestOptionsIn & {stream: true}): Promise<Readable>;
+  getAll(options?: RequestOptionsIn): Promise<T[]>;
   /**
-   * @param {object} options
+   * @param {object} options - pass stream: true to get the response body as a stream
    * @return {promise}
    */
-  getAll(options: RequestOptionsIn = {}) {
+  getAll(options: RequestOptionsIn = {}): Promise<T[] | Readable> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     return this._request('get', '', opts);
   }
 
+  search(
+    query: Query<T>,
+    limit: number | undefined,
+    skip: number | undefined,
+    sort: Sort | null | 0 | undefined,
+    options: RequestOptionsIn & {stream: true},
+  ): Promise<Readable>;
+  search(
+    query: Query<T>,
+    limit?: number,
+    skip?: number,
+    sort?: Sort | null | 0,
+    options?: RequestOptionsIn,
+  ): Promise<T[]>;
   /**
-   * @param {object} query
+   * @param {object} query - operators need the $ prefix, e.g. {kudos: {$gt: 5}}
    * @param {int} limit
    * @param {int} skip
-   * @param {object} sort
-   * @param {object} options
+   * @param {object} sort - e.g. {name: 1}, 0 and null mean no sort
+   * @param {object} options - pass stream: true to get the response body as a stream
    * @return {promise}
    */
-  search(query: any, limit=0, skip=0, sort=0, options: RequestOptionsIn = {}) {
+  search(
+    query: Query<T>,
+    limit = 0,
+    skip = 0,
+    sort: Sort | null | 0 = 0,
+    options: RequestOptionsIn = {},
+  ): Promise<T[] | Readable> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     opts.data = {
       query,
@@ -380,24 +422,29 @@ export default class BaseSchema {
   }
 
   /**
-   * @param {object} details
+   * Removes every entity in the collection, use bulkRemove to remove a set of ids
+   * @param {null} details - no longer supported, buttress ignores it and removes everything
    * @param {object} options
    * @return {promise}
    */
-  removeAll(details: any, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
+  removeAll(details: null = null, options: RequestOptionsIn = {}): Promise<boolean> {
+    if (details !== null && details !== undefined) {
+      throw new Error(
+        `removeAll removes every ${this.collection} and doesn't accept a filter, use bulkRemove(ids) instead`,
+      );
+    }
 
-    if (details) opts.data = details;
+    const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     return this._request('delete', '', opts);
   }
 
   /**
-   * @param {object} details
+   * @param {string[]} details - ids of the entities to fetch
    * @param {object} options
    * @return {promise}
    */
-  bulkGet(details: any, options: RequestOptionsIn = {}) {
+  bulkGet(details: string[], options: RequestOptionsIn = {}): Promise<T[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) {
@@ -410,11 +457,11 @@ export default class BaseSchema {
   }
 
   /**
-   * @param {object} details
+   * @param {object[]} details - the entities to add
    * @param {object} options
-   * @return {promise}
+   * @return {promise} - the added entities, or `true` for a core collection such as SecureStore
    */
-  bulkSave(details: any, options: RequestOptionsIn = {}) {
+  bulkSave(details: Partial<T>[], options: RequestOptionsIn = {}): Promise<BulkSaveResult> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -423,24 +470,26 @@ export default class BaseSchema {
   }
 
   /**
-   * @param {object} details
+   * @param {object[]} details - {id, sourceId?, body} per entity, where body is one or more {path, value} updates
    * @param {object} options
-   * @return {promise}
+   * @return {promise} - an item per update, refused ones have null results and a validation reason
    */
-  bulkUpdate(details: any, options: RequestOptionsIn = {}) {
+  bulkUpdate(details: BulkUpdateItem[], options: RequestOptionsIn = {}): Promise<BulkUpdateResult[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) opts.data = details;
+    // Sent as an array of updates, as update does
+    if (details)
+      opts.data = details.map((item) => ({...item, body: Array.isArray(item.body) ? item.body : [item.body]}));
 
     return this._request('post', 'bulk/update', opts);
   }
 
   /**
-   * @param {object} details
+   * @param {string[]} details - ids of the entities to remove
    * @param {object} options
    * @return {promise}
    */
-  bulkRemove(details: any, options: RequestOptionsIn = {}) {
+  bulkRemove(details: string[], options: RequestOptionsIn = {}): Promise<boolean> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -449,18 +498,23 @@ export default class BaseSchema {
   }
 
   /**
-  * @param {object} query
-  * @param {object} sort
-  * @param {object} options
+   * @param {object} [query] - operators need the $ prefix, e.g. {kudos: {$gt: 5}}. Counts everything when left out.
+   * @param {object} [sort] - Buttress doesn't use it for a count
+   * @param {object} options - pass actualCount to sum a count per matching policy instead of one count of the combined query
    * @return {promise}
    */
-  count(query: any, sort: any, options: RequestOptionsIn = {}) {
+  count(query?: Query<T>, sort?: Sort | null | 0, options: RequestOptionsIn = {}): Promise<number> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
+    // Always send a query, buttress treats a body without one as the query itself
     opts.data = {
-      query,
+      query: query ?? {},
       sort,
     };
+
+    if (options.actualCount) {
+      opts.data.actualCount = true;
+    }
 
     return this._request('search', 'count', opts);
   }

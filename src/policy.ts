@@ -14,39 +14,40 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Helpers, { RequestOptionsIn } from './helpers';
+import Helpers, {RequestOptionsIn} from './helpers';
 import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
+import {Policy as PolicyModel} from './types/Policy';
 
 /**
-* @class Policy
-*/
+ * @class Policy
+ */
 export default class Policy extends BaseSchema {
   /**
-  * Instance of Policy
-  * @param {object} ButtressOptions
-  */
+   * Instance of Policy
+   * @param {object} ButtressOptions
+   */
   constructor(ButtressOptions: ButtressOptionsInternal) {
     super('policy', ButtressOptions, true);
   }
 
   /**
-  * Add a new policy to the database
-  * @param {Object} policy
-  * @return {Promise}
-  */
-  createPolicy(policy: any) {
+   * Add a new policy to the database
+   * @param {Object} policy - needs a version, Buttress refuses one without
+   * @return {Promise}
+   */
+  createPolicy(policy: PolicyModel) {
     return this.save(policy);
-  };
+  }
 
   /**
-  * Retrieve all policies linked to the auth app
-  * @return {Promise}
-  */
+   * Retrieve all policies linked to the auth app
+   * @return {Promise}
+   */
   getAllPolicies() {
     return this.getAll();
-  };
+  }
 
   /**
    * Retrieve policy by name
@@ -66,9 +67,9 @@ export default class Policy extends BaseSchema {
    * @param {object} options
    * @return {Promise}
    */
-  syncAppPolicy(policies: any[], options?: RequestOptionsIn) {
+  syncAppPolicy(policies: PolicyModel[], options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (policies) opts.data = policies;
     return this._request('post', 'sync', opts);
-  };
+  }
 }

@@ -14,17 +14,19 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import Helpers, { RequestOptionsIn } from './helpers';
+import Helpers, {RequestOptionsIn} from './helpers';
 import BaseSchema from './helpers/schema';
 
 import SecureStoreModel from './model/SecureStore';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
+import {Entity} from './types/Entity';
 
 /**
  * @class SecureStore
  */
-export default class SecureStore extends BaseSchema {
+// Buttress answers a bulk add of secure stores with `true`, not the stores
+export default class SecureStore extends BaseSchema<SecureStoreModel & Entity, true> {
   /**
    * Instance of SecureStore
    * @param {object} ButtressOptions
@@ -33,24 +35,30 @@ export default class SecureStore extends BaseSchema {
     super('secure-store', ButtressOptions, true);
   }
 
+  /**
+   * @param {SecureStoreModel} secureStore
+   * @return {object} - getValue and setValue for the store
+   */
   _secureStoreInterface(secureStore: SecureStoreModel) {
     return {
-      'getValue': (key: string) => {
+      getValue: (key: string) => {
         const output = secureStore.storeData[key];
         if (!output) {
           throw new Error(`${key} does not exist on the secure store ${secureStore.name}`);
         }
-  
+
         return output;
       },
-      'setValue': (key: string, value: any) => {
-        return this.update(secureStore.id, [{
-          path: `storeData.${key}`,
-          value: value,
-        }]);
-      }
+      setValue: (key: string, value: any) => {
+        return this.update(secureStore.id, [
+          {
+            path: `storeData.${key}`,
+            value: value,
+          },
+        ]);
+      },
     };
-  };
+  }
 
   /**
    * Add a new secure store to the database
@@ -59,8 +67,8 @@ export default class SecureStore extends BaseSchema {
    */
   async createSecureStore(details: any) {
     const store = await this.save(details);
-    return this._secureStoreInterface(store)
-  };
+    return this._secureStoreInterface(store);
+  }
 
   /**
    * Add a new secure store to the database
