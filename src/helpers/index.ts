@@ -19,6 +19,7 @@ import {randomUUID} from 'node:crypto';
 import ObjectId from 'bson-objectid';
 
 import SchemaModel, {Property, Properties} from '../model/Schema';
+import {Projection} from '../types/Query';
 
 export interface RequestOptions {
   method: string;
@@ -42,7 +43,7 @@ export interface RequestOptionsIn {
     [key: string]: any;
   };
   token?: string;
-  project?: string;
+  project?: Projection;
   data?: any;
   stream?: boolean;
   combineResults?: boolean;

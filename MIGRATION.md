@@ -10,6 +10,7 @@
 - [ ] Check any code that reads `err.message` from a failed request ([details](#error-messages-come-from-the-server))
 - [ ] Read `user.tokens[0].policyProperties` instead of `user.policyProperties` after `findOrCreateUser` ([details](#findorcreateuser))
 - [ ] Send tokens only in the `Authorization` header, and connect sockets with `auth: {token}` ([details](#tokens-are-only-read-from-the-authorization-header))
+- [ ] TypeScript only: write query operators with a `$`, and pass `update` a `{path, value}` update ([details](#types))
 
 The rest of this guide is behaviour changes that need no code changes, and new options.
 
@@ -186,6 +187,34 @@ When a request matches more than one policy, Buttress normally counts the combin
 
 - `ButtressOptions` is defined once, in `types/ButtressOptions`, and still exported from the package root (`import {ButtressOptions} from '@buttress/api'`). It now includes `useLocalSchema` and `clientSessionId`. It's exported as a type only, which makes no difference for an interface.
 - `RequestOptionsIn` gains `sourceId` and `actualCount`.
+- The collection methods are typed instead of returning `any`. Nothing changes at runtime, but these calls no longer compile:
+
+  | Call              | Before                                   | After                                            |
+  | ----------------- | ---------------------------------------- | ------------------------------------------------ |
+  | `search`, `count` | `{kudos: {gt: 5}}`, `{status: 'active'}` | `{kudos: {$gt: 5}}`, `{status: {$eq: 'active'}}` |
+  | `update`          | `update(id, {kudos: 1})`                 | `update(id, {path: 'kudos', value: 1})`          |
+  | `search` options  | `{project: 'content'}`                   | `{project: {content: 1}}`                        |
+  | `search` sort     | any number                               | `{name: 1}`, or `0` or `null` for none           |
+
+  Queries only accept the operators crag can also run in the browser: `$eq`, `$not`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$exists`, `$rex`, `$rexi`, `$inProp`, `$elMatch`, `$gtDate`, `$gteDate`, `$ltDate` and `$lteDate`, combined with `$and` and `$or`. Buttress itself accepts more, such as `gt` without the `$`, but crag would match nothing with those.
+
+- `get`, `save`, `getAll`, `search` and `bulkGet` resolve to `Entity` (an `id` plus any other property) by default, `count` to a number, and `remove`, `removeAll` and `bulkRemove` to `true`. `getAll` and `search` resolve to a Node `Readable` when you pass `stream: true`.
+- To type a collection's entities, and have queries check property names and values, pass your own type:
+
+  ```ts
+  import Buttress, {BaseSchema} from '@buttress/api';
+
+  interface Post {
+    id: string;
+    content: string;
+    kudos: number;
+  }
+
+  const posts = Buttress.getCollection<BaseSchema<Post>>('post');
+  const popular = await posts.search({kudos: {$gt: 5}}); // Post[]
+  ```
+
+- `BaseSchema`, `Entity`, `Query`, `QueryOperators`, `Sort`, `Projection`, `UpdateOperation`, `UpdateResult`, `BulkUpdateItem` and `BulkUpdateResult` are exported from the package root.
 
 ## Server compatibility
 
