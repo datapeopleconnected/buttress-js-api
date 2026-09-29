@@ -13,3 +13,27 @@
  * You should have received a copy of the GNU Affero General Public Licence along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
+// Policies are written with @-prefixed operators, e.g. {role: {'@eq': 'admin'}}, and can refer to env values.
+export interface PolicyConfig {
+  verbs: string[];
+  schema: string[];
+  endpoints?: string[];
+  env?: Record<string, unknown>;
+  condition?: Record<string, unknown>;
+  projection?: {keys: string[]};
+  query?: Record<string, unknown>;
+}
+
+export interface Policy {
+  id?: string;
+  name: string;
+  // Buttress refuses a policy without one, with invalid_policy_no_version
+  version: string;
+  selection: Record<string, unknown>;
+  config: PolicyConfig[];
+  priority?: number;
+  merge?: boolean;
+  env?: Record<string, unknown>;
+  limit?: string | Date | null;
+}

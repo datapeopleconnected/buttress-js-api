@@ -71,6 +71,7 @@ describe('@policy', function () {
   it('should create a policy', async function () {
     const policy = {
       name: 'admin-access',
+      version: '1',
       selection: {
         policyTests: {
           '@eq': 1,
@@ -94,6 +95,7 @@ describe('@policy', function () {
   it('Should create mutiple policies, api should handle merging results', async function () {
     await Buttress.getCollection('policy').createPolicy({
       name: 'policy-test-2-1',
+      version: '1',
       selection: {policyTests: {'@eq': 2}},
       config: [
         {
@@ -112,6 +114,7 @@ describe('@policy', function () {
     });
     await Buttress.getCollection('policy').createPolicy({
       name: 'policy-test-2-2',
+      version: '1',
       selection: {policyTests: {'@eq': 2}},
       config: [
         {

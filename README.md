@@ -110,9 +110,10 @@ const [token] = user.tokens;
 // Give a user a policy property, scoped to one of their tokens
 await Buttress.User.updatePolicyProperty(user.id, token.value, {role: 'admin'});
 
-// Manage schema-level access policies
+// Manage schema-level access policies. Buttress refuses a policy without a version.
 await Buttress.Policy.createPolicy({
   name: 'admin',
+  version: '1',
   selection: {role: {'@eq': 'admin'}},
   config: [{verbs: ['GET', 'SEARCH'], schema: ['post']}],
 });

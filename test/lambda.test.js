@@ -33,6 +33,7 @@ const authentication = {
 const policies = [
   {
     name: 'admin-lambda',
+    version: '1',
     selection: {
       adminAccess: {
         '@eq': true,
@@ -50,6 +51,7 @@ const policies = [
   },
   {
     name: 'active-org-lambda',
+    version: '1',
     selection: {
       grade: {
         '@eq': 1,

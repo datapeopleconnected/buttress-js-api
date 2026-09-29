@@ -50,6 +50,8 @@ class Config {
     this._initialised = false;
 
     this.endpoint = process.env.BUTTRESS_TEST_API_URL;
+    // The address Buttress reaches itself on, for data shares. Inside Docker that isn't the port the tests use.
+    this.remoteEndpoint = process.env.BUTTRESS_TEST_REMOTE_API_URL || this.endpoint;
     this.token = process.env.BUTTRESS_TEST_SUPER_APP_KEY;
 
     this.token_super = process.env.BUTTRESS_TEST_SUPER_APP_KEY;
@@ -256,7 +258,7 @@ class Config {
         profileImgUrl: 'http://test.com/thisisatest.png',
       },
       {
-        domains: [Buttress.options.url.host],
+        domains: [this.endpoint],
         policyProperties: {},
       },
     );

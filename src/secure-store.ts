@@ -25,7 +25,8 @@ import {Entity} from './types/Entity';
 /**
  * @class SecureStore
  */
-export default class SecureStore extends BaseSchema<SecureStoreModel & Entity> {
+// Buttress answers a bulk add of secure stores with `true`, not the stores
+export default class SecureStore extends BaseSchema<SecureStoreModel & Entity, true> {
   /**
    * Instance of SecureStore
    * @param {object} ButtressOptions

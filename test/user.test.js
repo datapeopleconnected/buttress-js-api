@@ -83,7 +83,7 @@ describe('@users', function () {
 
     it('should create a user', function (done) {
       Buttress.Auth.findOrCreateUser(USERS[0], {
-        domains: [Buttress.options.url.host],
+        domains: [Config.endpoint],
         policyProperties: {},
       })
         .then(function (user) {
@@ -116,7 +116,7 @@ describe('@users', function () {
 
     it('should find an existing user', function (done) {
       Buttress.Auth.findOrCreateUser(USERS[0], {
-        domains: [Buttress.options.url.host],
+        domains: [Config.endpoint],
       })
         .then(function (user) {
           user.should.not.equal(false);
@@ -137,7 +137,7 @@ describe('@users', function () {
       const user = _users[0];
 
       Buttress.Auth.createToken(user.id, {
-        domains: [Buttress.options.url.host],
+        domains: [Config.endpoint],
         policyProperties: {},
       })
         .then(function (token) {

@@ -32,8 +32,10 @@ declare const lambda: any;
 
 /**
  * @class BaseSchema
+ * @template T - the collection's entities
+ * @template BulkSaveResult - what bulkSave resolves to: the added entities, but `true` for a core collection
  */
-export default class BaseSchema<T extends object = Entity> {
+export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]> {
   collection: string;
 
   core: boolean = false;
@@ -345,7 +347,8 @@ export default class BaseSchema<T extends object = Entity> {
   ): Promise<UpdateResult[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) opts.data = details;
+    // Buttress before 29 September 2026 only took an array of updates on its core collections (user, policy...)
+    if (details) opts.data = Array.isArray(details) ? details : [details];
 
     const path = options.sourceId ? `${options.sourceId}/${id}` : id;
 
@@ -456,9 +459,9 @@ export default class BaseSchema<T extends object = Entity> {
   /**
    * @param {object[]} details - the entities to add
    * @param {object} options
-   * @return {promise}
+   * @return {promise} - the added entities, or `true` for a core collection such as SecureStore
    */
-  bulkSave(details: Partial<T>[], options: RequestOptionsIn = {}): Promise<T[]> {
+  bulkSave(details: Partial<T>[], options: RequestOptionsIn = {}): Promise<BulkSaveResult> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -474,7 +477,9 @@ export default class BaseSchema<T extends object = Entity> {
   bulkUpdate(details: BulkUpdateItem[], options: RequestOptionsIn = {}): Promise<BulkUpdateResult[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
-    if (details) opts.data = details;
+    // Sent as an array of updates, as update does
+    if (details)
+      opts.data = details.map((item) => ({...item, body: Array.isArray(item.body) ? item.body : [item.body]}));
 
     return this._request('post', 'bulk/update', opts);
   }
