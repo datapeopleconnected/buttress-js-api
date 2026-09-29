@@ -31,6 +31,7 @@ jobs:
       - run: npm run lint
       - run: npm run format:check
       - run: npm run licence-check
+      - run: npm run test:types
       - run: npm run test:unit
 
   # The end-to-end tests (`npm run test:e2e`) aren't run here yet: several suites fail against the current

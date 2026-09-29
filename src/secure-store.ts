@@ -20,11 +20,12 @@ import BaseSchema from './helpers/schema';
 import SecureStoreModel from './model/SecureStore';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
+import {Entity} from './types/Entity';
 
 /**
  * @class SecureStore
  */
-export default class SecureStore extends BaseSchema {
+export default class SecureStore extends BaseSchema<SecureStoreModel & Entity> {
   /**
    * Instance of SecureStore
    * @param {object} ButtressOptions

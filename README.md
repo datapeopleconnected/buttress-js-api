@@ -1,8 +1,8 @@
 # @buttress/api
 
 The official Node.js / TypeScript client for [Buttress](https://github.com/datapeopleconnected/buttress), the
-federated real-time open data platform. It wraps Buttress's REST API behind a small set of collection modules, so you
-can authenticate and read and write schema-defined data without hand-rolling HTTP requests.
+federated real-time open data platform. It wraps Buttress's REST API behind a small set of collection
+modules, so you can authenticate, and read and write schema-defined data, without hand-rolling HTTP requests.
 
 ## Contents
 
@@ -27,9 +27,12 @@ Requires Node.js 22 or later.
 ```ts
 import Buttress from '@buttress/api';
 
+const appToken = process.env.BUTTRESS_APP_TOKEN;
+if (!appToken) throw new Error('BUTTRESS_APP_TOKEN is not set');
+
 await Buttress.init({
   buttressUrl: 'https://your-buttress-instance.com',
-  appToken: process.env.BUTTRESS_APP_TOKEN!,
+  appToken,
   apiPath: 'my-app',
   version: 1,
 });
@@ -72,7 +75,7 @@ await posts.save({title: '...'}); // create, rejected as a duplicate if given an
 await posts.update(id, {path: 'title', value: '...'}); // update by path, see below
 await posts.remove(id); // delete one
 await posts.removeAll(); // delete every entity in the collection
-await posts.count(query, null); // count matching a filter
+await posts.count(query); // count matching a filter
 await posts.search(query); // query with a filter
 ```
 
@@ -100,7 +103,7 @@ On an array property, paths work like this:
 Named modules add their own methods on top of this, for example:
 
 ```ts
-// Find or create a user by the service they signed in with, making sure they have a token
+// Find or create a user from a third-party login; the user comes back with their tokens
 const user = await Buttress.Auth.findOrCreateUser({app: 'google', appId: googleUserId}, {domains, policyProperties});
 const [token] = user.tokens;
 
@@ -108,7 +111,11 @@ const [token] = user.tokens;
 await Buttress.User.updatePolicyProperty(user.id, token.value, {role: 'admin'});
 
 // Manage schema-level access policies
-await Buttress.Policy.createPolicy({name: 'admin', selection: {...}});
+await Buttress.Policy.createPolicy({
+  name: 'admin',
+  selection: {role: {'@eq': 'admin'}},
+  config: [{verbs: ['GET', 'SEARCH'], schema: ['post']}],
+});
 ```
 
 If you're upgrading from an older version of this client, see [MIGRATION.md](MIGRATION.md) for breaking changes.

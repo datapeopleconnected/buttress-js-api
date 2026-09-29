@@ -10,6 +10,8 @@
 - [ ] Check any code that reads `err.message` from a failed request ([details](#error-messages-come-from-the-server))
 - [ ] Read `user.tokens[0].policyProperties` instead of `user.policyProperties` after `findOrCreateUser` ([details](#findorcreateuser))
 - [ ] Send tokens only in the `Authorization` header, and connect sockets with `auth: {token}` ([details](#tokens-are-only-read-from-the-authorization-header))
+- [ ] Stop assigning to the core modules (`Buttress.User = ...`), and drop `?.` or `!` when using them ([details](#core-modules-are-read-only-and-throw-before-init))
+- [ ] TypeScript only: write query operators with a `$`, and pass `update` a `{path, value}` update ([details](#types))
 
 The rest of this guide is behaviour changes that need no code changes, and new options.
 
@@ -135,6 +137,24 @@ await Buttress.getCollection('post').getAll({token});
 io.connect(url, {auth: {token}});
 ```
 
+### Core modules are read-only and throw before `init()`
+
+`Buttress.App`, `Auth`, `Lambda`, `LambdaExecution`, `Policy`, `Token`, `User`, `SecureStore` and `AppDataSharing` are now getters. They return the same instances as `getCollection` (`Buttress.User === Buttress.getCollection('user')`), and are typed as always present, so strict TypeScript no longer needs `?.` or `!` to use them.
+
+Using one before `init()`, or after `clean()`, throws `Errors.NotYetInitiated` instead of returning `undefined`. The transient policy helpers throw the same error instead of a plain `Error`.
+
+The getters have no setters, so assigning to them (for example to stub a module in a test) throws a `TypeError`. Stub the module's methods instead, or its class prototype.
+
+```js
+// No longer works
+Buttress.User = fakeUser;
+if (Buttress.User) { ... }
+
+// Use
+Buttress.User.findUser = async () => user;
+if (Buttress.initialised) { ... }
+```
+
 ## Behaviour changes that need no code changes
 
 | Change                                                                                 | What you'll notice                                                                                                                                                                                                                                                                                                                                              |
@@ -147,7 +167,6 @@ io.connect(url, {auth: {token}});
 | Network errors are retried                                                             | `GET`, `HEAD` and `OPTIONS` requests that fail without a response (`ECONNREFUSED`, `ECONNRESET`, …) retry up to 10 times with exponential back-off. This retry code already existed but never ran. **If the server is unreachable, a GET now takes about 3½ minutes to fail instead of failing straight away**, and that includes the schema fetch in `init()`. |
 | `combineResults: false` is respected                                                   | The default is still `true`. Before, passing `false` was ignored.                                                                                                                                                                                                                                                                                               |
 | A failed `init()` can be retried                                                       | If fetching the schema fails, the instance is reset with `clean()` and the error is rethrown. Before, the instance stayed marked as initialised with no schema, and calling `init()` again did nothing.                                                                                                                                                         |
-| `clean()` clears the core module properties                                            | After `clean()`, `Buttress.App`, `Buttress.User` and the other core modules are `undefined` until the next `init()`.                                                                                                                                                                                                                                            |
 
 ## New options
 
@@ -186,6 +205,35 @@ When a request matches more than one policy, Buttress normally counts the combin
 
 - `ButtressOptions` is defined once, in `types/ButtressOptions`, and still exported from the package root (`import {ButtressOptions} from '@buttress/api'`). It now includes `useLocalSchema` and `clientSessionId`. It's exported as a type only, which makes no difference for an interface.
 - `RequestOptionsIn` gains `sourceId` and `actualCount`.
+- `count`'s `query` and `sort` are optional. With no `query` it counts everything. Buttress ignores `sort`.
+- The collection methods are typed instead of returning `any`. Nothing changes at runtime, but these calls no longer compile:
+
+  | Call              | Before                                   | After                                            |
+  | ----------------- | ---------------------------------------- | ------------------------------------------------ |
+  | `search`, `count` | `{kudos: {gt: 5}}`, `{status: 'active'}` | `{kudos: {$gt: 5}}`, `{status: {$eq: 'active'}}` |
+  | `update`          | `update(id, {kudos: 1})`                 | `update(id, {path: 'kudos', value: 1})`          |
+  | `search` options  | `{project: 'content'}`                   | `{project: {content: 1}}`                        |
+  | `search` sort     | any number                               | `{name: 1}`, or `0` or `null` for none           |
+
+  Queries only accept the operators crag can also run in the browser: `$eq`, `$not`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$exists`, `$rex`, `$rexi`, `$inProp`, `$elMatch`, `$gtDate`, `$gteDate`, `$ltDate` and `$lteDate`, combined with `$and` and `$or`. Buttress itself accepts more, such as `gt` without the `$`, but crag would match nothing with those.
+
+- `get`, `save`, `getAll`, `search` and `bulkGet` resolve to `Entity` (an `id` plus any other property) by default, `count` to a number, and `remove`, `removeAll` and `bulkRemove` to `true`. `getAll` and `search` resolve to a Node `Readable` when you pass `stream: true`.
+- To type a collection's entities, and have queries check property names and values, pass your own type:
+
+  ```ts
+  import Buttress, {BaseSchema} from '@buttress/api';
+
+  interface Post {
+    id: string;
+    content: string;
+    kudos: number;
+  }
+
+  const posts = Buttress.getCollection<BaseSchema<Post>>('post');
+  const popular = await posts.search({kudos: {$gt: 5}}); // Post[]
+  ```
+
+- `BaseSchema`, `Entity`, `Query`, `QueryOperators`, `Sort`, `Projection`, `UpdateOperation`, `UpdateResult`, `BulkUpdateItem` and `BulkUpdateResult` are exported from the package root.
 
 ## Server compatibility
 

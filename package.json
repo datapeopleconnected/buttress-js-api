@@ -30,6 +30,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "licence-check": "./scripts/licence-check",
+    "test:types": "tsc -p test/types",
     "test:unit": "NODE_ENV=test mocha --recursive --parallel test/unit/**/*",
     "test": "mocha --require should --reporter spec --bail",
     "test:e2e": "npm run build && node ./scripts/e2e.js npm test",

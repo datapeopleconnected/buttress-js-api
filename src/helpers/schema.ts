@@ -13,12 +13,16 @@
  * You should have received a copy of the GNU Affero General Public Licence along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
+import type {Readable} from 'stream';
+
 import Sugar from 'sugar';
 
 import Helpers, {RequestOptions, RequestOptionsIn} from './';
 
 import ModelSchema from '../model/Schema';
 import ButtressOptionsInternal from '../types/ButtressOptionsInternal';
+import {BulkUpdateItem, BulkUpdateResult, Entity, UpdateOperation, UpdateResult} from '../types/Entity';
+import {Query, Sort} from '../types/Query';
 
 import fetch from 'cross-fetch';
 import APIResponse from '../types/Response';
@@ -29,7 +33,7 @@ declare const lambda: any;
 /**
  * @class BaseSchema
  */
-export default class BaseSchema {
+export default class BaseSchema<T extends object = Entity> {
   collection: string;
 
   core: boolean = false;
@@ -307,7 +311,7 @@ export default class BaseSchema {
    * @param {object} options
    * @return {promise}
    */
-  get(id: string, options: RequestOptionsIn = {}) {
+  get(id: string, options: RequestOptionsIn = {}): Promise<T> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     return this._request('get', id, opts);
   }
@@ -317,7 +321,7 @@ export default class BaseSchema {
    * @param {object} options
    * @return {promise}
    */
-  save(details: any, options: RequestOptionsIn = {}) {
+  save(details: Partial<T>, options: RequestOptionsIn = {}): Promise<T> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -330,11 +334,15 @@ export default class BaseSchema {
 
   /**
    * @param {string} id
-   * @param {object} details
+   * @param {object|array} details - one or more {path, value} updates
    * @param {object} options - pass sourceId to update an entity held in a remote datastore
    * @return {promise}
    */
-  update(id: string, details: any, options: RequestOptionsIn = {}) {
+  update(
+    id: string,
+    details: UpdateOperation | UpdateOperation[],
+    options: RequestOptionsIn = {},
+  ): Promise<UpdateResult[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -349,30 +357,52 @@ export default class BaseSchema {
    * @param {object} options
    * @return {promise}
    */
-  remove(id: string, options: RequestOptionsIn = {}) {
+  remove(id: string, options: RequestOptionsIn = {}): Promise<boolean> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     return this._request('delete', id, opts);
   }
 
+  getAll(options: RequestOptionsIn & {stream: true}): Promise<Readable>;
+  getAll(options?: RequestOptionsIn): Promise<T[]>;
   /**
-   * @param {object} options
+   * @param {object} options - pass stream: true to get the response body as a stream
    * @return {promise}
    */
-  getAll(options: RequestOptionsIn = {}) {
+  getAll(options: RequestOptionsIn = {}): Promise<T[] | Readable> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     return this._request('get', '', opts);
   }
 
+  search(
+    query: Query<T>,
+    limit: number | undefined,
+    skip: number | undefined,
+    sort: Sort | null | 0 | undefined,
+    options: RequestOptionsIn & {stream: true},
+  ): Promise<Readable>;
+  search(
+    query: Query<T>,
+    limit?: number,
+    skip?: number,
+    sort?: Sort | null | 0,
+    options?: RequestOptionsIn,
+  ): Promise<T[]>;
   /**
-   * @param {object} query
+   * @param {object} query - operators need the $ prefix, e.g. {kudos: {$gt: 5}}
    * @param {int} limit
    * @param {int} skip
-   * @param {object} sort
-   * @param {object} options
+   * @param {object} sort - e.g. {name: 1}, 0 and null mean no sort
+   * @param {object} options - pass stream: true to get the response body as a stream
    * @return {promise}
    */
-  search(query: any, limit = 0, skip = 0, sort = 0, options: RequestOptionsIn = {}) {
+  search(
+    query: Query<T>,
+    limit = 0,
+    skip = 0,
+    sort: Sort | null | 0 = 0,
+    options: RequestOptionsIn = {},
+  ): Promise<T[] | Readable> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     opts.data = {
       query,
@@ -394,7 +424,7 @@ export default class BaseSchema {
    * @param {object} options
    * @return {promise}
    */
-  removeAll(details: null = null, options: RequestOptionsIn = {}) {
+  removeAll(details: null = null, options: RequestOptionsIn = {}): Promise<boolean> {
     if (details !== null && details !== undefined) {
       throw new Error(
         `removeAll removes every ${this.collection} and doesn't accept a filter, use bulkRemove(ids) instead`,
@@ -407,11 +437,11 @@ export default class BaseSchema {
   }
 
   /**
-   * @param {object} details
+   * @param {string[]} details - ids of the entities to fetch
    * @param {object} options
    * @return {promise}
    */
-  bulkGet(details: any, options: RequestOptionsIn = {}) {
+  bulkGet(details: string[], options: RequestOptionsIn = {}): Promise<T[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) {
@@ -424,11 +454,11 @@ export default class BaseSchema {
   }
 
   /**
-   * @param {object} details
+   * @param {object[]} details - the entities to add
    * @param {object} options
    * @return {promise}
    */
-  bulkSave(details: any, options: RequestOptionsIn = {}) {
+  bulkSave(details: Partial<T>[], options: RequestOptionsIn = {}): Promise<T[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -437,11 +467,11 @@ export default class BaseSchema {
   }
 
   /**
-   * @param {object} details
+   * @param {object[]} details - {id, sourceId?, body} per entity, where body is one or more {path, value} updates
    * @param {object} options
-   * @return {promise}
+   * @return {promise} - an item per update, refused ones have null results and a validation reason
    */
-  bulkUpdate(details: any, options: RequestOptionsIn = {}) {
+  bulkUpdate(details: BulkUpdateItem[], options: RequestOptionsIn = {}): Promise<BulkUpdateResult[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -450,11 +480,11 @@ export default class BaseSchema {
   }
 
   /**
-   * @param {object} details
+   * @param {string[]} details - ids of the entities to remove
    * @param {object} options
    * @return {promise}
    */
-  bulkRemove(details: any, options: RequestOptionsIn = {}) {
+  bulkRemove(details: string[], options: RequestOptionsIn = {}): Promise<boolean> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -463,16 +493,17 @@ export default class BaseSchema {
   }
 
   /**
-   * @param {object} query
-   * @param {object} sort
+   * @param {object} [query] - operators need the $ prefix, e.g. {kudos: {$gt: 5}}. Counts everything when left out.
+   * @param {object} [sort] - Buttress doesn't use it for a count
    * @param {object} options - pass actualCount to sum a count per matching policy instead of one count of the combined query
    * @return {promise}
    */
-  count(query: any, sort: any, options: RequestOptionsIn = {}) {
+  count(query?: Query<T>, sort?: Sort | null | 0, options: RequestOptionsIn = {}): Promise<number> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
+    // Always send a query, buttress treats a body without one as the query itself
     opts.data = {
-      query,
+      query: query ?? {},
       sort,
     };
 
