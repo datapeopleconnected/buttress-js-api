@@ -146,8 +146,8 @@ Development needs Node 24 or later (`nvm use` picks it up from `.nvmrc`).
 | Script                  | What it does                                                                |
 | ----------------------- | --------------------------------------------------------------------------- |
 | `npm run build`         | Compiles `src/` to `dist/`.                                                 |
-| `npm run lint`          | Runs ESLint over the project. `lint:fix` fixes what it can.                 |
-| `npm run format`        | Formats the project with Prettier. `format:check` only reports.             |
+| `npm run lint`          | Runs oxlint over the project. `lint:fix` fixes what it can.                 |
+| `npm run format`        | Formats the project with oxfmt. `format:check` only reports.                |
 | `npm run licence-check` | Checks every file in `src/`, `scripts/` and `test/` has the licence header. |
 | `npm run test:unit`     | Runs the unit tests. No Buttress needed.                                    |
 | `npm run test:e2e`      | Builds, then runs the end-to-end tests against a Buttress in Docker.        |
