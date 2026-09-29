@@ -142,6 +142,15 @@ describe('Requests', () => {
     assert.strictEqual(server.requests[0].body.actualCount, true);
   });
 
+  it('should count everything when no query is passed', async () => {
+    await instance.getCollection('thing').count();
+    await instance.getCollection('thing').count(undefined, undefined, {actualCount: true});
+
+    // Buttress treats a body without a query as the query itself, so it would filter on actualCount
+    assert.deepStrictEqual(server.requests[0].body, {query: {}});
+    assert.deepStrictEqual(server.requests[1].body, {query: {}, actualCount: true});
+  });
+
   it('should refuse a removeAll filter as buttress would remove everything', async () => {
     assert.throws(() => instance.getCollection('thing').removeAll({name: 'x'}), /bulkRemove/);
     assert.strictEqual(server.requests.length, 0);
@@ -237,6 +246,7 @@ describe('Init', () => {
         /unreachable/,
       );
       assert.strictEqual(instance.initialised, false);
+      assert.throws(() => instance.App, Errors.NotYetInitiated);
 
       App.prototype.getSchema = () => Promise.resolve(schema);
       await instance.init({buttressUrl: 'http://127.0.0.1:1', appToken: 'APP_TOKEN', apiPath: 'test-app'});
@@ -245,6 +255,63 @@ describe('Init', () => {
       assert(instance.getCollection('thing'));
     } finally {
       App.prototype.getSchema = getSchema;
+    }
+  });
+});
+
+describe('Core modules', () => {
+  const coreModules = {
+    App: 'app',
+    Auth: 'auth',
+    Lambda: 'lambda',
+    Policy: 'policy',
+    Token: 'token',
+    User: 'user',
+    SecureStore: 'secureStore',
+    AppDataSharing: 'appDataSharing',
+    LambdaExecution: 'lambdaExecution',
+  };
+
+  it('should throw NotYetInitiated when used before init', async () => {
+    const instance = Buttress.new();
+
+    for (const name of Object.keys(coreModules)) {
+      assert.throws(
+        () => instance[name],
+        (err) => err instanceof Errors.NotYetInitiated && err.message.includes(name),
+      );
+    }
+    await assert.rejects(instance.createUserTransientPolicy('USER', 'TOKEN', {name: 'p'}), Errors.NotYetInitiated);
+  });
+
+  it('should be the same instances as getCollection', async () => {
+    const instance = Buttress.new();
+    await instance.init({
+      buttressUrl: 'http://127.0.0.1:1',
+      appToken: 'APP_TOKEN',
+      apiPath: 'test-app',
+      schema,
+      useLocalSchema: true,
+    });
+
+    for (const [name, collection] of Object.entries(coreModules)) {
+      assert.strictEqual(instance[name], instance.getCollection(collection), name);
+    }
+  });
+
+  it('should throw NotYetInitiated again after clean', async () => {
+    const instance = Buttress.new();
+    await instance.init({
+      buttressUrl: 'http://127.0.0.1:1',
+      appToken: 'APP_TOKEN',
+      apiPath: 'test-app',
+      schema,
+      useLocalSchema: true,
+    });
+    instance.clean();
+
+    for (const name of Object.keys(coreModules)) {
+      assert.throws(() => instance[name], Errors.NotYetInitiated);
     }
   });
 });

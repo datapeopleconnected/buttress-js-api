@@ -10,6 +10,7 @@
 - [ ] Check any code that reads `err.message` from a failed request ([details](#error-messages-come-from-the-server))
 - [ ] Read `user.tokens[0].policyProperties` instead of `user.policyProperties` after `findOrCreateUser` ([details](#findorcreateuser))
 - [ ] Send tokens only in the `Authorization` header, and connect sockets with `auth: {token}` ([details](#tokens-are-only-read-from-the-authorization-header))
+- [ ] Stop assigning to the core modules (`Buttress.User = ...`), and drop `?.` or `!` when using them ([details](#core-modules-are-read-only-and-throw-before-init))
 
 The rest of this guide is behaviour changes that need no code changes, and new options.
 
@@ -135,6 +136,24 @@ await Buttress.getCollection('post').getAll({token});
 io.connect(url, {auth: {token}});
 ```
 
+### Core modules are read-only and throw before `init()`
+
+`Buttress.App`, `Auth`, `Lambda`, `LambdaExecution`, `Policy`, `Token`, `User`, `SecureStore` and `AppDataSharing` are now getters. They return the same instances as `getCollection` (`Buttress.User === Buttress.getCollection('user')`), and are typed as always present, so strict TypeScript no longer needs `?.` or `!` to use them.
+
+Using one before `init()`, or after `clean()`, throws `Errors.NotYetInitiated` instead of returning `undefined`. The transient policy helpers throw the same error instead of a plain `Error`.
+
+The getters have no setters, so assigning to them (for example to stub a module in a test) throws a `TypeError`. Stub the module's methods instead, or its class prototype.
+
+```js
+// No longer works
+Buttress.User = fakeUser;
+if (Buttress.User) { ... }
+
+// Use
+Buttress.User.findUser = async () => user;
+if (Buttress.initialised) { ... }
+```
+
 ## Behaviour changes that need no code changes
 
 | Change                                                                                 | What you'll notice                                                                                                                                                                                                                                                                                                                                              |
@@ -147,7 +166,6 @@ io.connect(url, {auth: {token}});
 | Network errors are retried                                                             | `GET`, `HEAD` and `OPTIONS` requests that fail without a response (`ECONNREFUSED`, `ECONNRESET`, …) retry up to 10 times with exponential back-off. This retry code already existed but never ran. **If the server is unreachable, a GET now takes about 3½ minutes to fail instead of failing straight away**, and that includes the schema fetch in `init()`. |
 | `combineResults: false` is respected                                                   | The default is still `true`. Before, passing `false` was ignored.                                                                                                                                                                                                                                                                                               |
 | A failed `init()` can be retried                                                       | If fetching the schema fails, the instance is reset with `clean()` and the error is rethrown. Before, the instance stayed marked as initialised with no schema, and calling `init()` again did nothing.                                                                                                                                                         |
-| `clean()` clears the core module properties                                            | After `clean()`, `Buttress.App`, `Buttress.User` and the other core modules are `undefined` until the next `init()`.                                                                                                                                                                                                                                            |
 
 ## New options
 
@@ -186,6 +204,7 @@ When a request matches more than one policy, Buttress normally counts the combin
 
 - `ButtressOptions` is defined once, in `types/ButtressOptions`, and still exported from the package root (`import {ButtressOptions} from '@buttress/api'`). It now includes `useLocalSchema` and `clientSessionId`. It's exported as a type only, which makes no difference for an interface.
 - `RequestOptionsIn` gains `sourceId` and `actualCount`.
+- `count`'s `query` and `sort` are optional. With no `query` it counts everything. Buttress ignores `sort`.
 
 ## Server compatibility
 

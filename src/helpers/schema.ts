@@ -463,12 +463,13 @@ export default class BaseSchema {
   }
 
   /**
-   * @param {object} query
-   * @param {object} sort
+   * @param {object} query - defaults to {}, which counts everything. Always sent, because buttress treats a body
+   * without a query as the query itself.
+   * @param {object} sort - ignored by buttress
    * @param {object} options - pass actualCount to sum a count per matching policy instead of one count of the combined query
    * @return {promise}
    */
-  count(query: any, sort: any, options: RequestOptionsIn = {}) {
+  count(query: any = {}, sort?: any, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     opts.data = {
