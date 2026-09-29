@@ -1,9 +1,8 @@
 # @buttress/api
 
 The official Node.js / TypeScript client for [Buttress](https://github.com/datapeopleconnected/buttress), the
-federated real-time open data platform. It wraps Buttress's REST API and realtime sockets behind a small set of
-collection modules, so you can authenticate, read and write schema-defined data, and react to changes without
-hand-rolling HTTP requests.
+federated real-time open data platform. It wraps Buttress's REST API behind a small set of collection modules, so you
+can authenticate and read and write schema-defined data without hand-rolling HTTP requests.
 
 ## Contents
 
@@ -11,7 +10,6 @@ hand-rolling HTTP requests.
 - [Quick start](#quick-start)
 - [Core concepts](#core-concepts)
 - [Working with data](#working-with-data)
-- [Realtime updates](#realtime-updates)
 - [Configuration](#configuration)
 - [Development](#development)
 - [License](#license)
@@ -31,7 +29,7 @@ import Buttress from '@buttress/api';
 
 await Buttress.init({
   buttressUrl: 'https://your-buttress-instance.com',
-  appToken: process.env.BUTTRESS_APP_TOKEN,
+  appToken: process.env.BUTTRESS_APP_TOKEN!,
   apiPath: 'my-app',
   version: 1,
 });
@@ -44,17 +42,12 @@ const post = await Buttress.getCollection('post').save({
   title: 'Hello, Buttress',
   body: 'Getting started with the API client.',
 });
-
-// Listen for changes
-Buttress.getCollection('post').socket.on('post-updated', (updatedPost) => {
-  console.log('post changed:', updatedPost);
-});
 ```
 
 ## Core concepts
 
 Buttress is schema-driven: each app defines collections (schema), and the client builds a module for every
-collection it discovers so you can read, write and subscribe to that data.
+collection it discovers so you can read and write that data.
 
 - **`Buttress.init(options)`** connects to a Buttress instance, authenticates with your app token, and pulls down
   (or pushes up) the schema. It must be called, and awaited, before anything else.
@@ -75,33 +68,50 @@ const posts = Buttress.getCollection('post');
 
 await posts.getAll(); // fetch every entity
 await posts.get(id); // fetch one entity
-await posts.save({title: '...'}); // create or update
-await posts.update(id, updates); // partial update
+await posts.save({title: '...'}); // create, rejected as a duplicate if given an id that's already taken
+await posts.update(id, {path: 'title', value: '...'}); // update by path, see below
 await posts.remove(id); // delete one
 await posts.removeAll(); // delete every entity in the collection
-await posts.count(); // count matching a filter
+await posts.count(query, null); // count matching a filter
 await posts.search(query); // query with a filter
 ```
+
+`update` takes update-by-path operations rather than a partial entity: one `{path, value}`, or an array of them to
+apply in one request. It resolves to the operations it applied, each with its `type`, `path` and `value`, not to the
+updated entity.
+
+```ts
+await posts.update(id, {path: 'title', value: 'Hello again'});
+
+await posts.update(id, [
+  {path: 'author.name', value: 'Ada'}, // a dot path reaches a nested property
+  {path: 'views.__increment__', value: 1}, // adds to a number, a negative value subtracts
+]);
+```
+
+On an array property, paths work like this:
+
+| `path`              | Effect                                                                       |
+| ------------------- | ---------------------------------------------------------------------------- |
+| `tags`              | Appends `value` to the array, or replaces the whole array if `value` is one. |
+| `tags.2`            | Sets the item at index 2.                                                    |
+| `tags.2.__remove__` | Removes the item at index 2. `value` is still required, so pass `''`.        |
 
 Named modules add their own methods on top of this, for example:
 
 ```ts
-// Authenticate a user and get their token
-const { user, token } = await Buttress.Auth.findOrCreateUser({ ... });
+// Find or create a user by the service they signed in with, making sure they have a token
+const user = await Buttress.Auth.findOrCreateUser({app: 'google', appId: googleUserId}, {domains, policyProperties});
+const [token] = user.tokens;
 
 // Give a user a policy property, scoped to one of their tokens
-await Buttress.User.updatePolicyProperty(user.id, token.id, { role: 'admin' });
+await Buttress.User.updatePolicyProperty(user.id, token.value, {role: 'admin'});
 
 // Manage schema-level access policies
-await Buttress.Policy.createPolicy({ name: 'admin', selection: { ... } });
+await Buttress.Policy.createPolicy({name: 'admin', selection: {...}});
 ```
 
 If you're upgrading from an older version of this client, see [MIGRATION.md](MIGRATION.md) for breaking changes.
-
-## Realtime updates
-
-Each collection module has a `socket` that emits events when data changes on the server (`<collection>-created`,
-`<collection>-updated`, `<collection>-removed`), so you can keep local state in sync without polling.
 
 ## Configuration
 
