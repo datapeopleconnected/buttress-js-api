@@ -33,7 +33,9 @@ import SecureStore from './secure-store';
 import AppDataSharing from './app-data-sharing';
 import LambdaExecution from './lambda-execution';
 
-export type {ButtressOptions};
+export type {ButtressOptions, BaseSchema};
+export type {BulkUpdateItem, BulkUpdateResult, Entity, UpdateOperation, UpdateResult} from './types/Entity';
+export type {DateOperand, LooseQuery, Projection, Query, QueryOperators, Sort, TypedQuery} from './types/Query';
 
 type Modules = {
   [key: string]: BaseSchema;
