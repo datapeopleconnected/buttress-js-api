@@ -152,6 +152,24 @@ describe('@lambda', function () {
           },
         },
       },
+      {
+        name: 'ticket',
+        type: 'collection',
+        properties: {
+          title: {
+            __type: 'string',
+            __default: null,
+            __required: true,
+            __allowUpdate: true,
+          },
+          ref: {
+            __type: 'uuid',
+            __default: 'new',
+            __required: true,
+            __allowUpdate: false,
+          },
+        },
+      },
     ];
 
     Buttress.setAuthToken(testApp.token);
@@ -431,6 +449,68 @@ describe('@lambda', function () {
 
       companies.length.should.equal(1);
       status.should.equal('COMPLETE');
+    });
+
+    it('Should create a post api endpoint lambda that saves an entity with a uuid default', async function () {
+      const lambda = {
+        name: 'api-create-ticket-lambda',
+        git: {
+          url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
+          branch: 'main',
+          hash: '2ce408ce219727d72f11b0c26c416e1c07b5b77a',
+          entryFile: 'api-create-ticket/index.js',
+          entryPoint: 'execute',
+        },
+        trigger: [
+          {
+            type: 'API_ENDPOINT',
+            apiEndpoint: {
+              url: 'create/ticket',
+              method: 'POST',
+              type: 'SYNC',
+            },
+          },
+        ],
+        policyProperties: {
+          adminAccess: true,
+        },
+      };
+
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
+      lambdaDB.name.should.equal('api-create-ticket-lambda');
+    });
+
+    it('Should call the lambda to save a ticket, whose uuid the lambda generated in its isolate', async function () {
+      const ticket = {title: 'Uuid default'};
+
+      const res = await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/create/ticket`, {
+        method: 'POST',
+        body: JSON.stringify(ticket),
+        headers: {
+          Authorization: `Bearer ${testApp.token}`,
+          'Content-Type': 'application/json',
+          'Content-Length': JSON.stringify(ticket).length,
+        },
+      });
+
+      const parsedRes = await res.json();
+      const executionId = parsedRes.executionId;
+
+      if (typeof executionId !== 'string') {
+        throw new Error('failed to make the API call');
+      }
+
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda-execution/${executionId}/status`, {
+        method: 'GET',
+        headers: {Authorization: `Bearer ${testApp.token}`},
+      });
+      const status = (await statusRes.json())?.status;
+
+      const tickets = await Buttress.getCollection('ticket').search({title: {$eq: 'Uuid default'}});
+
+      status.should.equal('COMPLETE');
+      tickets.length.should.equal(1);
+      tickets[0].ref.should.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
     });
 
     it('Should create a name path mutation lambda and use the cr to change organisation name', async function () {
