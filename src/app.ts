@@ -21,6 +21,9 @@ import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 import Schema from './model/Schema';
 
+// Each policy property and the values an app allows for it, e.g. {role: ['admin', 'user']}
+export type PolicyPropertyList = Record<string, unknown[]>;
+
 /**
  * @class App
  */
@@ -57,12 +60,12 @@ export default class App extends BaseSchema {
   }
 
   /**
-   * @param {array} list
+   * @param {object} list
    * @param {string} appId
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  setPolicyPropertyList(list: any[], appId = null, options = {}) {
+  setPolicyPropertyList(list: PolicyPropertyList, appId = null, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (list) opts.data = list;
 
@@ -72,12 +75,12 @@ export default class App extends BaseSchema {
   }
 
   /**
-   * @param {array} list
+   * @param {object} list
    * @param {string} appId
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  updatePolicyPropertyList(list: any[], appId = null, options = {}) {
+  updatePolicyPropertyList(list: PolicyPropertyList, appId = null, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (list) opts.data = list;
 
@@ -91,7 +94,7 @@ export default class App extends BaseSchema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  getPolicyPropertiesList(apiPath: string, options = {}) {
+  getPolicyPropertiesList(apiPath?: string, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     let path = `policy-property-list`;
     if (apiPath) path = `policy-property-list/${apiPath}`;

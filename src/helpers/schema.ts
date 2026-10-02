@@ -117,7 +117,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {string} path
    * @return {object} schemaPart
    */
-  createObject(path: string) {
+  createObject(path?: string) {
     if (path) {
       return Helpers.Schema.createFromPath(this.loadSchema(), path);
     }

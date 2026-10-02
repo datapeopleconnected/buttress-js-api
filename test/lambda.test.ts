@@ -164,11 +164,11 @@ describe('@lambda', function () {
     await Buttress.getCollection<App>('app').setPolicyPropertyList({
       adminAccess: [true],
       grade: [1],
-    } as unknown as unknown[]);
+    });
     await Buttress.getCollection<App>('app').updatePolicyPropertyList({
       adminAccess: [true],
       grade: [1],
-    } as unknown as unknown[]);
+    });
 
     await organisations.reduce(async (prev, next) => {
       await prev;
@@ -196,7 +196,7 @@ describe('@lambda', function () {
     });
 
     it('Should create an edit organisation lambda on the app', async function () {
-      const lambda = {
+      const lambda: LambdaModel = {
         name: 'organisation-edit-lambda',
         git: {
           url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
@@ -220,7 +220,7 @@ describe('@lambda', function () {
         },
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda as unknown as LambdaModel, authentication);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
       lambdaDB.name.should.equal('organisation-edit-lambda');
     });
 
@@ -245,7 +245,7 @@ describe('@lambda', function () {
     });
 
     it('Should create a async get api endpoint lambda to print hello world and call it using its url', async function () {
-      const lambda = {
+      const lambda: LambdaModel = {
         name: 'api-hello-world-lambda',
         git: {
           url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
@@ -268,7 +268,7 @@ describe('@lambda', function () {
         },
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda as unknown as LambdaModel, authentication);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
       lambdaDB.name.should.equal('api-hello-world-lambda');
 
       const res = await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/hello/world`, {
@@ -290,7 +290,7 @@ describe('@lambda', function () {
     });
 
     it('Should create an a sync get api endpoint lambda to change liquidation organisations name to Test Lambda API', async function () {
-      const lambda = {
+      const lambda: LambdaModel = {
         name: 'api-edit-organisation-lambda',
         git: {
           url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
@@ -314,7 +314,7 @@ describe('@lambda', function () {
         },
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda as unknown as LambdaModel, authentication);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
       lambdaDB.name.should.equal('api-edit-organisation-lambda');
     });
 
@@ -366,7 +366,7 @@ describe('@lambda', function () {
     });
 
     it('Should create a post api endpoint lambda for adding organisations', async function () {
-      const lambda = {
+      const lambda: LambdaModel = {
         name: 'api-add-organisation-lambda',
         git: {
           url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
@@ -390,7 +390,7 @@ describe('@lambda', function () {
         },
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda as unknown as LambdaModel, authentication);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
       lambdaDB.name.should.equal('api-add-organisation-lambda');
     });
 
@@ -458,7 +458,7 @@ describe('@lambda', function () {
           policyProperties: {
             adminAccess: true,
           },
-        } as unknown as LambdaModel,
+        },
         authentication,
       );
 

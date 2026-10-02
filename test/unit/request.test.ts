@@ -261,7 +261,7 @@ describe('Requests', () => {
   });
 
   it('should get the policy property list for the authenticated app', async () => {
-    await (instance.App as unknown as {getPolicyPropertiesList(): Promise<unknown>}).getPolicyPropertiesList();
+    await instance.App.getPolicyPropertiesList();
 
     assert.strictEqual(server.requests[0].url, '/api/v1/app/policy-property-list');
   });

@@ -35,7 +35,7 @@ describe('@policy', function () {
 
     await Buttress.getCollection<App>('app').updatePolicyPropertyList({
       policyTests: [1, 2],
-    } as unknown as unknown[]);
+    });
 
     testUser = await Buttress.Auth.findOrCreateUser(
       {

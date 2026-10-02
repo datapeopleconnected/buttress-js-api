@@ -27,10 +27,18 @@ export interface Properties {
   [key: string]: Property | Properties;
 }
 
+export interface Remote {
+  name: string;
+  schema: string;
+}
+
 export default interface Schema {
   name: string;
   type: string;
   extends?: string[];
   core?: boolean;
+  strict?: boolean;
+  // The schemas this one is shared with over data sharing
+  remotes?: Remote | Remote[];
   properties: Properties;
 }

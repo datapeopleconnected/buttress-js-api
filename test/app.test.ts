@@ -18,7 +18,6 @@ import Buttress from '../dist/index';
 import type {Entity} from '../dist/index';
 import type App from '../dist/app';
 import type Policy from '../dist/policy';
-import type AppDataSharingModel from '../dist/model/AppDataSharing';
 import type SchemaModel from '../dist/model/Schema';
 import Config from './config';
 import Schemas from './data/schema';
@@ -363,13 +362,6 @@ describe('@app-relationship', function () {
           token: null,
         },
 
-        dataSharing: {
-          localApp: '',
-          remoteApp: JSON.stringify({
-            car: ['READ'],
-          }),
-        },
-
         policyConfig: [
           {
             verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
@@ -379,7 +371,7 @@ describe('@app-relationship', function () {
             },
           },
         ],
-      } as unknown as AppDataSharingModel);
+      });
 
       res.name.should.equal('test-app2');
       res.remoteApp.endpoint.should.equal(Config.remoteEndpoint);
@@ -399,13 +391,6 @@ describe('@app-relationship', function () {
           token: testAppRelationships[0].registrationToken,
         },
 
-        dataSharing: {
-          localApp: JSON.stringify({
-            car: ['READ'],
-          }),
-          remoteApp: null,
-        },
-
         policyConfig: [
           {
             verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
@@ -415,7 +400,7 @@ describe('@app-relationship', function () {
             },
           },
         ],
-      } as unknown as AppDataSharingModel);
+      });
 
       res.name.should.equal('test-app1');
       res.active.should.equal(true);
@@ -435,7 +420,7 @@ describe('@app-relationship', function () {
 
       const res = await Buttress.AppDataSharing.updateDataSharingPolicy(testAppRelationships[0].id, {
         collections: ['car'],
-      } as unknown as unknown[]);
+      });
 
       res.should.equal(true);
 

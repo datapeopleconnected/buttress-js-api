@@ -15,7 +15,7 @@
  */
 
 import Buttress from '../dist/index';
-import type {Entity, LooseQuery} from '../dist/index';
+import type {Entity} from '../dist/index';
 import Config from './config';
 import polices from './data/policy';
 
@@ -180,9 +180,9 @@ describe('@data-filter', function () {
         .search(
           {
             kudos: {
-              gt: 5,
+              $gt: 5,
             },
-          } as LooseQuery,
+          },
           0,
           0,
           null,
@@ -210,9 +210,9 @@ describe('@data-filter', function () {
         .search(
           {
             kudos: {
-              gt: 5,
+              $gt: 5,
             },
-          } as LooseQuery,
+          },
           0,
           0,
           null,
@@ -272,9 +272,9 @@ describe('@data-filter', function () {
         .count(
           {
             kudos: {
-              gt: 5,
+              $gt: 5,
             },
-          } as LooseQuery,
+          },
           null,
           {
             token: token.value,
