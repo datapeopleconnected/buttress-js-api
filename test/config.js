@@ -100,7 +100,7 @@ class Config {
       Buttress.setAuthToken(testApp.token);
       Buttress.setAPIPath(testApp.apiPath);
 
-      Buttress.getCollection('app').updateSchema(TestSchema);
+      await Buttress.getCollection('app').updateSchema(TestSchema);
 
       // Add the policies
       const TestData = Object.values(TestPolicies);
@@ -113,6 +113,28 @@ class Config {
     after(function (done) {
       done();
     });
+  }
+
+  /**
+   * Runs a request until it gets past "No route takes", for the first request after a schema is saved. Buttress has
+   * several workers, each of which builds an app's routes a moment after the schema is saved, so a request can reach one
+   * that doesn't have them yet. Any other failure is the test's to see.
+   * @param {function(): Promise} request
+   * @param {Object} [options]
+   * @param {number} [options.attempts]
+   * @param {number} [options.delayMs]
+   * @return {Promise}
+   */
+  async retryUnrouted(request, {attempts = 50, delayMs = 100} = {}) {
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await request();
+      } catch (err) {
+        const unrouted = err.statusCode === 404 && /^No route takes /.test(err.message);
+        if (!unrouted || attempt >= attempts) throw err;
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
+    }
   }
 
   configureSuper() {

@@ -22,8 +22,6 @@ const Schemas = require('./data/schema');
 
 Config.init();
 
-const sleep = (time) => new Promise((r) => setTimeout(r, time));
-
 describe('@app', function () {
   this.timeout(2000);
   const testApps = [];
@@ -135,8 +133,7 @@ describe('@app-schema', function () {
         return done(err);
       }
 
-      Buttress.getCollection('test')
-        .getAll()
+      Config.retryUnrouted(() => Buttress.getCollection('test').getAll())
         .then((tests) => {
           tests.length.should.equal(0);
           done();
@@ -275,9 +272,7 @@ describe('@app-relationship', function () {
       },
     ]);
 
-    await sleep(100); // Give it chance for the URL's to be regenerated
-
-    const car = await Buttress.getCollection('car').save({name: 'A red car'});
+    const car = await Config.retryUnrouted(() => Buttress.getCollection('car').save({name: 'A red car'}));
 
     Config.configureSuper();
 
@@ -315,12 +310,12 @@ describe('@app-relationship', function () {
       ],
     });
 
-    await sleep(100); // Give it chance for the URL's to be regenerated
-
-    await Buttress.getCollection('people').save({
-      name: 'Jeff',
-      carId: car.id,
-    });
+    await Config.retryUnrouted(() =>
+      Buttress.getCollection('people').save({
+        name: 'Jeff',
+        carId: car.id,
+      }),
+    );
 
     // Create user
     testApp2User = await Buttress.Auth.findOrCreateUser(
@@ -470,12 +465,12 @@ describe('@app-relationship', function () {
       Buttress.setAuthToken(value);
       Buttress.setAPIPath('test-app2');
 
-      const people = await Buttress.getCollection('people').getAll();
+      const people = await Config.retryUnrouted(() => Buttress.getCollection('people').getAll());
 
       people.length.should.equal(1, "Person count doesn't match whats expected");
       people[0].name.should.equal('Jeff');
 
-      const cars = await Buttress.getCollection('car').getAll();
+      const cars = await Config.retryUnrouted(() => Buttress.getCollection('car').getAll());
 
       cars.length.should.equal(1, "Car count doesn't match whats expected");
       cars[0].id.should.equal(people[0].carId);

@@ -40,8 +40,7 @@ describe('@boards', function () {
 
   describe('Post Basics', function () {
     it('should return no boards', function (done) {
-      Buttress.getCollection('board')
-        .getAll()
+      Config.retryUnrouted(() => Buttress.getCollection('board').getAll())
         .then(function (boards) {
           boards.length.should.equal(0);
           done();
