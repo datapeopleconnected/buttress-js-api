@@ -14,7 +14,53 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+export interface LambdaCronTrigger {
+  executionTime: string | Date;
+  periodicExecution: string;
+  status: 'PENDING' | 'RUNNING' | 'ERROR';
+}
+
+export interface LambdaApiEndpointTrigger {
+  method: 'GET' | 'POST';
+  url: string;
+  type?: 'ASYNC' | 'SYNC';
+  useCallerToken?: boolean;
+  redirect?: boolean;
+}
+
+export interface LambdaTrigger {
+  type?: 'CRON' | 'PATH_MUTATION' | 'API_ENDPOINT';
+  cron?: LambdaCronTrigger;
+  apiEndpoint?: LambdaApiEndpointTrigger;
+  pathMutation?: {paths: string[]};
+}
+
+export interface LambdaGit {
+  url: string;
+  branch: string;
+  hash: string;
+  entryFile: string;
+  entryPoint: string;
+  sharedModules?: {name: string; entryFile: string}[];
+}
+
+// The token Buttress makes for the lambda to run with.
+export interface LambdaAuth {
+  // The domains the lambda's token works from
+  domains: string[];
+  // Can be given on the lambda instead, Buttress needs it in one of the two.
+  policyProperties?: Record<string, unknown>;
+  [key: string]: any;
+}
+
 export default interface Lambda {
-  id: string;
+  id?: string;
   name: string;
+  type?: 'PRIVATE' | 'PUBLIC';
+  executable?: boolean;
+  git: LambdaGit;
+  trigger: LambdaTrigger[];
+  metadata?: {key: string; value: string}[];
+  // Buttress copies these onto the auth given to createLambda
+  policyProperties?: Record<string, unknown>;
 }

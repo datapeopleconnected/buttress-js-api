@@ -30,10 +30,10 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "licence-check": "./scripts/licence-check",
-    "test:types": "tsc -p test/types",
+    "test:types": "tsc -p test/types && tsc -p test",
     "test:unit": "NODE_ENV=test mocha --recursive --parallel test/unit/**/*",
     "test": "mocha --require should --reporter spec --bail",
-    "test:e2e": "npm run build && node ./scripts/e2e.js npm test",
+    "test:e2e": "npm run build && tsx ./scripts/e2e.ts npm test",
     "test-app": "mocha --require should --reporter spec --bail -g @app",
     "test-company": "mocha --require should --reporter spec --bail -g company",
     "test-service": "mocha --require should --reporter spec -g service",
@@ -58,12 +58,14 @@
     "sugar": "^2.0.6"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.10",
     "@types/node": "^18.19.130",
     "mocha": "^12.0.2",
     "oxfmt": "0.71.0",
     "oxlint": "^1.86.0",
     "should": "^13.2.3",
     "source-map-support": "^0.5.21",
+    "tsx": "^4.23.15",
     "typescript": "~6.0.3"
   }
 }

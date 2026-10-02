@@ -25,6 +25,8 @@ export interface UserData {
   app: string;
   appId: string;
   policyProperties?: any;
+  // Whatever else the auth provider knows about the user, such as name, email and profile URLs.
+  [key: string]: any;
 }
 export interface AuthData {
   domains?: string[];

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -16,9 +14,9 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const {default: Buttress} = require('../dist/index');
-const Config = require('./config');
-const ObjectId = require('bson-objectid');
+import Buttress from '../dist/index';
+import Config from './config';
+import ObjectId from 'bson-objectid';
 
 Config.init();
 
@@ -114,7 +112,7 @@ describe('@posts', function () {
         .then(function (results) {
           results.length.should.equal(2);
           results[0].path.should.equal('kudos');
-          results[0].value.should.equal(1);
+          (results[0].value as number).should.equal(1);
           results[1].path.should.equal('updatedAt');
           done();
         })
@@ -123,7 +121,7 @@ describe('@posts', function () {
 
     it('should increment the view count by 12', function (done) {
       const increment = 12;
-      let startCount = null;
+      let startCount: number;
 
       Buttress.getCollection('post')
         .get(_savePostData.id)
@@ -133,7 +131,7 @@ describe('@posts', function () {
         )
         .then((results) => {
           results[0].path.should.equal('views.__increment__');
-          results[0].value.should.equal(increment);
+          (results[0].value as number).should.equal(increment);
         })
         .then(() => Buttress.getCollection('post').get(_savePostData.id))
         .then((post) => {
@@ -145,7 +143,7 @@ describe('@posts', function () {
 
     it('should increment the view count by 5', function (done) {
       const increment = 5;
-      let startCount = null;
+      let startCount: number;
 
       Buttress.getCollection('post')
         .get(_savePostData.id)
@@ -155,7 +153,7 @@ describe('@posts', function () {
         )
         .then((results) => {
           results[0].path.should.equal('views.__increment__');
-          results[0].value.should.equal(increment);
+          (results[0].value as number).should.equal(increment);
         })
         .then(() => Buttress.getCollection('post').get(_savePostData.id))
         .then((post) => {
@@ -167,7 +165,7 @@ describe('@posts', function () {
 
     it('should decrement the view count by 2', function (done) {
       const increment = -2;
-      let startCount = null;
+      let startCount: number;
 
       Buttress.getCollection('post')
         .get(_savePostData.id)
@@ -177,7 +175,7 @@ describe('@posts', function () {
         )
         .then((results) => {
           results[0].path.should.equal('views.__increment__');
-          results[0].value.should.equal(increment);
+          (results[0].value as number).should.equal(increment);
         })
         .then(() => Buttress.getCollection('post').get(_savePostData.id))
         .then((post) => {
@@ -222,7 +220,7 @@ describe('@posts', function () {
     });
 
     it('should add several posts', function (done) {
-      const __gen = (num) => {
+      const __gen = (num: number) => {
         const arr = [];
         for (let x = 0; x < num; x++) {
           arr.push({

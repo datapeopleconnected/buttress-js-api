@@ -13,20 +13,32 @@
  * You should have received a copy of the GNU Affero General Public Licence along with
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
-const assert = require('assert');
+import assert from 'assert';
 
-const {default: Buttress} = require('../../dist/index');
+import Buttress from '../../dist/index';
+import type {ButtressOptions} from '../../dist/index';
+
+type SchemaObject = Record<string, any>;
+
+// Tests init without a version and (once) with a non-array schema, which the options type does not allow
+const options = (partial: Record<string, unknown>) => partial as unknown as ButtressOptions;
+
+// createObject's path is optional at runtime, and it returns false when there is no schema
+const createObject = (collection: string, path?: string) =>
+  (Buttress.getCollection(collection) as unknown as {createObject(path?: string): SchemaObject}).createObject(path);
 
 describe('Unit tests for index.js', () => {
   describe('Basic', () => {
     it('should call init and be initialised', async () => {
       try {
-        await Buttress.init({
-          schema: '[]',
-          useLocalSchema: true,
-        });
+        await Buttress.init(
+          options({
+            schema: '[]',
+            useLocalSchema: true,
+          }),
+        );
       } catch (err) {
-        assert.fail(err);
+        assert.fail(err as Error);
       }
 
       assert.strictEqual(Buttress.initialised, true);
@@ -36,7 +48,7 @@ describe('Unit tests for index.js', () => {
       try {
         await Buttress.clean();
       } catch (err) {
-        assert.fail(err);
+        assert.fail(err as Error);
       }
 
       assert.strictEqual(Buttress.initialised, false);
@@ -184,10 +196,12 @@ describe('Unit tests for index.js', () => {
     before(async function () {
       await Buttress.clean();
 
-      await Buttress.init({
-        schema: schemas,
-        useLocalSchema: true,
-      });
+      await Buttress.init(
+        options({
+          schema: schemas,
+          useLocalSchema: true,
+        }),
+      );
     });
 
     it('should have function _addModule', async () => {
@@ -195,8 +209,9 @@ describe('Unit tests for index.js', () => {
     });
 
     it(`check that modules are called 'example', 'exampleSchema' and 'exampleSchemaExample'`, async () => {
-      const names = Object.keys(Buttress.__modules).reduce((arr, schemaName) => {
-        if (Buttress.__modules[schemaName].core) return arr;
+      const modules = (Buttress as unknown as {__modules: Record<string, {core?: boolean}>}).__modules;
+      const names = Object.keys(modules).reduce<string[]>((arr, schemaName) => {
+        if (modules[schemaName].core) return arr;
 
         arr.push(schemaName);
         return arr;
@@ -212,8 +227,8 @@ describe('Unit tests for index.js', () => {
     });
 
     it(`validate createObject result with the schema object`, async () => {
-      const company = Buttress.getCollection('organisation').createObject();
-      const companyRegistrar = Buttress.getCollection('organisation').createObject('companiesRegistrar');
+      const company = createObject('organisation');
+      const companyRegistrar = createObject('organisation', 'companiesRegistrar');
       assert(Object.keys(company).some((k) => k === 'name'));
       assert(Object.keys(company).some((k) => k === 'profile' && company[k] === 'PRIVATE'));
       assert(Object.keys(company).some((k) => k === 'score' && company[k] === 0));

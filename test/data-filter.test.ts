@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -16,11 +14,12 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const {default: Buttress} = require('../dist/index');
-const Config = require('./config');
-const polices = require('./data/policy/index.js');
+import Buttress from '../dist/index';
+import type {Entity} from '../dist/index';
+import Config from './config';
+import polices from './data/policy';
 
-const TestAppRoles = {
+const TestAppRoles: Record<string, (typeof polices)[keyof typeof polices]> = {
   public: polices['data-filter-public'],
   'user.member': polices['data-filter-admin'],
   'admin.super': polices['data-filter-user'],
@@ -31,8 +30,8 @@ Config.init();
 describe('@data-filter', function () {
   const TestUsersRoles = Object.keys(TestAppRoles);
 
-  let _testUsers = [];
-  let _testBoards = [];
+  let _testUsers: Entity[] = [];
+  let _testBoards: Entity[] = [];
 
   before(async function () {
     Config.configureTest();
@@ -73,7 +72,7 @@ describe('@data-filter', function () {
     };
 
     const addTestPosts = () => {
-      return _testBoards.reduce((arr, board) => {
+      return _testBoards.reduce<Promise<Entity>[]>((arr, board) => {
         const posts = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => {
           return Buttress.getCollection('post').save({
             content: 'Hello world',
@@ -113,7 +112,8 @@ describe('@data-filter', function () {
           token: `RANDOMTOKEN`,
         });
         throw new Error('Request should not have succeeded');
-      } catch (err) {
+      } catch (error) {
+        const err = error as InstanceType<typeof Buttress.Errors.ResponseError>;
         err.message.should.not.be.equal('Request should not have succeeded');
 
         err.statusCode.should.equal(401);
@@ -125,8 +125,8 @@ describe('@data-filter', function () {
 
   describe('Boards', function () {
     it('should only return boards user is subscribed to', function (done) {
-      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
-      const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
+      const publicUser = _testUsers.find((u) => u.tokens.some((t: Entity) => t.policyProperties.role === 'public'))!;
+      const token = publicUser.tokens.find((t: Entity) => t.policyProperties.role === 'public');
 
       Buttress.getCollection('board')
         .getAll({
@@ -148,9 +148,9 @@ describe('@data-filter', function () {
 
   describe('Posts', function () {
     it('should return posts that are part of the public board', function (done) {
-      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
-      const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
-      const publicBoard = _testBoards.find((board) => board.name === 'public');
+      const publicUser = _testUsers.find((u) => u.tokens.some((t: Entity) => t.policyProperties.role === 'public'))!;
+      const token = publicUser.tokens.find((t: Entity) => t.policyProperties.role === 'public');
+      const publicBoard = _testBoards.find((board) => board.name === 'public')!;
 
       Buttress.getCollection('post')
         .getAll({
@@ -173,14 +173,14 @@ describe('@data-filter', function () {
     });
 
     it('should return posts that are part of the public board with more than 5 kudos', function (done) {
-      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
-      const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
+      const publicUser = _testUsers.find((u) => u.tokens.some((t: Entity) => t.policyProperties.role === 'public'))!;
+      const token = publicUser.tokens.find((t: Entity) => t.policyProperties.role === 'public');
 
       Buttress.getCollection('post')
         .search(
           {
             kudos: {
-              gt: 5,
+              $gt: 5,
             },
           },
           0,
@@ -203,14 +203,14 @@ describe('@data-filter', function () {
     });
 
     it('should return posts ids that are part of the public board with more than 5 kudos', function (done) {
-      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
-      const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
+      const publicUser = _testUsers.find((u) => u.tokens.some((t: Entity) => t.policyProperties.role === 'public'))!;
+      const token = publicUser.tokens.find((t: Entity) => t.policyProperties.role === 'public');
 
       Buttress.getCollection('post')
         .search(
           {
             kudos: {
-              gt: 5,
+              $gt: 5,
             },
           },
           0,
@@ -247,8 +247,8 @@ describe('@data-filter', function () {
     });
 
     it('should return a count of posts that are part of the public board', function (done) {
-      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
-      const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
+      const publicUser = _testUsers.find((u) => u.tokens.some((t: Entity) => t.policyProperties.role === 'public'))!;
+      const token = publicUser.tokens.find((t: Entity) => t.policyProperties.role === 'public');
 
       Buttress.getCollection('post')
         .count({}, null, {
@@ -265,14 +265,14 @@ describe('@data-filter', function () {
     });
 
     it('should return a count of posts that are part of the public board with more than 5 kudos', function (done) {
-      const publicUser = _testUsers.find((u) => u.tokens.some((t) => t.policyProperties.role === 'public'));
-      const token = publicUser.tokens.find((t) => t.policyProperties.role === 'public');
+      const publicUser = _testUsers.find((u) => u.tokens.some((t: Entity) => t.policyProperties.role === 'public'))!;
+      const token = publicUser.tokens.find((t: Entity) => t.policyProperties.role === 'public');
 
       Buttress.getCollection('post')
         .count(
           {
             kudos: {
-              gt: 5,
+              $gt: 5,
             },
           },
           null,

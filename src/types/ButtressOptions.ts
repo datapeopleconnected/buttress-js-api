@@ -19,7 +19,8 @@ export default interface ButtressOptions {
   appToken: string;
   apiPath: string;
   schema?: any[];
-  version: number;
+  // The API version in the URL, buttress only serves 1. Defaults to 1
+  version?: number;
   update?: boolean;
   useLocalSchema?: boolean;
   allowUnauthorized?: boolean;

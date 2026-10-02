@@ -14,14 +14,19 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+import {PolicyConfig} from '../types/Policy';
+
 export default interface AppDataSharing {
   id?: string;
   name: string;
   remoteApp: {
     endpoint: string;
+    ws?: string | null;
     apiPath: string;
-    token: string;
+    // Leave it null to be given a registrationToken to hand to the other app, or pass that app's to join it.
+    token: string | null;
   };
-  policy: any[];
+  // What the other app is allowed to do with this one's data, Buttress refuses a data share without it.
+  policyConfig: PolicyConfig[];
   _appId?: string;
 }

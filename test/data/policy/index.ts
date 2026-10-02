@@ -14,11 +14,11 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Public = require('./public.json');
-const User = require('./user.json');
-const Admin = require('./admin.json');
+import Public from './public.json';
+import User from './user.json';
+import Admin from './admin.json';
 
-module.exports = {
+export default {
   'data-filter-public': Public,
   'data-filter-admin': Admin,
   'data-filter-user': User,

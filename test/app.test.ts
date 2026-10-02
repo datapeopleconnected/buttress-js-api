@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -16,15 +14,19 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const {default: Buttress} = require('../dist/index');
-const Config = require('./config');
-const Schemas = require('./data/schema');
+import Buttress from '../dist/index';
+import type {Entity} from '../dist/index';
+import type App from '../dist/app';
+import type Policy from '../dist/policy';
+import type SchemaModel from '../dist/model/Schema';
+import Config from './config';
+import Schemas from './data/schema';
 
 Config.init();
 
 describe('@app', function () {
   this.timeout(2000);
-  const testApps = [];
+  const testApps: Entity[] = [];
 
   before(async function () {
     Config.configureSuper();
@@ -32,7 +34,7 @@ describe('@app', function () {
 
   after(async function () {
     for await (const testApp of testApps) {
-      await Buttress.getCollection('app').remove(testApp.id);
+      await Buttress.getCollection<App>('app').remove(testApp.id);
     }
     Config.configureTest();
   });
@@ -45,7 +47,7 @@ describe('@app', function () {
         apiPath: 'test-app',
       };
 
-      const testApp = await Buttress.getCollection('app').save(testAppData);
+      const testApp = await Buttress.getCollection<App>('app').save(testAppData);
 
       testApp.name.should.equal(testAppData.name);
       testApp.version.should.equal(testAppData.version);
@@ -58,7 +60,7 @@ describe('@app', function () {
 
 describe('@app-schema', function () {
   this.timeout(2000);
-  const testApps = [];
+  const testApps: Entity[] = [];
 
   before(function (done) {
     done();
@@ -67,14 +69,14 @@ describe('@app-schema', function () {
   after(async function () {
     Config.configureSuper();
     for await (const testApp of testApps) {
-      await Buttress.getCollection('app').remove(testApp.id);
+      await Buttress.getCollection<App>('app').remove(testApp.id);
     }
     Config.configureTest();
   });
 
   describe('Basic', function () {
     it('should return the app schema', function (done) {
-      Buttress.getCollection('app')
+      Buttress.getCollection<App>('app')
         .getSchema()
         .then(function (schema) {
           schema.length.should.equal(Schemas.length);
@@ -85,7 +87,7 @@ describe('@app-schema', function () {
           schema[3].properties.appProp5.__default.should.equal('pending');
           done();
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
           done(err);
         });
     });
@@ -121,7 +123,7 @@ describe('@app-schema', function () {
         .then(() => {
           done();
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
           done(err);
         });
     });
@@ -138,7 +140,7 @@ describe('@app-schema', function () {
           tests.length.should.equal(0);
           done();
         })
-        .catch(function (err) {
+        .catch(function (err: unknown) {
           done(err);
         });
     });
@@ -158,7 +160,7 @@ describe('@app-schema', function () {
   //       }
   //     };
 
-  //     const res = await Buttress.getCollection('app').save(testData);
+  //     const res = await Buttress.getCollection<App>('app').save(testData);
 
   //     res.name.should.equal(testData.name);
   //     res.apiPath.should.equal(testData.apiPath);
@@ -217,11 +219,11 @@ describe('@app-schema', function () {
 
 describe('@app-relationship', function () {
   this.timeout(90000);
-  const testApps = [];
+  const testApps: Entity[] = [];
 
-  const testAppRelationships = [];
+  const testAppRelationships: Entity[] = [];
 
-  const testApp2Schema = [
+  const testApp2Schema: SchemaModel[] = [
     {
       name: 'people',
       type: 'collection',
@@ -242,13 +244,13 @@ describe('@app-relationship', function () {
     },
   ];
 
-  let testApp2User = null;
+  let testApp2User: Entity;
 
   before(async function () {
     Config.configureSuper();
 
     testApps.push(
-      await Buttress.getCollection('app').save({
+      await Buttress.getCollection<App>('app').save({
         name: 'Test App 1',
         apiPath: 'test-app1',
       }),
@@ -277,7 +279,7 @@ describe('@app-relationship', function () {
     Config.configureSuper();
 
     testApps.push(
-      await Buttress.getCollection('app').save({
+      await Buttress.getCollection<App>('app').save({
         name: 'Test App 2',
         apiPath: 'test-app2',
         policyPropertiesList: {
@@ -291,7 +293,7 @@ describe('@app-relationship', function () {
 
     await Buttress.setSchema(testApp2Schema);
 
-    await Buttress.getCollection('policy').createPolicy({
+    await Buttress.getCollection<Policy>('policy').createPolicy({
       name: 'test-policy',
       version: '1',
       selection: {
@@ -341,7 +343,7 @@ describe('@app-relationship', function () {
     Config.configureSuper();
 
     for await (const testApp of testApps) {
-      await Buttress.getCollection('app').remove(testApp.id);
+      await Buttress.getCollection<App>('app').remove(testApp.id);
     }
 
     Config.configureTest();
@@ -358,13 +360,6 @@ describe('@app-relationship', function () {
           endpoint: Config.remoteEndpoint,
           apiPath: testApps[1].apiPath,
           token: null,
-        },
-
-        dataSharing: {
-          localApp: '',
-          remoteApp: JSON.stringify({
-            car: ['READ'],
-          }),
         },
 
         policyConfig: [
@@ -394,13 +389,6 @@ describe('@app-relationship', function () {
           endpoint: Config.remoteEndpoint,
           apiPath: testApps[0].apiPath,
           token: testAppRelationships[0].registrationToken,
-        },
-
-        dataSharing: {
-          localApp: JSON.stringify({
-            car: ['READ'],
-          }),
-          remoteApp: null,
         },
 
         policyConfig: [
@@ -455,7 +443,7 @@ describe('@app-relationship', function () {
             __allowUpdate: true,
           },
         },
-      });
+      } as SchemaModel);
 
       await Buttress.setSchema(testApp2Schema);
     });

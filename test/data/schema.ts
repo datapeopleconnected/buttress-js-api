@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -16,38 +14,11 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const {default: Buttress} = require('../dist/index');
-const Config = require('./config');
+import board from './schema/board.json';
+import company from './schema/company.json';
+import post from './schema/post.json';
+import service from './schema/service.json';
 
-const Schemas = require('./data/schema');
+const Schema = [board, company, post, service];
 
-Config.init();
-
-describe('@boards', function () {
-  this.timeout(2000);
-
-  before(async function () {
-    Config.configureTest();
-    await Buttress.setSchema(Schemas);
-  });
-
-  after(function (done) {
-    Buttress.getCollection('board')
-      .removeAll()
-      .then(() => done())
-      .catch(done);
-  });
-
-  describe('Post Basics', function () {
-    it('should return no boards', function (done) {
-      Config.retryUnrouted(() => Buttress.getCollection('board').getAll())
-        .then(function (boards) {
-          boards.length.should.equal(0);
-          done();
-        })
-        .catch(function (err) {
-          done(err);
-        });
-    });
-  });
-});
+export default Schema;
