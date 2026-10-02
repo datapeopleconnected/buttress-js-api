@@ -169,7 +169,7 @@ describe('@lambda', function () {
 
     await organisations.reduce(async (prev, next) => {
       await prev;
-      await Buttress.getCollection('organisation').save(next);
+      await Config.retryUnrouted(() => Buttress.getCollection('organisation').save(next));
     }, Promise.resolve());
 
     await sleep(1000);
