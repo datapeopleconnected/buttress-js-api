@@ -64,83 +64,39 @@
     "content": {
       "__type": "string",
       "__required": true,
-      "__allowUpdate": true,
-      "__permissions": [
-        {
-          "role": "public",
-          "READ": "allow"
-        }
-      ]
+      "__allowUpdate": true
     },
     "memberSecretContent": {
       "__type": "string",
       "__required": true,
-      "__allowUpdate": true,
-      "__permissions": [
-        {
-          "role": "user.member",
-          "READ": "allow",
-          "UPDATE": "deny"
-        }
-      ]
+      "__allowUpdate": true
     },
     "adminSecretContent": {
       "__type": "string",
       "__required": true,
-      "__allowUpdate": true,
-      "__permissions": [
-        {
-          "role": "user.member",
-          "READ": "deny",
-          "UPDATE": "deny"
-        }
-      ]
+      "__allowUpdate": true
     },
     "kudos": {
       "__type": "number",
       "__default": 0,
       "__required": false,
-      "__allowUpdate": true,
-      "__permissions": [
-        {
-          "role": "public",
-          "READ": "allow"
-        }
-      ]
+      "__allowUpdate": true
     },
     "views": {
       "__type": "number",
       "__default": 0,
       "__required": false,
-      "__allowUpdate": true,
-      "__permissions": [
-        {
-          "role": "public",
-          "READ": "allow"
-        }
-      ]
+      "__allowUpdate": true
     },
     "boardId": {
       "__type": "id",
       "__required": false,
-      "__allowUpdate": false,
-      "__permissions": [
-        {
-          "role": "public",
-          "READ": "allow"
-        }
-      ]
+      "__allowUpdate": false
     },
     "parentPostId": {
       "__type": "id",
       "__required": true,
-      "__allowUpdate": false,
-      "__permissions": [
-        {
-          "role": "public",
-          "READ": "allow"
-        }
-      ]
+      "__allowUpdate": false
     },
     "someArray": {
       "__type": "array",
@@ -156,14 +112,7 @@
           "__type": "string",
           "__default": "",
           "__required": true,
-          "__allowUpdate": true,
-          "__permissions": [
-            {
-              "role": "user.member",
-              "READ": "deny",
-              "UPDATE": "deny"
-            }
-          ]
+          "__allowUpdate": true
         }
       }
     },
@@ -173,40 +122,20 @@
           "__type": "string",
           "__required": false,
           "__default": "someValue",
-          "__allowUpdate": true,
-          "__permissions": [
-            {
-              "role": "user.member",
-              "READ": "allow",
-              "UPDATE": "deny"
-            }
-          ]
+          "__allowUpdate": true
         },
         "stringProperty": {
           "__type": "string",
           "__required": false,
           "__default": "sometest",
-          "__allowUpdate": true,
-          "__permissions": [
-            {
-              "role": "user.member",
-              "READ": "deny",
-              "UPDATE": "deny"
-            }
-          ]
+          "__allowUpdate": true
         }
       }
     },
     "userId": {
       "__type": "id",
       "__required": true,
-      "__allowUpdate": false,
-      "__permissions": [
-        {
-          "role": "public",
-          "READ": "allow"
-        }
-      ]
+      "__allowUpdate": false
     }
   }
 }

@@ -337,7 +337,7 @@ describe('@app-relationship', function () {
         policyProperties: {
           role: 'TEST',
         },
-        domains: ['test.local.buttressjs.com'],
+        domains: [Config.endpoint],
       },
     );
   });

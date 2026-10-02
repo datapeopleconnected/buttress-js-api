@@ -29,13 +29,7 @@
     "name": {
       "__type": "string",
       "__required": true,
-      "__allowUpdate": true,
-      "__permissions": [
-        {
-          "role": "public",
-          "READ": "allow"
-        }
-      ]
+      "__allowUpdate": true
     },
     "subscribed": {
       "__type": "array",

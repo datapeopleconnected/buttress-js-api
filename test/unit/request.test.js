@@ -81,13 +81,13 @@ describe('Requests', () => {
   after(() => server.close());
 
   it('should surface the message from a buttress error body', async () => {
-    server.reply = () => ({status: 401, body: {statusMessage: 'invalid_token', message: 'invalid_token'}});
+    server.reply = () => ({status: 401, body: {code: 'invalid_token', message: 'The token is not valid'}});
 
     await assert.rejects(instance.getCollection('thing').getAll(), (err) => {
       assert(err instanceof Errors.ResponseError);
       assert.strictEqual(err.statusCode, 401);
       assert.strictEqual(err.statusMessage, 'Unauthorized');
-      assert.strictEqual(err.message, 'invalid_token');
+      assert.strictEqual(err.message, 'The token is not valid');
       return true;
     });
   });
@@ -128,6 +128,22 @@ describe('Requests', () => {
 
     assert.deepStrictEqual(res, [{id: '1'}]);
     assert.strictEqual(server.requests.length, 2);
+  });
+
+  it('should not retry a GET that never got a response when maxRetries is 0', async () => {
+    const noRetry = Buttress.new();
+    await noRetry.init({
+      buttressUrl: server.url,
+      appToken: 'APP_TOKEN',
+      apiPath: 'test-app',
+      schema,
+      useLocalSchema: true,
+      maxRetries: 0,
+    });
+    server.reply = () => ({destroy: true});
+
+    await assert.rejects(noRetry.getCollection('thing').getAll(), (err) => err instanceof Errors.RequestError);
+    assert.strictEqual(server.requests.length, 1);
   });
 
   it('should update an entity in a remote datastore by sourceId', async () => {
