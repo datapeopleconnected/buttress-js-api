@@ -196,10 +196,10 @@ describe('@lambda', function () {
       const lambda = {
         name: 'organisation-edit-lambda',
         git: {
-          url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/edit-data.git',
-          hash: 'e91f68c18c85121df186dd5bcb27ca0706fe29d4',
+          url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
+          hash: '9f7643e1d570e6061933f5b439eeb088af7ac044',
           branch: 'main',
-          entryFile: 'organisation-edit.js',
+          entryFile: 'edit-data/organisation-edit.js',
           entryPoint: 'execute',
         },
         trigger: [
@@ -245,10 +245,10 @@ describe('@lambda', function () {
       const lambda = {
         name: 'api-hello-world-lambda',
         git: {
-          url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-hello-world.git',
+          url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
           branch: 'main',
-          hash: '38075abf8ea62cf4f68d53c9911dba68bd52fa6e',
-          entryFile: 'index.js',
+          hash: '9f7643e1d570e6061933f5b439eeb088af7ac044',
+          entryFile: 'api-hello-world/index.js',
           entryPoint: 'execute',
         },
         trigger: [
@@ -268,20 +268,19 @@ describe('@lambda', function () {
       const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
       lambdaDB.name.should.equal('api-hello-world-lambda');
 
-      const res = await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/hello/world?token=${testApp.token}`, {
+      const res = await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/hello/world`, {
         method: 'GET',
+        headers: {Authorization: `Bearer ${testApp.token}`},
       });
 
       const parsedRes = await res.json();
       const executionId = parsedRes.executionId;
       await sleep(5000);
 
-      const statusRes = await fetch(
-        `${Config.endpoint}/api/v1/lambda-execution/${executionId}/status?token=${testApp.token}`,
-        {
-          method: 'GET',
-        },
-      );
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda-execution/${executionId}/status`, {
+        method: 'GET',
+        headers: {Authorization: `Bearer ${testApp.token}`},
+      });
       const resJson = await statusRes.json();
       const status = resJson?.status;
       status.should.equal('COMPLETE');
@@ -291,10 +290,10 @@ describe('@lambda', function () {
       const lambda = {
         name: 'api-edit-organisation-lambda',
         git: {
-          url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-edit-data.git',
+          url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
           branch: 'main',
-          hash: '054f7e80279f0f06221d245d2f90ce9faf8a7648',
-          entryFile: 'index.js',
+          hash: '9f7643e1d570e6061933f5b439eeb088af7ac044',
+          entryFile: 'api-edit-data/index.js',
           entryPoint: 'execute',
         },
         trigger: [
@@ -317,12 +316,10 @@ describe('@lambda', function () {
     });
 
     it('Should call the api-edit-organisation-lambda lambda to change liquidation organisations name to Test Lambda API', async function () {
-      const res = await fetch(
-        `${Config.endpoint}/lambda/v1/${testApp.apiPath}/edit/organisation?token=${testApp.token}`,
-        {
-          method: 'GET',
-        },
-      );
+      const res = await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/edit/organisation`, {
+        method: 'GET',
+        headers: {Authorization: `Bearer ${testApp.token}`},
+      });
 
       if (!res.ok) {
         throw new Error('failed to make the API call');
@@ -344,26 +341,22 @@ describe('@lambda', function () {
         },
       });
 
-      await Buttress.Lambda.setPolicyProperty(lambda.id, {
-        grade: 1,
-      });
+      // With no policy property the lambda matches no policy. One it matched that only allowed some of the data would
+      // filter what the lambda reads rather than fail it.
+      await Buttress.Lambda.clearPolicyProperty(lambda.id);
 
-      const res = await fetch(
-        `${Config.endpoint}/lambda/v1/${testApp.apiPath}/edit/organisation?token=${testApp.token}`,
-        {
-          method: 'GET',
-        },
-      );
+      const res = await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/edit/organisation`, {
+        method: 'GET',
+        headers: {Authorization: `Bearer ${testApp.token}`},
+      });
 
       const parsedRes = await res.json();
       const executionId = parsedRes.executionId;
 
-      const statusRes = await fetch(
-        `${Config.endpoint}/api/v1/lambda-execution/${executionId}/status?token=${testApp.token}`,
-        {
-          method: 'GET',
-        },
-      );
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda-execution/${executionId}/status`, {
+        method: 'GET',
+        headers: {Authorization: `Bearer ${testApp.token}`},
+      });
       const resJson = await statusRes.json();
       const status = resJson?.status;
       status.should.equal('ERROR');
@@ -373,10 +366,10 @@ describe('@lambda', function () {
       const lambda = {
         name: 'api-add-organisation-lambda',
         git: {
-          url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/api-add-data.git',
+          url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
           branch: 'main',
-          hash: 'e47ba5b7575582d0d78f9611f127979b6f47b570',
-          entryFile: 'index.js',
+          hash: '9f7643e1d570e6061933f5b439eeb088af7ac044',
+          entryFile: 'api-add-data/index.js',
           entryPoint: 'execute',
         },
         trigger: [
@@ -406,17 +399,15 @@ describe('@lambda', function () {
         empolyees: ['John', 'Joe', 'Robert'],
       };
 
-      const res = await fetch(
-        `${Config.endpoint}/lambda/v1/${testApp.apiPath}/add/organisation?token=${testApp.token}`,
-        {
-          method: 'POST',
-          body: JSON.stringify(organisation),
-          headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': JSON.stringify(organisation).length,
-          },
+      const res = await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/add/organisation`, {
+        method: 'POST',
+        body: JSON.stringify(organisation),
+        headers: {
+          Authorization: `Bearer ${testApp.token}`,
+          'Content-Type': 'application/json',
+          'Content-Length': JSON.stringify(organisation).length,
         },
-      );
+      });
 
       const parsedRes = await res.json();
       const executionId = parsedRes.executionId;
@@ -425,12 +416,10 @@ describe('@lambda', function () {
         throw new Error('failed to make the API call');
       }
 
-      const statusRes = await fetch(
-        `${Config.endpoint}/api/v1/lambda-execution/${executionId}/status?token=${testApp.token}`,
-        {
-          method: 'GET',
-        },
-      );
+      const statusRes = await fetch(`${Config.endpoint}/api/v1/lambda-execution/${executionId}/status`, {
+        method: 'GET',
+        headers: {Authorization: `Bearer ${testApp.token}`},
+      });
       const resJson = await statusRes.json();
       const status = resJson?.status;
 
@@ -449,10 +438,10 @@ describe('@lambda', function () {
         {
           name: 'name-path-lambda',
           git: {
-            url: 'ssh://git@git.wearelighten.co.uk:8822/lambdas/name-path-mutation.git',
-            hash: '107c6c5cea37aee288ab499b18869e6e117a6417',
+            url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
+            hash: 'e7445ba5453a17205270bb93eaff87fda5ff76eb',
             branch: 'main',
-            entryFile: 'index.js',
+            entryFile: 'name-path-mutation/index.js',
             entryPoint: 'execute',
           },
           trigger: [
