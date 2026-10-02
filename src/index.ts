@@ -117,6 +117,7 @@ export class Buttress {
     if (options.allowUnauthorized) this.options.allowUnauthorized = options.allowUnauthorized;
     if (options.useLocalSchema) this.options.useLocalSchema = options.useLocalSchema;
     if (options.clientSessionId) this.options.clientSessionId = options.clientSessionId;
+    if (options.maxRetries !== undefined) this.options.maxRetries = options.maxRetries;
 
     this.options.url = options.buttressUrl;
 

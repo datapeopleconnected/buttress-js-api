@@ -130,6 +130,22 @@ describe('Requests', () => {
     assert.strictEqual(server.requests.length, 2);
   });
 
+  it('should not retry a GET that never got a response when maxRetries is 0', async () => {
+    const noRetry = Buttress.new();
+    await noRetry.init({
+      buttressUrl: server.url,
+      appToken: 'APP_TOKEN',
+      apiPath: 'test-app',
+      schema,
+      useLocalSchema: true,
+      maxRetries: 0,
+    });
+    server.reply = () => ({destroy: true});
+
+    await assert.rejects(noRetry.getCollection('thing').getAll(), (err) => err instanceof Errors.RequestError);
+    assert.strictEqual(server.requests.length, 1);
+  });
+
   it('should update an entity in a remote datastore by sourceId', async () => {
     await instance.getCollection('thing').update('ID', [{path: 'name', value: 'x'}], {sourceId: 'SOURCE'});
 
