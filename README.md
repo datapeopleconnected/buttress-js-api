@@ -157,14 +157,14 @@ tests on every push to `main` and `develop`, and on pull requests.
 
 ### End-to-end tests
 
-The end-to-end tests need [Docker](https://docs.docker.com/get-docker/) with Compose v2. `scripts/e2e.js` starts
+The end-to-end tests need [Docker](https://docs.docker.com/get-docker/) with Compose v2. `scripts/e2e.ts` starts
 Buttress, MongoDB and Redis in containers, runs the tests with `BUTTRESS_TEST_API_URL` and
 `BUTTRESS_TEST_SUPER_APP_KEY` set, and then removes the containers. Every run starts from an empty database.
 
 It runs any command, so you can run a single suite:
 
 ```sh
-npm run build && node scripts/e2e.js npm run test-policy
+npm run build && npx tsx scripts/e2e.ts npm run test-policy
 ```
 
 Set `BUTTRESS_IMAGE` to test against a different image than `dpcltd/buttress:develop`, such as one built from a

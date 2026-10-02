@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -16,15 +14,18 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const {default: Buttress} = require('../dist/index');
-const Config = require('./config');
+import Buttress from '../dist/index';
+import type {Entity} from '../dist/index';
+import type App from '../dist/app';
+import type Policy from '../dist/policy';
+import Config from './config';
 
 Config.init();
 
 // const sleep = (time) => new Promise((r) => setTimeout(r, time));
 
-let testUser = null;
-let testPosts = [];
+let testUser: Entity;
+const testPosts: Entity[] = [];
 // Create a test to handle the creation of a policy.
 // Create a test to handle mutiple results coming back due to the policy.
 
@@ -32,9 +33,9 @@ describe('@policy', function () {
   before(async function () {
     Config.configureTest();
 
-    await Buttress.getCollection('app').updatePolicyPropertyList({
+    await Buttress.getCollection<App>('app').updatePolicyPropertyList({
       policyTests: [1, 2],
-    });
+    } as unknown as unknown[]);
 
     testUser = await Buttress.Auth.findOrCreateUser(
       {
@@ -88,12 +89,12 @@ describe('@policy', function () {
       ],
     };
 
-    const res = await Buttress.getCollection('policy').createPolicy(policy);
+    const res = await Buttress.getCollection<Policy>('policy').createPolicy(policy);
     res.name.should.equal('admin-access');
   });
 
   it('Should create mutiple policies, api should handle merging results', async function () {
-    await Buttress.getCollection('policy').createPolicy({
+    await Buttress.getCollection<Policy>('policy').createPolicy({
       name: 'policy-test-2-1',
       version: '1',
       selection: {policyTests: {'@eq': 2}},
@@ -112,7 +113,7 @@ describe('@policy', function () {
         },
       ],
     });
-    await Buttress.getCollection('policy').createPolicy({
+    await Buttress.getCollection<Policy>('policy').createPolicy({
       name: 'policy-test-2-2',
       version: '1',
       selection: {policyTests: {'@eq': 2}},
@@ -206,10 +207,10 @@ describe('@policy', function () {
 //   before(async function() {
 //     Buttress.setAuthToken(Config.token);
 
-//     const existingApps = await Buttress.getCollection('app').getAll();
+//     const existingApps = await Buttress.getCollection<App>('app').getAll();
 //     testApp = existingApps.find((a) => a.name === 'Socket Test App');
 //     if (!testApp) {
-//       testApp = await Buttress.getCollection('app').save({
+//       testApp = await Buttress.getCollection<App>('app').save({
 //         name: 'Policy Test App',
 //         apiPath: 'policy-test-app',
 //         policyPropertiesList: {
@@ -248,7 +249,7 @@ describe('@policy', function () {
 
 //     await testPolicies.reduce(async (prev, next) => {
 //       await prev;
-//       await Buttress.getCollection('policy').remove(next.id);
+//       await Buttress.getCollection<Policy>('policy').remove(next.id);
 //     }, Promise.resolve());
 
 //     await Buttress.getCollection('switch').remove(testSwitch.id);
@@ -260,7 +261,7 @@ describe('@policy', function () {
 //     it('Should create policies on the app', async function() {
 //       await policies.reduce(async (prev, next) => {
 //         await prev;
-//         testPolicies.push(await Buttress.getCollection('policy').createPolicy(next));
+//         testPolicies.push(await Buttress.getCollection<Policy>('policy').createPolicy(next));
 //       }, Promise.resolve());
 
 //       testPolicies.length.should.equal(13);

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -16,8 +14,9 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const {default: Buttress} = require('../dist/index');
-const Config = require('./config');
+import Buttress from '../dist/index';
+import type {Entity} from '../dist/index';
+import Config from './config';
 
 Config.init();
 
@@ -67,8 +66,8 @@ describe('@users', function () {
   });
 
   describe('User Basics', function () {
-    const _users = [null, null];
-    let _userId = false;
+    const _users: (Entity | null)[] = [null, null];
+    let _userId: string | false = false;
 
     it('should return no users', function (done) {
       Buttress.User.getAll()
@@ -134,7 +133,7 @@ describe('@users', function () {
     });
 
     it('should create a user token', function (done) {
-      const user = _users[0];
+      const user = _users[0]!;
 
       Buttress.Auth.createToken(user.id, {
         domains: [Config.endpoint],

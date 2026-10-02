@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -16,23 +14,26 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-require('source-map-support').install();
+import 'source-map-support/register';
 
-const {default: Buttress} = require('../dist/index');
-const TestSchema = require('./data/schema');
-const TestPolicies = require('./data/policy/index.js');
-const ObjectId = require('bson-objectid');
+import Buttress from '../dist/index';
+import TestSchema from './data/schema';
+import TestPolicies from './data/policy';
+import ObjectId from 'bson-objectid';
+import type App from '../dist/app';
 
 // TODO: Update AppRoles to Policy.
 
-const PolicyPropertiesList = Object.values(TestPolicies).reduce((list, policy) => {
-  if (policy.selection) {
-    Object.keys(policy.selection).forEach((key) => {
+const PolicyPropertiesList = Object.values(TestPolicies).reduce<Record<string, unknown[]>>((list, policy) => {
+  const selection: Record<string, unknown> = policy.selection;
+  if (selection) {
+    Object.keys(selection).forEach((key) => {
       if (!list[key]) list[key] = [];
-      if (typeof policy.selection[key] === 'object') {
-        list[key].push(...Object.values(policy.selection[key]));
+      const value = selection[key];
+      if (typeof value === 'object' && value !== null) {
+        list[key].push(...Object.values(value));
       } else {
-        list[key].push(policy.selection[key]);
+        list[key].push(value);
       }
     });
   }
@@ -43,18 +44,24 @@ const PolicyPropertiesList = Object.values(TestPolicies).reduce((list, policy) =
  * @class Config
  */
 class Config {
+  _initialised: boolean;
+  endpoint: string;
+  remoteEndpoint: string;
+  // Set once the test app has been created.
+  token!: string;
+  token_super: string;
+
   /**
    * Creates an instance of Config.
    */
   constructor() {
     this._initialised = false;
 
-    this.endpoint = process.env.BUTTRESS_TEST_API_URL;
+    this.endpoint = process.env.BUTTRESS_TEST_API_URL as string;
     // The address Buttress reaches itself on, for data shares. Inside Docker that isn't the port the tests use.
     this.remoteEndpoint = process.env.BUTTRESS_TEST_REMOTE_API_URL || this.endpoint;
-    this.token = process.env.BUTTRESS_TEST_SUPER_APP_KEY;
 
-    this.token_super = process.env.BUTTRESS_TEST_SUPER_APP_KEY;
+    this.token_super = process.env.BUTTRESS_TEST_SUPER_APP_KEY as string;
   }
 
   /**
@@ -80,7 +87,7 @@ class Config {
 
       await Promise.all([
         // Remove all existing apps, this should clear out any existing data.
-        await Buttress.getCollection('app').removeAll(),
+        await Buttress.getCollection<App>('app').removeAll(),
         // Buttress.getCollection('service').removeAll(),
         // Buttress.getCollection('company').removeAll(),
         // Buttress.getCollection('board').removeAll(),
@@ -89,7 +96,7 @@ class Config {
       console.log('Cleared out existing local data.');
 
       // Create a test app
-      const testApp = await Buttress.getCollection('app').save({
+      const testApp = await Buttress.getCollection<App>('app').save({
         name: 'Test App',
         apiPath: 'test',
         policyPropertiesList: PolicyPropertiesList,
@@ -100,12 +107,12 @@ class Config {
       Buttress.setAuthToken(testApp.token);
       Buttress.setAPIPath(testApp.apiPath);
 
-      await Buttress.getCollection('app').updateSchema(TestSchema);
+      await Buttress.getCollection<App>('app').updateSchema(TestSchema);
 
       // Add the policies
       const TestData = Object.values(TestPolicies);
       for await (const policy of TestData) {
-        await Buttress.getCollection('policy').createPolicy(policy);
+        await Buttress.Policy.createPolicy(policy);
         console.log(`Added policy: ${policy.name}`);
       }
     });
@@ -125,11 +132,11 @@ class Config {
    * @param {number} [options.delayMs]
    * @return {Promise}
    */
-  async retryUnrouted(request, {attempts = 50, delayMs = 100} = {}) {
+  async retryUnrouted<T>(request: () => Promise<T>, {attempts = 50, delayMs = 100} = {}): Promise<T> {
     for (let attempt = 1; ; attempt++) {
       try {
         return await request();
-      } catch (err) {
+      } catch (err: any) {
         const unrouted = err.statusCode === 404 && /^No route takes /.test(err.message);
         if (!unrouted || attempt >= attempts) throw err;
         await new Promise((resolve) => setTimeout(resolve, delayMs));
@@ -287,4 +294,4 @@ class Config {
   }
 }
 
-module.exports = new Config();
+export default new Config();

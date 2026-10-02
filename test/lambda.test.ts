@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -16,15 +14,19 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Sugar = require('sugar');
-const fetch = require('cross-fetch');
+import Sugar from 'sugar';
+import fetch from 'cross-fetch';
 
-const {default: Buttress} = require('../dist/index');
-const Config = require('./config');
+import Buttress from '../dist/index';
+import type {Entity} from '../dist/index';
+import type App from '../dist/app';
+import type Policy from '../dist/policy';
+import type LambdaModel from '../dist/model/Lambda';
+import Config from './config';
 
 Config.init();
 
-const sleep = (time) => new Promise((r) => setTimeout(r, time));
+const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
 
 const authentication = {
   domains: [Config.endpoint],
@@ -100,20 +102,21 @@ const organisations = [
 
 describe('@lambda', function () {
   this.timeout(90000);
-  let testApp = null;
+  let testApp: Entity;
 
   before(async function () {
     Config.configureSuper();
 
-    const existingApps = await Buttress.getCollection('app').getAll();
-    testApp = existingApps.find((a) => a.name === 'Lambda Test App');
-    if (!testApp) {
-      testApp = await Buttress.getCollection('app').save({
+    const existingApps = await Buttress.getCollection<App>('app').getAll();
+    const existingApp = existingApps.find((a) => a.name === 'Lambda Test App');
+    if (!existingApp) {
+      testApp = await Buttress.getCollection<App>('app').save({
         name: 'Lambda Test App',
         type: 'app',
         apiPath: 'lambda-test-app',
       });
     } else {
+      testApp = existingApp;
       // Fetch token and attach
       const tokens = await Buttress.Token.getAll();
       const appToken = tokens.find((t) => t.type === 'app' && t._appId === testApp.id);
@@ -158,14 +161,14 @@ describe('@lambda', function () {
     Buttress.setAPIPath('lambda-test-app');
 
     await Buttress.setSchema(schemas);
-    await Buttress.getCollection('app').setPolicyPropertyList({
+    await Buttress.getCollection<App>('app').setPolicyPropertyList({
       adminAccess: [true],
       grade: [1],
-    });
-    await Buttress.getCollection('app').updatePolicyPropertyList({
+    } as unknown as unknown[]);
+    await Buttress.getCollection<App>('app').updatePolicyPropertyList({
       adminAccess: [true],
       grade: [1],
-    });
+    } as unknown as unknown[]);
 
     await organisations.reduce(async (prev, next) => {
       await prev;
@@ -186,7 +189,7 @@ describe('@lambda', function () {
       const appPolicies = [];
       await policies.reduce(async (prev, next) => {
         await prev;
-        appPolicies.push(await Buttress.getCollection('policy').createPolicy(next));
+        appPolicies.push(await Buttress.getCollection<Policy>('policy').createPolicy(next));
       }, Promise.resolve());
 
       appPolicies.length.should.equal(2);
@@ -217,7 +220,7 @@ describe('@lambda', function () {
         },
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda as unknown as LambdaModel, authentication);
       lambdaDB.name.should.equal('organisation-edit-lambda');
     });
 
@@ -234,7 +237,7 @@ describe('@lambda', function () {
           branch: 'develop',
         });
       } catch (err) {
-        err.statusCode.should.equal(400);
+        (err as {statusCode: number}).statusCode.should.equal(400);
         return;
       }
 
@@ -265,7 +268,7 @@ describe('@lambda', function () {
         },
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda as unknown as LambdaModel, authentication);
       lambdaDB.name.should.equal('api-hello-world-lambda');
 
       const res = await fetch(`${Config.endpoint}/lambda/v1/${testApp.apiPath}/hello/world`, {
@@ -311,7 +314,7 @@ describe('@lambda', function () {
         },
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda as unknown as LambdaModel, authentication);
       lambdaDB.name.should.equal('api-edit-organisation-lambda');
     });
 
@@ -387,7 +390,7 @@ describe('@lambda', function () {
         },
       };
 
-      const lambdaDB = await Buttress.Lambda.createLambda(lambda, authentication);
+      const lambdaDB = await Buttress.Lambda.createLambda(lambda as unknown as LambdaModel, authentication);
       lambdaDB.name.should.equal('api-add-organisation-lambda');
     });
 
@@ -405,7 +408,7 @@ describe('@lambda', function () {
         headers: {
           Authorization: `Bearer ${testApp.token}`,
           'Content-Type': 'application/json',
-          'Content-Length': JSON.stringify(organisation).length,
+          'Content-Length': String(JSON.stringify(organisation).length),
         },
       });
 
@@ -455,7 +458,7 @@ describe('@lambda', function () {
           policyProperties: {
             adminAccess: true,
           },
-        },
+        } as unknown as LambdaModel,
         authentication,
       );
 

@@ -1,4 +1,4 @@
-# A throwaway Buttress for the end-to-end tests. scripts/e2e.js starts it, runs the tests against it and removes it
+# A throwaway Buttress for the end-to-end tests. scripts/e2e.ts starts it, runs the tests against it and removes it
 # again: see "Tests" in the README.
 name: buttress-js-api-e2e
 
@@ -36,7 +36,7 @@ services:
       BUTTRESS_APP_PATH: /opt/buttress
       BUTTRESS_DATASTORE_CONNECTION_STRING: mongodb://mongo:27017
       BUTTRESS_REDIS_URL: redis://redis:6379
-    # A free port on loopback only. scripts/e2e.js looks it up with `docker compose port`.
+    # A free port on loopback only. scripts/e2e.ts looks it up with `docker compose port`.
     ports:
       - 127.0.0.1::8000
     healthcheck:
