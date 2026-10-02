@@ -88,6 +88,20 @@ describe('Requests', () => {
       assert.strictEqual(err.statusCode, 401);
       assert.strictEqual(err.statusMessage, 'Unauthorized');
       assert.strictEqual(err.message, 'The token is not valid');
+      assert.strictEqual(err.errorCode, 'invalid_token');
+      // code stays the HTTP status
+      assert.strictEqual(err.code, 401);
+      return true;
+    });
+  });
+
+  it('should leave errorCode out when the error body has no code', async () => {
+    server.reply = () => ({status: 502, body: {message: 'Bad gateway'}});
+
+    await assert.rejects(instance.getCollection('thing').getAll(), (err) => {
+      assert(err instanceof Errors.ResponseError);
+      assert.strictEqual(err.errorCode, undefined);
+      assert.strictEqual(err.statusCode, 502);
       return true;
     });
   });
