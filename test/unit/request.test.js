@@ -81,13 +81,13 @@ describe('Requests', () => {
   after(() => server.close());
 
   it('should surface the message from a buttress error body', async () => {
-    server.reply = () => ({status: 401, body: {statusMessage: 'invalid_token', message: 'invalid_token'}});
+    server.reply = () => ({status: 401, body: {code: 'invalid_token', message: 'The token is not valid'}});
 
     await assert.rejects(instance.getCollection('thing').getAll(), (err) => {
       assert(err instanceof Errors.ResponseError);
       assert.strictEqual(err.statusCode, 401);
       assert.strictEqual(err.statusMessage, 'Unauthorized');
-      assert.strictEqual(err.message, 'invalid_token');
+      assert.strictEqual(err.message, 'The token is not valid');
       return true;
     });
   });

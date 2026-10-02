@@ -118,7 +118,7 @@ describe('@data-filter', function () {
 
         err.statusCode.should.equal(401);
         err.statusMessage.should.equal('Unauthorized');
-        err.message.should.equal('invalid_token');
+        err.body.code.should.equal('invalid_token');
       }
     });
   });

@@ -79,7 +79,7 @@ const Errors = {
     body?: any;
     /**
      * @param {Object} response
-     * @param {Object} [body] - parsed error body, buttress responds with {statusMessage, message}
+     * @param {Object} [body] - parsed error body, buttress responds with {code, message, details?}
      */
     constructor(response: {status: number; statusText?: string}, body?: any) {
       super();
