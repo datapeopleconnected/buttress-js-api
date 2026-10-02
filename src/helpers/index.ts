@@ -76,6 +76,8 @@ const Errors = {
     code: number;
     statusCode: number;
     statusMessage: string;
+    // buttress's code for what went wrong, such as invalid_token. `code` is the HTTP status, as it always has been.
+    errorCode?: string;
     body?: any;
     /**
      * @param {Object} response
@@ -87,6 +89,7 @@ const Errors = {
       this.code = this.statusCode = response.status;
       this.statusMessage = response.statusText || '';
       this.body = body;
+      if (body && typeof body.code === 'string') this.errorCode = body.code;
       this.message = body && typeof body.message === 'string' ? body.message : this.statusMessage;
     }
   },
