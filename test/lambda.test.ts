@@ -22,6 +22,7 @@ import type {Entity} from '../dist/index';
 import type App from '../dist/app';
 import type Policy from '../dist/policy';
 import type LambdaModel from '../dist/model/Lambda';
+import type SchemaModel from '../dist/model/Schema';
 import Config from './config';
 
 Config.init();
@@ -124,7 +125,7 @@ describe('@lambda', function () {
       testApp.token = appToken.value;
     }
 
-    const schemas = [
+    const schemas: SchemaModel[] = [
       {
         name: 'organisation',
         type: 'collection',
@@ -455,7 +456,7 @@ describe('@lambda', function () {
     });
 
     it('Should create a post api endpoint lambda that saves an entity with a uuid default', async function () {
-      const lambda = {
+      const lambda: LambdaModel = {
         name: 'api-create-ticket-lambda',
         git: {
           url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
@@ -492,7 +493,7 @@ describe('@lambda', function () {
         headers: {
           Authorization: `Bearer ${testApp.token}`,
           'Content-Type': 'application/json',
-          'Content-Length': JSON.stringify(ticket).length,
+          'Content-Length': String(JSON.stringify(ticket).length),
         },
       });
 

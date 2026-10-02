@@ -20,6 +20,10 @@ export interface Property {
   __required?: boolean;
   __allowUpdate?: boolean;
   __enum?: string[];
+  // The type of the items in an array
+  __itemtype?: string;
+  __private?: boolean;
+  __unique?: boolean;
   __schema?: Properties;
 }
 
