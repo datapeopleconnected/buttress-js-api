@@ -26,9 +26,10 @@ export default interface ButtressOptionsInternal {
   version: number;
   update: boolean;
   useLocalSchema: boolean;
-  allowUnauthorized: boolean;
   clientSessionId?: string;
   maxRetries?: number;
+  // Set by clean(), modules built with these options refuse to be used after it
+  cleaned?: boolean;
   url?: string;
   urls?: {
     core: string;

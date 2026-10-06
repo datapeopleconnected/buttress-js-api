@@ -38,7 +38,7 @@ export default class AppDataSharing extends BaseSchema {
    * @param {AppDataSharingModel} dataShare
    * @return {Promise}
    */
-  createDataSharing(dataShare: AppDataSharingModel) {
+  async createDataSharing(dataShare: AppDataSharingModel) {
     return this.save(dataShare, {});
   }
 
@@ -49,7 +49,7 @@ export default class AppDataSharing extends BaseSchema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  updateDataSharingPolicy(dataSharingId: string, data: Record<string, unknown>, options: RequestOptionsIn = {}) {
+  async updateDataSharingPolicy(dataSharingId: string, data: Record<string, unknown>, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
     return this._request('put', `${Helpers.pathSegment(dataSharingId)}/policy`, opts);
@@ -61,10 +61,10 @@ export default class AppDataSharing extends BaseSchema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  activate(registrationToken: string, newToken: string, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.token);
-    // Buttress only reads tokens from the Authorization header, the registration token authenticates this call
-    opts.token = registrationToken;
+  async activate(registrationToken: string, newToken: string, options: RequestOptionsIn = {}) {
+    // Buttress only reads tokens from the Authorization header, the registration token authenticates this call, so
+    // a client without an app token can make it
+    const opts = Helpers.checkOptions({...options, token: registrationToken}, this.token);
     opts.data = {newToken};
     return this._request('post', `activate`, opts);
   }
@@ -74,7 +74,7 @@ export default class AppDataSharing extends BaseSchema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  reactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
+  async reactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('put', `reactivate/${Helpers.pathSegment(dataSharingId)}`, opts);
   }
@@ -84,7 +84,7 @@ export default class AppDataSharing extends BaseSchema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  deactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
+  async deactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('put', `deactivate/${Helpers.pathSegment(dataSharingId)}`, opts);
   }

@@ -50,6 +50,27 @@ type Modules = {
 export const Errors = Helpers.Errors;
 
 /**
+ * Whether two sets of init options are the same, deeply. A property set to undefined counts as left out.
+ * @param {*} a
+ * @param {*} b
+ * @return {boolean}
+ */
+const isSameOptions = (a: unknown, b: unknown): boolean => {
+  if (a === b) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+
+  const left = a as Record<string, unknown>;
+  const right = b as Record<string, unknown>;
+  const keys = (o: Record<string, unknown>) => Object.keys(o).filter((key) => o[key] !== undefined);
+  const leftKeys = keys(left);
+  return (
+    leftKeys.length === keys(right).length &&
+    leftKeys.every((key) => Object.hasOwn(right, key) && isSameOptions(left[key], right[key]))
+  );
+};
+
+/**
  * @class Buttress
  */
 export class Buttress {
@@ -60,7 +81,6 @@ export class Buttress {
     version: 1,
     update: false,
     useLocalSchema: false,
-    allowUnauthorized: false,
   };
 
   // private __coreModules = { App, AppDataSharing, Auth, Lambda, Policy, Token, User, SecureStore };
@@ -68,6 +88,12 @@ export class Buttress {
   private __modules: Modules = {};
 
   private __initialised = false;
+
+  // The first init()'s promise, which any later init() with the same options returns until clean()
+  private __initPromise?: Promise<boolean | undefined>;
+
+  // What the first init() was called with
+  private __initArgs?: {options: ButtressOptions; isolated: boolean};
 
   /**
    * Creates an instance of Buttress.
@@ -88,16 +114,28 @@ export class Buttress {
    * @return {promise}
    */
   async init(options: ButtressOptions, isolated = false) {
-    if (this.__initialised === true) return;
+    if (this.__initPromise) {
+      // Different options would be ignored, leaving the caller talking to the first app
+      if (!isSameOptions(this.__initArgs, {options: {...options}, isolated})) {
+        throw new Error(
+          'Buttress is already initialised with different options, call clean() before init() to change them',
+        );
+      }
+
+      // A call made while the first is still loading the schema waits for it rather than returning before it's done
+      return this.__initPromise;
+    }
+    this.__initArgs = {options: {...options}, isolated};
 
     // Modules can only be created once initialised, reset if the schema can't be fetched so init can be retried.
     this.__initialised = true;
-    try {
-      return await this.__init(options, isolated);
-    } catch (err) {
-      this.clean();
+    const initPromise = this.__init(options, isolated).catch((err) => {
+      if (this.__initPromise === initPromise) this.clean();
       throw err;
-    }
+    });
+    this.__initPromise = initPromise;
+
+    return initPromise;
   }
 
   /**
@@ -114,7 +152,12 @@ export class Buttress {
     if (options.schema) this.options.schema = options.schema;
     if (options.version) this.options.version = options.version;
     if (options.update) this.options.update = options.update;
-    if (options.allowUnauthorized) this.options.allowUnauthorized = options.allowUnauthorized;
+    // Certificates are always verified. A lambda's client is set up by Buttress, which still passes the option.
+    if (options.allowUnauthorized && !isolated) {
+      console.warn(
+        '[WARNING] Buttress: allowUnauthorized is ignored, certificates are always verified. Remove the option.',
+      );
+    }
     if (options.useLocalSchema) this.options.useLocalSchema = options.useLocalSchema;
     if (options.clientSessionId) this.options.clientSessionId = options.clientSessionId;
     if (options.maxRetries !== undefined) this.options.maxRetries = options.maxRetries;
@@ -187,6 +230,10 @@ export class Buttress {
     });
     this.__modules = {};
 
+    // A module taken before clean() still holds these options, so mark them to make it fail loudly rather than go on
+    // using the old app's token and URLs. Every module from here on is built with the new options object.
+    this.options.cleaned = true;
+
     // Reset options
     this.options = {
       isolated: false,
@@ -195,10 +242,11 @@ export class Buttress {
       version: 1,
       update: false,
       useLocalSchema: false,
-      allowUnauthorized: false,
     };
 
     this.__initialised = false;
+    this.__initPromise = undefined;
+    this.__initArgs = undefined;
   }
 
   /**
@@ -284,7 +332,7 @@ export class Buttress {
   /**
    * Create user transient policy
    * @param {String} userId
-   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
+   * @param {String} tokenId - id of the user's token, policy properties are held per token. Not its value, which would end up in access logs
    * @param {Object} policy
    * @return {Promise}
    */
@@ -296,7 +344,7 @@ export class Buttress {
   /**
    * Delete user transient policy
    * @param {String} userId
-   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
+   * @param {String} tokenId - id of the user's token, policy properties are held per token. Not its value, which would end up in access logs
    * @param {String} policyName
    * @return {Promise}
    */

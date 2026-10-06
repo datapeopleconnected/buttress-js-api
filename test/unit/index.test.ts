@@ -15,6 +15,8 @@
  */
 import assert from 'assert';
 
+import Sugar from 'sugar';
+
 import Buttress from '../../dist/index';
 import type {ButtressOptions} from '../../dist/index';
 
@@ -84,6 +86,16 @@ describe('Unit tests for index.js', () => {
           name: {
             __type: 'string',
             __default: null,
+          },
+        },
+      },
+      {
+        name: 'dated',
+        type: 'collection',
+        properties: {
+          startsOn: {
+            __type: 'date',
+            __default: '01/02/2026',
           },
         },
       },
@@ -252,6 +264,41 @@ describe('Unit tests for index.js', () => {
       assert(Object.keys(companyRegistrar).some((k) => k === 'numbers'));
       assert(Object.keys(companyRegistrar['numbers']).some((k) => k === 'number1'));
       assert(Object.keys(companyRegistrar['numbers']).some((k) => k === 'number2'));
+    });
+
+    it('should read a date default day first, as Buttress does', async () => {
+      const {startsOn} = createObject('dated');
+
+      assert.strictEqual(startsOn.getFullYear(), 2026);
+      assert.strictEqual(startsOn.getMonth(), 1);
+      assert.strictEqual(startsOn.getDate(), 1);
+      // Without changing the locale for anything else using Sugar
+      assert.strictEqual((Sugar.Date.getLocale() as unknown as {code: string}).code, 'en');
+    });
+
+    it('should refuse to create an object for a plain array property', async () => {
+      assert.throws(
+        () => createObject('organisation', 'array'),
+        /'array' is a property of type array with no __schema/,
+      );
+    });
+
+    it('should refuse to create an object for a property that holds a value', async () => {
+      assert.throws(() => createObject('organisation', 'name'), /'name' is a property of type string with no __schema/);
+      assert.throws(
+        () => createObject('organisation', 'registeredAddress.city'),
+        /'registeredAddress.city', 'city' is a property of type number/,
+      );
+    });
+
+    it('should still create an object for a nested object or an array with a __schema', async () => {
+      assert.deepStrictEqual(Object.keys(createObject('organisation', 'registeredAddress')).sort(), [
+        'address1',
+        'address2',
+        'city',
+        'county',
+      ]);
+      assert.deepStrictEqual(createObject('organisation', 'companiesRegistrar.numbers'), {number1: null, number2: 0});
     });
   });
 });

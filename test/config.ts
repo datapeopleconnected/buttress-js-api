@@ -79,7 +79,6 @@ class Config {
       await Buttress.init({
         buttressUrl: this.endpoint,
         appToken: this.token_super,
-        allowUnauthorized: true,
         apiPath: 'bjs',
         version: 1,
         update: true,

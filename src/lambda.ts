@@ -39,7 +39,7 @@ export default class Lambda extends BaseSchema {
    * @param {Object} auth
    * @return {Promise}
    */
-  createLambda(lambda: LambdaModel, auth: LambdaAuth) {
+  async createLambda(lambda: LambdaModel, auth: LambdaAuth) {
     return this.save({lambda, auth});
   }
 
@@ -50,7 +50,7 @@ export default class Lambda extends BaseSchema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  editLambdaDeployment(lambdaId: string, data: any, options?: RequestOptionsIn) {
+  async editLambdaDeployment(lambdaId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
     return this._request('put', `${Helpers.pathSegment(lambdaId)}/deployment`, opts);
@@ -62,7 +62,7 @@ export default class Lambda extends BaseSchema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  setPolicyProperty(lambdaId: string, data: any, options?: RequestOptionsIn) {
+  async setPolicyProperty(lambdaId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
     return this._request('put', `${Helpers.pathSegment(lambdaId)}/policy-property`, opts);
@@ -74,7 +74,7 @@ export default class Lambda extends BaseSchema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  updatePolicyProperty(lambdaId: string, data: any, options?: RequestOptionsIn) {
+  async updatePolicyProperty(lambdaId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
     return this._request('put', `${Helpers.pathSegment(lambdaId)}/update-policy-property`, opts);
@@ -87,7 +87,7 @@ export default class Lambda extends BaseSchema {
    * @param {object} options
    * @return {Promise}
    */
-  scheduleExecution(lambdaId: string, executeAfter?: string | null, metadata?: any, options?: RequestOptionsIn) {
+  async scheduleExecution(lambdaId: string, executeAfter?: string | null, metadata?: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (executeAfter) opts.data.executeAfter = executeAfter;
     if (metadata !== undefined) opts.data.metadata = metadata;
@@ -99,7 +99,7 @@ export default class Lambda extends BaseSchema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  clearPolicyProperty(lambdaId: string, options?: RequestOptionsIn) {
+  async clearPolicyProperty(lambdaId: string, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('put', `${Helpers.pathSegment(lambdaId)}/clear-policy-property`, opts);
   }

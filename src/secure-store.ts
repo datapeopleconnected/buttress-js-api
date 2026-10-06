@@ -23,6 +23,17 @@ import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 import {Entity} from './types/Entity';
 
 /**
+ * Checks a secure store key. setValue writes `storeData.<key>` as an update path, where a `.` would reach a nested
+ * property, while getValue reads the key as it is, so a key holding one couldn't be read back. Both refuse it.
+ * @param {string} key
+ */
+const checkStoreKey = (key: string) => {
+  if (typeof key !== 'string' || key === '' || key.includes('.')) {
+    throw new Error(`Unable to use '${String(key)}' as a secure store key, pass a non-empty string without a '.'`);
+  }
+};
+
+/**
  * @class SecureStore
  */
 // Buttress answers a bulk add of secure stores with `true`, not the stores
@@ -42,6 +53,8 @@ export default class SecureStore extends BaseSchema<SecureStoreModel & Entity, t
   _secureStoreInterface(secureStore: SecureStoreModel) {
     return {
       getValue: (key: string) => {
+        checkStoreKey(key);
+
         // A stored 0, '' or false is still a value, only a key the store doesn't hold is missing
         if (!Object.hasOwn(secureStore.storeData, key)) {
           throw new Error(`${key} does not exist on the secure store ${secureStore.name}`);
@@ -49,7 +62,9 @@ export default class SecureStore extends BaseSchema<SecureStoreModel & Entity, t
 
         return secureStore.storeData[key];
       },
-      setValue: (key: string, value: any) => {
+      setValue: async (key: string, value: any) => {
+        checkStoreKey(key);
+
         return this.update(secureStore.id, [
           {
             path: `storeData.${key}`,

@@ -31,6 +31,8 @@ import APIResponse from '../types/Response';
 declare const lambda: any;
 
 /**
+ * Every method that makes a request is async, here and in the core modules, so an error thrown before the request is
+ * sent, such as a refused token or id, rejects the call's promise rather than throwing where the call is made.
  * @class BaseSchema
  * @template T - the collection's entities
  * @template BulkSaveResult - what bulkSave resolves to: the added entities, but `true` for a core collection
@@ -90,9 +92,22 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
   }
 
   /**
+   * Throws when the module was taken before Buttress.clean(), as its options are no longer the client's
+   */
+  protected _assertCurrent() {
+    if (this._ButtressOptions.cleaned) {
+      throw new Helpers.Errors.NotYetInitiated(
+        `Attempting to use the ${this.collection} module after Buttress.clean(), get it again after init()`,
+      );
+    }
+  }
+
+  /**
    * @return {object} schema
    */
   loadSchema() {
+    this._assertCurrent();
+
     if (this.__schema) {
       return this.__schema;
     }
@@ -134,6 +149,8 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @return {promise}
    */
   async _request(type: string, path: string, options: RequestOptions, attempt = 0, redirect = false): Promise<any> {
+    this._assertCurrent();
+
     if (!this.__route) {
       throw new Error(`Unable to make request to Buttress due to unknown schema ${this.collection}`);
     }
@@ -153,11 +170,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
     }
 
     if (options.params) {
-      const params = Object.keys(options.params)
-        .map((key) => {
-          return `${encodeURIComponent(key)}=${encodeURIComponent(options.params[key])}`;
-        })
-        .join('&');
+      const params = Helpers.queryString(options.params);
 
       url = params !== '' ? `${url}?${params}` : url;
     }
@@ -207,7 +220,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
 
     attempt++;
     if (redirect) {
-      url = url.replace(this.__protocolRegex, 'https://');
+      url = this.__toHttps(url);
     }
 
     if (this._ButtressOptions.isolated) {
@@ -265,7 +278,16 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
             if (!item.id || !item.sourceId) continue;
             const nextItem = results[j];
             if (item.id === nextItem.id && item.sourceId === nextItem.sourceId) {
-              Object.assign(item, nextItem);
+              // Each key is defined as a plain property. Object.assign would run the __proto__ setter for the
+              // "__proto__" key JSON.parse leaves on a partner's item, letting partner data set the prototype.
+              for (const key of Object.keys(nextItem)) {
+                Object.defineProperty(item, key, {
+                  value: nextItem[key],
+                  writable: true,
+                  enumerable: true,
+                  configurable: true,
+                });
+              }
               results.splice(j, 1);
               j--;
             }
@@ -289,8 +311,9 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
         error.code !== 'ECONNABORTED' &&
         BaseSchema.Constants.RETRY_METHODS.includes(type)
       ) {
+        // attempt counts the first request too, so maxRetries: N sends it N more times
         const maxRetries = this._ButtressOptions.maxRetries ?? BaseSchema.Constants.MAX_RETRIES;
-        if (attempt >= maxRetries) throw error;
+        if (attempt > maxRetries) throw error;
 
         return Helpers.backOff(attempt).then(() => this._request(type, path, options, attempt));
       }
@@ -306,16 +329,43 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @return {promise}
    */
   _postRedirect(response: APIResponse, url: string) {
-    const originalURL = url.match(this.__protocolRegex);
-    const redirectedURL = response.url.match(this.__protocolRegex);
+    if (typeof response.url !== 'string') return false;
 
-    const originalProtocol = originalURL !== null ? originalURL.pop() : null;
-    const redirectedProtocol = redirectedURL !== null ? redirectedURL.pop() : null;
+    const original = this.__splitURL(url);
+    const redirected = this.__splitURL(response.url);
 
-    const replacedOriginalURL = url.replace(this.__protocolRegex, '');
-    const replacedRedirectedURL = response.url.replace(this.__protocolRegex, '');
+    return original.rest === redirected.rest && original.protocol !== redirected.protocol;
+  }
 
-    return replacedOriginalURL === replacedRedirectedURL && originalProtocol !== redirectedProtocol;
+  /**
+   * @param {string} url
+   * @return {string} - the url over https, without an http default port such as http://host:80 has
+   */
+  private __toHttps(url: string) {
+    try {
+      const parsed = new URL(url);
+      parsed.protocol = 'https:';
+      return parsed.toString();
+    } catch {
+      return url.replace(this.__protocolRegex, 'https://');
+    }
+  }
+
+  /**
+   * Splits a URL into its protocol and the rest, normalised as fetch normalises the URL it reports for a response:
+   * the host lower-cased and a default port dropped, so http://Host:80/x matches https://host/x
+   * @param {string} url
+   * @return {object} - {protocol, rest}
+   */
+  private __splitURL(url: string): {protocol: string | null; rest: string} {
+    try {
+      const parsed = new URL(url);
+      return {protocol: parsed.protocol, rest: `${parsed.host}${parsed.pathname}${parsed.search}`};
+    } catch {
+      // Not a URL that parses, or no URL global (a lambda's isolate may not have one), so compare it as it is
+      const match = url.match(this.__protocolRegex);
+      return {protocol: match !== null ? (match.pop() ?? null) : null, rest: url.replace(this.__protocolRegex, '')};
+    }
   }
 
   /**
@@ -323,7 +373,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  get(id: string, options: RequestOptionsIn = {}): Promise<T> {
+  async get(id: string, options: RequestOptionsIn = {}): Promise<T> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     return this._request('get', Helpers.pathSegment(id), opts);
   }
@@ -333,7 +383,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  save(details: Partial<T>, options: RequestOptionsIn = {}): Promise<T> {
+  async save(details: Partial<T>, options: RequestOptionsIn = {}): Promise<T> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -350,7 +400,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options - pass sourceId to update an entity held in a remote datastore
    * @return {promise}
    */
-  update(
+  async update(
     id: string,
     details: UpdateOperation | UpdateOperation[],
     options: RequestOptionsIn = {},
@@ -372,7 +422,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  remove(id: string, options: RequestOptionsIn = {}): Promise<boolean> {
+  async remove(id: string, options: RequestOptionsIn = {}): Promise<boolean> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     return this._request('delete', Helpers.pathSegment(id), opts);
   }
@@ -383,7 +433,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options - pass stream: true to get the response body as a stream
    * @return {promise}
    */
-  getAll(options: RequestOptionsIn = {}): Promise<T[] | Readable> {
+  async getAll(options: RequestOptionsIn = {}): Promise<T[] | Readable> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     return this._request('get', '', opts);
@@ -411,7 +461,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options - pass stream: true to get the response body as a stream
    * @return {promise}
    */
-  search(
+  async search(
     query: Query<T>,
     limit = 0,
     skip = 0,
@@ -439,7 +489,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  removeAll(details: null = null, options: RequestOptionsIn = {}): Promise<boolean> {
+  async removeAll(details: null = null, options: RequestOptionsIn = {}): Promise<boolean> {
     if (details !== null && details !== undefined) {
       throw new Error(
         `removeAll removes every ${this.collection} and doesn't accept a filter, use bulkRemove(ids) instead`,
@@ -456,7 +506,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  bulkGet(details: string[], options: RequestOptionsIn = {}): Promise<T[]> {
+  async bulkGet(details: string[], options: RequestOptionsIn = {}): Promise<T[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) {
@@ -473,7 +523,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise} - the added entities, or `true` for a core collection such as SecureStore
    */
-  bulkSave(details: Partial<T>[], options: RequestOptionsIn = {}): Promise<BulkSaveResult> {
+  async bulkSave(details: Partial<T>[], options: RequestOptionsIn = {}): Promise<BulkSaveResult> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -486,7 +536,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise} - an item per update, refused ones have null results and a validation reason
    */
-  bulkUpdate(details: BulkUpdateItem[], options: RequestOptionsIn = {}): Promise<BulkUpdateResult[]> {
+  async bulkUpdate(details: BulkUpdateItem[], options: RequestOptionsIn = {}): Promise<BulkUpdateResult[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     // Sent as an array of updates, as update does
@@ -501,7 +551,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  bulkRemove(details: string[], options: RequestOptionsIn = {}): Promise<boolean> {
+  async bulkRemove(details: string[], options: RequestOptionsIn = {}): Promise<boolean> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -515,7 +565,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options - pass actualCount to sum a count per matching policy instead of one count of the combined query
    * @return {promise}
    */
-  count(query?: Query<T>, sort?: Sort | null | 0, options: RequestOptionsIn = {}): Promise<number> {
+  async count(query?: Query<T>, sort?: Sort | null | 0, options: RequestOptionsIn = {}): Promise<number> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     // Always send a query, buttress treats a body without one as the query itself
