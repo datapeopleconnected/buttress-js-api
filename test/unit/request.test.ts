@@ -369,6 +369,32 @@ describe('Requests', () => {
     assert.strictEqual(server.requests.length, 2);
   });
 
+  describe('Secure store', () => {
+    const storeData = {zero: 0, empty: '', no: false, nothing: null, name: 'x'};
+
+    beforeEach(() => {
+      server.reply = () => ({status: 200, body: {id: '1', name: 'store', storeData}});
+    });
+
+    it('should read back a stored 0, empty string, false or null', async () => {
+      const store = await instance.SecureStore.findByName('store');
+
+      assert.strictEqual(store.getValue('zero'), 0);
+      assert.strictEqual(store.getValue('empty'), '');
+      assert.strictEqual(store.getValue('no'), false);
+      assert.strictEqual(store.getValue('nothing'), null);
+      assert.strictEqual(store.getValue('name'), 'x');
+    });
+
+    it('should throw for a key the store does not hold', async () => {
+      const store = await instance.SecureStore.findByName('store');
+
+      assert.throws(() => store.getValue('missing'), /^Error: missing does not exist on the secure store store$/);
+      // An inherited property isn't a stored value
+      assert.throws(() => store.getValue('toString'), /toString does not exist/);
+    });
+  });
+
   describe('Path segments', () => {
     // A call that throws before returning its promise counts as refused too
     const refuses = async (call: () => Promise<unknown>) => {

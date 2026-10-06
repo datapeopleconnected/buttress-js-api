@@ -42,12 +42,12 @@ export default class SecureStore extends BaseSchema<SecureStoreModel & Entity, t
   _secureStoreInterface(secureStore: SecureStoreModel) {
     return {
       getValue: (key: string) => {
-        const output = secureStore.storeData[key];
-        if (!output) {
+        // A stored 0, '' or false is still a value, only a key the store doesn't hold is missing
+        if (!Object.hasOwn(secureStore.storeData, key)) {
           throw new Error(`${key} does not exist on the secure store ${secureStore.name}`);
         }
 
-        return output;
+        return secureStore.storeData[key];
       },
       setValue: (key: string, value: any) => {
         return this.update(secureStore.id, [
