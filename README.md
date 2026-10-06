@@ -135,7 +135,7 @@ If you're upgrading from an older version of this client, see [MIGRATION.md](MIG
 | Option            | Type       | Description                                                                                   |
 | ----------------- | ---------- | --------------------------------------------------------------------------------------------- |
 | `buttressUrl`     | `string`   | Base URL of the Buttress instance.                                                            |
-| `appToken`        | `string`   | Your app's API token.                                                                         |
+| `appToken`        | `string`   | Your app's API token, sent with every call that doesn't pass its own `token` option.          |
 | `apiPath`         | `string`   | Your app's API path, as configured in Buttress.                                               |
 | `version`         | `number`   | API version to target.                                                                        |
 | `schema`          | `object[]` | Schema to push to Buttress, or to use locally (see `useLocalSchema`).                         |

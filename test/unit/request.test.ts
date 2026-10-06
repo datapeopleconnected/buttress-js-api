@@ -231,6 +231,27 @@ describe('Requests', () => {
     assert.strictEqual(server.requests.length, 0);
   });
 
+  it('should make calls that pass their own token on a client without an app token', async () => {
+    const noAppToken = Buttress.new();
+    await noAppToken.init(options({buttressUrl: server.url, apiPath: 'test-app', schema, useLocalSchema: true}));
+
+    await noAppToken.getCollection('thing').getAll({token: 'USER_TOKEN'});
+    await noAppToken.AppDataSharing.activate('REGISTRATION_TOKEN', 'NEW_TOKEN');
+
+    assert.deepStrictEqual(
+      server.requests.map((r) => `${r.method} ${r.url} ${r.headers['authorization']}`),
+      [
+        'GET /test-app/api/v1/thing Bearer USER_TOKEN',
+        'POST /api/v1/app-data-sharing/activate Bearer REGISTRATION_TOKEN',
+      ],
+    );
+
+    // A call without its own token still needs the app token
+    await assert.rejects(async () => noAppToken.getCollection('thing').getAll(), /No default token provided/);
+    await assert.rejects(async () => noAppToken.AppDataSharing.activate('', 'NEW_TOKEN'), /token option/);
+    assert.strictEqual(server.requests.length, 2);
+  });
+
   it('should search, count and bulk load with QUERY', async () => {
     await instance.getCollection('thing').search({name: {$eq: 'x'}});
     await instance.getCollection('thing').count({name: {$eq: 'x'}});

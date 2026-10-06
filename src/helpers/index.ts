@@ -394,20 +394,20 @@ const _checkOptions = (options?: RequestOptionsIn, defaultToken?: string): Reque
     );
   }
 
-  if (!defaultToken) throw new Error('No default token provided');
+  // The instance token is only needed for a call that doesn't bring its own
+  const token = hasToken ? options.token : defaultToken;
+  if (!token) throw new Error('No default token provided');
 
   const requestOptions: RequestOptions = {
     method: '',
     params: {},
-    token: defaultToken,
+    token,
     data: {},
     headers: {},
     body: {},
     stream: false,
     combineResults: true,
   };
-
-  if (hasToken) requestOptions.token = options.token as string;
 
   if (options.headers) requestOptions.headers = {...requestOptions.headers, ...options.headers};
   if (options.params) requestOptions.params = {...requestOptions.params, ...options.params};

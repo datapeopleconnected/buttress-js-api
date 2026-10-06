@@ -53,6 +53,9 @@
 - **Breaking:** a call given a `token` option that's empty (`''`, `null` or `undefined`) throws "The token passed in the
   options is ..." instead of quietly using the instance token. A user token that failed to load used to send the
   request with the app's token and its privileges. Leave the `token` key out to use the instance token.
+- A client set up without an `appToken` can make any call that passes its own `token` option, and
+  `AppDataSharing.activate` works with just the registration token. Every call used to throw "No default token
+  provided" first. A call without its own token still throws it. `appToken` is optional in the options type.
 
 ### 3.0.0-51
 

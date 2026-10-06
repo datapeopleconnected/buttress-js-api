@@ -16,7 +16,9 @@
 
 export default interface ButtressOptions {
   buttressUrl: string;
-  appToken: string;
+  // Sent with every call that doesn't pass its own token. Without one, every call must pass a token, and the schema
+  // can't be fetched, so pass it with useLocalSchema.
+  appToken?: string;
   apiPath: string;
   schema?: any[];
   // The API version in the URL, buttress only serves 1. Defaults to 1
