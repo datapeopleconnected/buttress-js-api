@@ -193,6 +193,60 @@ describe('Requests', () => {
     assert.strictEqual(server.requests.length, 1);
   });
 
+  it('should search, count and bulk load with QUERY', async () => {
+    await instance.getCollection('thing').search({name: {$eq: 'x'}});
+    await instance.getCollection('thing').count({name: {$eq: 'x'}});
+    await instance.getCollection('thing').bulkGet(['1', '2']);
+    await instance.Policy.search({});
+
+    assert.deepStrictEqual(
+      server.requests.map((r) => `${r.method} ${r.url}`),
+      [
+        'QUERY /test-app/api/v1/thing',
+        'QUERY /test-app/api/v1/thing/count',
+        'QUERY /test-app/api/v1/thing/bulk/load',
+        'QUERY /api/v1/policy',
+      ],
+    );
+    assert.deepStrictEqual(server.requests[0].body, {query: {name: {$eq: 'x'}}, limit: 0, skip: 0, sort: 0});
+  });
+
+  it('should send a JSON Content-Type with every QUERY', async () => {
+    await instance.getCollection('thing').search({});
+    await instance.getCollection('thing').count();
+    await instance.getCollection('thing').bulkGet(undefined as unknown as string[]);
+
+    for (const req of server.requests) {
+      assert.strictEqual(req.method, 'QUERY');
+      assert.strictEqual(req.headers['content-type'], 'application/json');
+    }
+    // A bulk load without ids still sends a body, buttress refuses a QUERY without one
+    assert.deepStrictEqual(server.requests[2].body, {});
+  });
+
+  it('should keep passed headers alongside the QUERY Content-Type', async () => {
+    await instance.getCollection('thing').search({}, 0, 0, 0, {headers: {'x-custom': 'yes'}});
+
+    const [req] = server.requests;
+    assert.strictEqual(req.headers['x-custom'], 'yes');
+    assert.strictEqual(req.headers['content-type'], 'application/json');
+    assert.strictEqual(req.headers['authorization'], 'Bearer APP_TOKEN');
+  });
+
+  it('should retry a QUERY that never got a response', async () => {
+    server.reply = (_req, count) => (count === 1 ? {destroy: true} : {status: 200, body: [{id: '1'}]});
+
+    const res = await instance.getCollection('thing').search({});
+
+    assert.deepStrictEqual(res, [{id: '1'}]);
+    assert.deepStrictEqual(
+      server.requests.map((r) => r.method),
+      ['QUERY', 'QUERY'],
+    );
+    assert.strictEqual(server.requests[1].headers['content-type'], 'application/json');
+    assert.deepStrictEqual(server.requests[1].body, server.requests[0].body);
+  });
+
   it('should update an entity in a remote datastore by sourceId', async () => {
     await instance.getCollection('thing').update('ID', [{path: 'name', value: 'x'}], {sourceId: 'SOURCE'});
 

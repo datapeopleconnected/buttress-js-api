@@ -20,7 +20,8 @@ modules, so you can authenticate, and read and write schema-defined data, withou
 npm install @buttress/api
 ```
 
-Requires Node.js 22 or later.
+Requires Node.js 22 or later, and a Buttress server that takes the HTTP `QUERY` method (buttress-js `390fea49` or
+later). Older servers answer `QUERY` with 404.
 
 ## Quick start
 
@@ -79,6 +80,9 @@ await posts.count(query); // count matching a filter
 await posts.search(query); // query with a filter
 ```
 
+`search`, `count` and `bulkGet` are sent with the HTTP `QUERY` method
+([RFC 10008](https://www.rfc-editor.org/rfc/rfc10008)) and a JSON body. `QUERY` is safe and idempotent, so like `GET` it's retried when the request never gets a response.
+
 `update` takes update-by-path operations rather than a partial entity: one `{path, value}`, or an array of them to
 apply in one request. It resolves to the operations it applied, each with its `type`, `path` and `value`, not to the
 updated entity.
@@ -115,9 +119,11 @@ await Buttress.Policy.createPolicy({
   name: 'admin',
   version: '1',
   selection: {role: {'@eq': 'admin'}},
-  config: [{verbs: ['GET', 'SEARCH'], schema: ['post']}],
+  config: [{verbs: ['GET', 'QUERY'], schema: ['post']}],
 });
 ```
+
+Policies treat `QUERY` and `SEARCH` as the same verb, so an existing policy that grants `SEARCH` also grants `QUERY`.
 
 If you're upgrading from an older version of this client, see [MIGRATION.md](MIGRATION.md) for breaking changes.
 
