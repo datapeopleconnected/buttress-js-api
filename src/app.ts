@@ -41,7 +41,7 @@ export default class App extends BaseSchema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  getSchema(rawSchema = false, options = {}) {
+  async getSchema(rawSchema = false, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (rawSchema) opts.params.rawSchema = true;
     return this._request('get', 'schema', opts);
@@ -65,7 +65,7 @@ export default class App extends BaseSchema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  setPolicyPropertyList(list: PolicyPropertyList, appId = null, options = {}) {
+  async setPolicyPropertyList(list: PolicyPropertyList, appId = null, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (list) opts.data = list;
 
@@ -80,7 +80,7 @@ export default class App extends BaseSchema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  updatePolicyPropertyList(list: PolicyPropertyList, appId = null, options = {}) {
+  async updatePolicyPropertyList(list: PolicyPropertyList, appId = null, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (list) opts.data = list;
 
@@ -94,7 +94,7 @@ export default class App extends BaseSchema {
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  getPolicyPropertiesList(apiPath?: string, options = {}) {
+  async getPolicyPropertiesList(apiPath?: string, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     let path = `policy-property-list`;
     if (apiPath) path = `policy-property-list/${Helpers.pathSegment(apiPath)}`;

@@ -38,7 +38,7 @@ export default class User extends BaseSchema {
    * @param {Object} [options={}] options - request options
    * @return {promise}
    */
-  findUser(appName: string, appUserId: string, options?: RequestOptionsIn) {
+  async findUser(appName: string, appUserId: string, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('get', `${Helpers.pathSegment(appName)}/${Helpers.pathSegment(appUserId)}`, opts);
   }
@@ -48,7 +48,7 @@ export default class User extends BaseSchema {
    * @param {Object} [options={}] options - request options
    * @return {promise}
    */
-  getUser(parameter: string, options?: RequestOptionsIn) {
+  async getUser(parameter: string, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('get', Helpers.pathSegment(parameter), opts);
   }
@@ -59,7 +59,7 @@ export default class User extends BaseSchema {
    * @param {Object} options - request options
    * @return {Promise} - resolves to the serialized Token object
    */
-  createToken(userId: string, token: AuthData, options?: RequestOptionsIn) {
+  async createToken(userId: string, token: AuthData, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (token) opts.data = token;
     return this._request('post', `${Helpers.pathSegment(userId)}/token`, opts);
@@ -70,7 +70,7 @@ export default class User extends BaseSchema {
    * @param {Object} [options={}] options - request options
    * @return {promise}
    */
-  getUserByToken(token: string, options?: RequestOptionsIn) {
+  async getUserByToken(token: string, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (token) opts.data = {token};
     return this._request('post', `get-by-token`, opts);
@@ -83,7 +83,7 @@ export default class User extends BaseSchema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  setPolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
+  async setPolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
     return this._request('put', `${Helpers.pathSegment(userId)}/policy-property/${Helpers.pathSegment(tokenId)}`, opts);
@@ -96,7 +96,7 @@ export default class User extends BaseSchema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  updatePolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
+  async updatePolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
     const path = `${Helpers.pathSegment(userId)}/update-policy-property/${Helpers.pathSegment(tokenId)}`;
@@ -110,7 +110,7 @@ export default class User extends BaseSchema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  removePolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
+  async removePolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
     const path = `${Helpers.pathSegment(userId)}/remove-policy-property/${Helpers.pathSegment(tokenId)}`;
@@ -123,7 +123,7 @@ export default class User extends BaseSchema {
    * @param {Object} options - request options
    * @return {Promise}
    */
-  clearPolicyProperty(userId: string, tokenId: string, options?: RequestOptionsIn) {
+  async clearPolicyProperty(userId: string, tokenId: string, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     const path = `${Helpers.pathSegment(userId)}/clear-policy-property/${Helpers.pathSegment(tokenId)}`;
     return this._request('put', path, opts);

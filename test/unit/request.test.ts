@@ -313,10 +313,10 @@ describe('Requests', () => {
   it('should refuse an empty per-call token rather than fall back to the instance token', async () => {
     for (const token of ['', null, undefined]) {
       await assert.rejects(
-        async () => instance.getCollection('thing').getAll({token: token as string}),
+        instance.getCollection('thing').getAll({token: token as string}),
         /The token passed in the options is/,
       );
-      await assert.rejects(async () => instance.User.getUser('U1', {token: token as string}), /token option/);
+      await assert.rejects(instance.User.getUser('U1', {token: token as string}), /token option/);
     }
     assert.strictEqual(server.requests.length, 0);
   });
@@ -337,8 +337,8 @@ describe('Requests', () => {
     );
 
     // A call without its own token still needs the app token
-    await assert.rejects(async () => noAppToken.getCollection('thing').getAll(), /No default token provided/);
-    await assert.rejects(async () => noAppToken.AppDataSharing.activate('', 'NEW_TOKEN'), /token option/);
+    await assert.rejects(noAppToken.getCollection('thing').getAll(), /No default token provided/);
+    await assert.rejects(noAppToken.AppDataSharing.activate('', 'NEW_TOKEN'), /token option/);
     assert.strictEqual(server.requests.length, 2);
   });
 
@@ -437,7 +437,7 @@ describe('Requests', () => {
   });
 
   it('should refuse a removeAll filter as buttress would remove everything', async () => {
-    assert.throws(() => instance.getCollection('thing').removeAll({name: 'x'} as unknown as null), /bulkRemove/);
+    await assert.rejects(instance.getCollection('thing').removeAll({name: 'x'} as unknown as null), /bulkRemove/);
     assert.strictEqual(server.requests.length, 0);
   });
 
@@ -536,6 +536,79 @@ describe('Requests', () => {
     assert.strictEqual(server.requests.length, 2);
   });
 
+  describe('A user created since it was looked up', () => {
+    const userBody = {
+      id: 'USER_ID',
+      auth: [],
+      tokens: [{id: 'TOKEN_ID', value: 'TOKEN_VALUE', policyProperties: null}],
+    };
+    // Buttress's answer to a user whose auth entry another user already has
+    const alreadyExists = {
+      status: 400,
+      body: {code: 'user_already_exists_with_that_name', message: 'User already exists with that name'},
+    };
+    const sent = () => server.requests.map((r) => `${r.method} ${r.url}`);
+
+    it('should find the user another call created when Buttress refuses to create it again', async () => {
+      let lookups = 0;
+      server.reply = (req) => {
+        if (req.method === 'GET')
+          return ++lookups === 1 ? {status: 404, body: {code: 'user_not_found'}} : {status: 200, body: userBody};
+        return alreadyExists;
+      };
+
+      const user = await instance.Auth.findOrCreateUser({app: 'google', appId: 'G1'}, {domains: []});
+
+      assert.strictEqual(user.id, 'USER_ID');
+      assert.deepStrictEqual(sent(), ['GET /api/v1/user/google/G1', 'POST /api/v1/user', 'GET /api/v1/user/google/G1']);
+    });
+
+    it('should give both of two simultaneous first logins the one user', async () => {
+      let created = false;
+      server.reply = (req) => {
+        if (req.method === 'GET')
+          return created ? {status: 200, body: userBody} : {status: 404, body: {code: 'user_not_found'}};
+        if (created) return alreadyExists;
+        created = true;
+        return {status: 200, body: userBody};
+      };
+
+      const users = await Promise.all([
+        instance.Auth.findOrCreateUser({app: 'google', appId: 'G1'}, {domains: []}),
+        instance.Auth.findOrCreateUser({app: 'google', appId: 'G1'}, {domains: []}),
+      ]);
+
+      assert.deepStrictEqual(
+        users.map((u) => u.id),
+        ['USER_ID', 'USER_ID'],
+      );
+      assert.strictEqual(server.requests.filter((r) => r.method === 'POST').length, 2);
+    });
+
+    it('should throw the refusal when the user still is not found, as another user has its email', async () => {
+      server.reply = (req) => (req.method === 'GET' ? {status: 404, body: {code: 'user_not_found'}} : alreadyExists);
+
+      await assert.rejects(
+        instance.Auth.findOrCreateUser({app: 'google', appId: 'G1', email: 'a@example.com'}, {domains: []}),
+        (err: unknown) => err instanceof Errors.ResponseError && err.errorCode === 'user_already_exists_with_that_name',
+      );
+      assert.deepStrictEqual(sent(), ['GET /api/v1/user/google/G1', 'POST /api/v1/user', 'GET /api/v1/user/google/G1']);
+    });
+
+    it('should throw any other refusal to create the user without looking it up again', async () => {
+      server.reply = (req) =>
+        req.method === 'GET'
+          ? {status: 404, body: {code: 'user_not_found'}}
+          : {status: 400, body: {code: 'invalid_domains', message: 'Invalid domains'}};
+
+      await assert.rejects(
+        instance.Auth.findOrCreateUser({app: 'google', appId: 'G1'}, {domains: []}),
+        (err: unknown) => err instanceof Errors.ResponseError && err.errorCode === 'invalid_domains',
+      );
+      assert.deepStrictEqual(sent(), ['GET /api/v1/user/google/G1', 'POST /api/v1/user']);
+    });
+  });
+
   describe('Secure store', () => {
     const storeData = {zero: 0, empty: '', no: false, nothing: null, name: 'x'};
 
@@ -618,9 +691,9 @@ describe('Requests', () => {
   });
 
   describe('Path segments', () => {
-    // A call that throws before returning its promise counts as refused too
+    // Refused through the call's promise, a call that throws instead fails the test
     const refuses = async (call: () => Promise<unknown>) => {
-      await assert.rejects(async () => call(), /path segment/);
+      await assert.rejects(call(), /path segment/);
     };
 
     const sent = () => server.requests.map((r) => `${r.method} ${r.url}`);
@@ -754,6 +827,135 @@ describe('Requests', () => {
       ]);
       await refuses(() => instance.App.getPolicyPropertiesList('..'));
       assert.strictEqual(server.requests.length, 2);
+    });
+  });
+
+  describe('Errors before the request', () => {
+    // Calls the method and checks it returned a promise, which rejects, rather than throwing
+    const rejectsWithoutThrowing = async (call: () => unknown, expected: RegExp | (new (m: string) => Error)) => {
+      let promise: unknown;
+      assert.doesNotThrow(() => {
+        promise = call();
+      }, 'the call threw instead of rejecting its promise');
+      assert(promise instanceof Promise, 'the call did not return a promise');
+      await assert.rejects(promise, expected);
+    };
+
+    it('should reject an empty per-call token, so .catch() handles it', async () => {
+      let caught: unknown;
+      await instance
+        .getCollection('thing')
+        .get('ID', {token: ''})
+        .catch((err: unknown) => {
+          caught = err;
+        });
+
+      assert.match(String(caught), /The token passed in the options is empty/);
+      assert.strictEqual(server.requests.length, 0);
+    });
+
+    it('should reject a missing app token, a removeAll filter and a refused id through the promise', async () => {
+      const noAppToken = Buttress.new();
+      await noAppToken.init(options({buttressUrl: server.url, apiPath: 'test-app', schema, useLocalSchema: true}));
+
+      await rejectsWithoutThrowing(() => noAppToken.getCollection('thing').get('ID'), /No default token provided/);
+      await rejectsWithoutThrowing(() => noAppToken.User.getUser('U1'), /No default token provided/);
+      await rejectsWithoutThrowing(
+        () => instance.getCollection('thing').removeAll({name: 'x'} as unknown as null),
+        /bulkRemove/,
+      );
+      await rejectsWithoutThrowing(() => instance.Lambda.setPolicyProperty('..', {}), /path segment/);
+      await rejectsWithoutThrowing(() => noAppToken.Policy.createPolicy({name: 'p'} as Policy), /No default token/);
+      assert.strictEqual(server.requests.length, 0);
+    });
+
+    it('should reject NotYetInitiated from a module taken before clean', async () => {
+      const cleaned = Buttress.new();
+      await cleaned.init(
+        options({buttressUrl: server.url, appToken: 'APP_TOKEN', apiPath: 'test-app', schema, useLocalSchema: true}),
+      );
+      const thing = cleaned.getCollection('thing');
+      const user = cleaned.User;
+      cleaned.clean();
+
+      await rejectsWithoutThrowing(() => thing.get('ID'), Errors.NotYetInitiated);
+      await rejectsWithoutThrowing(() => thing.save({}), Errors.NotYetInitiated);
+      await rejectsWithoutThrowing(() => user.findUser('google', 'G1'), Errors.NotYetInitiated);
+      assert.strictEqual(server.requests.length, 0);
+    });
+
+    it('should reject rather than throw from every request method of every module', async () => {
+      // A client without an app token, so every call is refused before anything is sent
+      const noAppToken = Buttress.new();
+      await noAppToken.init(options({buttressUrl: server.url, apiPath: 'test-app', schema, useLocalSchema: true}));
+
+      // Methods that don't make a request and return their result straight away
+      const notRequests = ['constructor', 'getEndpoint', 'loadSchema', 'createObject'];
+
+      const modules: Record<string, object> = {
+        thing: noAppToken.getCollection('thing'),
+        App: noAppToken.App,
+        Auth: noAppToken.Auth,
+        Lambda: noAppToken.Lambda,
+        Policy: noAppToken.Policy,
+        Token: noAppToken.Token,
+        User: noAppToken.User,
+        SecureStore: noAppToken.SecureStore,
+        AppDataSharing: noAppToken.AppDataSharing,
+        LambdaExecution: noAppToken.LambdaExecution,
+      };
+
+      const checked: string[] = [];
+      const failures: string[] = [];
+      for (const [name, mod] of Object.entries(modules)) {
+        const methods = new Set<string>();
+        for (
+          let proto = Object.getPrototypeOf(mod);
+          proto && proto !== Object.prototype;
+          proto = Object.getPrototypeOf(proto)
+        ) {
+          for (const key of Object.getOwnPropertyNames(proto)) {
+            const descriptor = Object.getOwnPropertyDescriptor(proto, key);
+            if (typeof descriptor?.value !== 'function' || key.startsWith('_') || notRequests.includes(key)) continue;
+            methods.add(key);
+          }
+        }
+
+        for (const method of methods) {
+          checked.push(`${name}.${method}`);
+          let result: unknown;
+          try {
+            result = (mod as Record<string, () => unknown>)[method]();
+          } catch (err) {
+            failures.push(`${name}.${method} threw ${String(err)}`);
+            continue;
+          }
+          if (!(result instanceof Promise)) {
+            failures.push(`${name}.${method} returned ${String(result)}`);
+            continue;
+          }
+          if (
+            await result.then(
+              () => true,
+              () => false,
+            )
+          )
+            failures.push(`${name}.${method} resolved`);
+        }
+      }
+
+      assert.deepStrictEqual(failures, []);
+      // Make sure the walk found the methods
+      for (const method of [
+        'thing.get',
+        'thing.removeAll',
+        'User.findUser',
+        'Auth.findOrCreateUser',
+        'App.getSchema',
+      ]) {
+        assert(checked.includes(method), `${method} was not checked`);
+      }
+      assert.strictEqual(server.requests.length, 0);
     });
   });
 });
