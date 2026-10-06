@@ -812,7 +812,7 @@ describe('Requests', () => {
     });
 
     it('should encode a data sharing id', async () => {
-      await instance.AppDataSharing.updateDataSharingPolicy('../x', {policy: []});
+      await instance.AppDataSharing.updateDataSharingPolicy('../x', [{verbs: ['GET'], schema: ['car']}]);
       await instance.AppDataSharing.reactivate('a#b');
       await instance.AppDataSharing.deactivate('a?b');
 
@@ -824,7 +824,7 @@ describe('Requests', () => {
     });
 
     it('should refuse a data sharing id of . or ..', async () => {
-      await refuses(() => instance.AppDataSharing.updateDataSharingPolicy('..', {policy: []}));
+      await refuses(() => instance.AppDataSharing.updateDataSharingPolicy('..', [{verbs: ['GET'], schema: ['car']}]));
       await refuses(() => instance.AppDataSharing.reactivate('..'));
       await refuses(() => instance.AppDataSharing.deactivate('.'));
 
