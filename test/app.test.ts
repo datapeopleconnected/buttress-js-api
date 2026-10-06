@@ -418,9 +418,16 @@ describe('@app-relationship', function () {
     it('should update the policy for the source relationship', async function () {
       Buttress.setAuthToken(testApps[0].token);
 
-      const res = await Buttress.AppDataSharing.updateDataSharingPolicy(testAppRelationships[0].id, {
-        collections: ['car'],
-      });
+      // Narrower than the policy the agreement was made with: read only the two collections the next tests read
+      const res = await Buttress.AppDataSharing.updateDataSharingPolicy(testAppRelationships[0].id, [
+        {
+          verbs: ['GET', 'QUERY'],
+          schema: ['people', 'car'],
+          query: {
+            access: '%FULL_ACCESS%',
+          },
+        },
+      ]);
 
       res.should.equal(true);
 
