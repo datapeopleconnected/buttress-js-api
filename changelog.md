@@ -85,6 +85,11 @@
   as taking any object, which Buttress ignored, answering `true` while the partner kept the access it was given when
   the agreement was made. A Buttress containing `3c5274bb` (buttress-js develop) or later refuses anything but a
   non-empty list with 400 `invalid_policy`.
+- A `ResponseError` has an `httpStatus`, the HTTP status as `code` and `statusCode` are, and a `retryable`, true for
+  429, 500, 502, 503 and 504 as Buttress decides it for its own errors. A lambda that leaves one uncaught answers its
+  API caller with that status and `retryable` (with a Buttress containing `f8bce2ee`, buttress-js develop, or later),
+  rather than 400. Buttress takes only a string `code`, so `errorCode` isn't passed on; catch the error and throw your
+  own to answer with one.
 
 ### 3.0.0-51
 
