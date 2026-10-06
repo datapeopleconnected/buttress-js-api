@@ -16,6 +16,9 @@
 - A secure store's `getValue` returns a stored `0`, `''`, `false` or `null` instead of throwing
   "<key> does not exist on the secure store". It throws only for a key the store doesn't hold, so a name the stored data
   merely inherits, such as `toString`, now throws too rather than returning a function.
+- `Lambda.scheduleExecution` sends the metadata it's given when there's no `executeAfter`, which Buttress takes as
+  "run now". It used to send an empty body, dropping the metadata. `executeAfter` and `metadata` are optional in the
+  types, and `data` passed in the options (such as a `deploymentId`) is kept alongside them rather than replaced.
 
 ### 3.0.0-51
 
