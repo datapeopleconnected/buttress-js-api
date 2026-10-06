@@ -38,6 +38,8 @@ interface RecordedRequest {
 interface Reply {
   status?: number;
   body?: unknown;
+  // Sent as it is instead of body, for JSON that an object can't be stringified to
+  raw?: string;
   destroy?: boolean;
 }
 
@@ -73,7 +75,7 @@ const startServer = async (): Promise<TestServer> => {
       if (reply.destroy) return req.socket.destroy();
 
       res.writeHead(reply.status as number, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify(reply.body));
+      res.end(reply.raw ?? JSON.stringify(reply.body));
     });
   });
 
@@ -237,6 +239,21 @@ describe('Requests', () => {
 
     assert.strictEqual((await instance.getCollection('thing').getAll()).length, 1);
     assert.strictEqual((await instance.getCollection('thing').getAll({combineResults: false})).length, 2);
+  });
+
+  it('should merge a partner item with a __proto__ key without changing its prototype', async () => {
+    server.reply = () => ({
+      status: 200,
+      raw: '[{"id":"1","sourceId":"a","name":"x"},{"id":"1","sourceId":"a","__proto__":{"isAdmin":true},"age":2}]',
+    });
+
+    const [item] = await instance.getCollection('thing').getAll();
+
+    assert.strictEqual(Object.getPrototypeOf(item), Object.prototype);
+    assert.strictEqual(item.isAdmin, undefined);
+    assert.deepStrictEqual(Object.getOwnPropertyDescriptor(item, '__proto__')?.value, {isAdmin: true});
+    assert.strictEqual(item.name, 'x');
+    assert.strictEqual(item.age, 2);
   });
 
   it('should retry a GET that never got a response', async () => {

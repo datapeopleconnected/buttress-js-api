@@ -63,6 +63,9 @@
 - A `POST` to an http `buttressUrl` that Buttress redirects to https is spotted and sent again over https when the URL
   has capital letters in its host or an explicit default port, such as `http://Buttress.example` or `http://host:80`.
   It used to miss those, and the call resolved to the answer to the bodyless `GET` the redirect was followed with.
+- When results from several sources are merged (`combineResults`, on by default), a `"__proto__"` key in a data
+  sharing partner's item is kept as an ordinary property instead of replacing the merged item's prototype, so partner
+  data can't make an item report inherited properties such as `isAdmin` that it doesn't have.
 
 ### 3.0.0-51
 

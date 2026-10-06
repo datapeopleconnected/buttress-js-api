@@ -276,7 +276,16 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
             if (!item.id || !item.sourceId) continue;
             const nextItem = results[j];
             if (item.id === nextItem.id && item.sourceId === nextItem.sourceId) {
-              Object.assign(item, nextItem);
+              // Each key is defined as a plain property. Object.assign would run the __proto__ setter for the
+              // "__proto__" key JSON.parse leaves on a partner's item, letting partner data set the prototype.
+              for (const key of Object.keys(nextItem)) {
+                Object.defineProperty(item, key, {
+                  value: nextItem[key],
+                  writable: true,
+                  enumerable: true,
+                  configurable: true,
+                });
+              }
               results.splice(j, 1);
               j--;
             }
