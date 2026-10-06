@@ -80,7 +80,7 @@ describe('@policy', function () {
       },
       config: [
         {
-          verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+          verbs: ['GET', 'QUERY', 'PUT', 'POST', 'DELETE'],
           schema: ['%ALL%'],
           query: {
             access: '%FULL_ACCESS%',
@@ -100,7 +100,7 @@ describe('@policy', function () {
       selection: {policyTests: {'@eq': 2}},
       config: [
         {
-          verbs: ['GET', 'SEARCH'],
+          verbs: ['GET', 'QUERY'],
           schema: ['post'],
           query: {
             content: {
@@ -119,7 +119,7 @@ describe('@policy', function () {
       selection: {policyTests: {'@eq': 2}},
       config: [
         {
-          verbs: ['GET', 'SEARCH'],
+          verbs: ['GET', 'QUERY'],
           schema: ['post'],
           query: {
             access: '%FULL_ACCESS%',
