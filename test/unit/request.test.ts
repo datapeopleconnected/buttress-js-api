@@ -179,6 +179,49 @@ describe('Requests', () => {
     assert.strictEqual(server.requests.length, 0);
   });
 
+  it('should spot a POST redirected to https whatever the case of the host or a default port', async () => {
+    const thing = instance.getCollection('thing');
+    const redirected = (url: string, responseUrl: string) => thing._postRedirect({url: responseUrl} as Response, url);
+
+    assert.strictEqual(
+      redirected('http://buttress.example/a/api/v1/thing', 'https://buttress.example/a/api/v1/thing'),
+      true,
+    );
+    assert.strictEqual(
+      redirected('http://Buttress.Example/a/api/v1/thing', 'https://buttress.example/a/api/v1/thing'),
+      true,
+    );
+    assert.strictEqual(
+      redirected('http://buttress.example:80/a/api/v1/thing', 'https://buttress.example/a/api/v1/thing'),
+      true,
+    );
+    assert.strictEqual(redirected('http://buttress.example/a?x=1', 'https://buttress.example/a?x=1'), true);
+
+    // Not a redirect between protocols of the same URL
+    assert.strictEqual(
+      redirected('https://buttress.example/a/api/v1/thing', 'https://buttress.example/a/api/v1/thing'),
+      false,
+    );
+    assert.strictEqual(
+      redirected('http://buttress.example/a/api/v1/thing', 'https://other.example/a/api/v1/thing'),
+      false,
+    );
+    assert.strictEqual(redirected('http://buttress.example:8080/a', 'https://buttress.example/a'), false);
+  });
+
+  it('should re-send a redirected POST to https without an http default port', async () => {
+    const thing = instance.getCollection('thing') as unknown as {__toHttps(url: string): string};
+
+    assert.strictEqual(
+      thing.__toHttps('http://Buttress.example:80/a/api/v1/thing'),
+      'https://buttress.example/a/api/v1/thing',
+    );
+    assert.strictEqual(
+      thing.__toHttps('http://buttress.example:8080/a?ids=a,b'),
+      'https://buttress.example:8080/a?ids=a,b',
+    );
+  });
+
   it('should send the client session id header', async () => {
     await instance.getCollection('thing').getAll();
 

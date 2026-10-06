@@ -60,6 +60,9 @@
   `undefined`, which Buttress filtered on. An array is sent as one comma-separated value, `ids=a,b`, the way Buttress
   reads a list; an empty array is left out, and an item holding a comma is refused. An object, which used to be sent
   as `[object Object]`, is refused with an error rather than sent.
+- A `POST` to an http `buttressUrl` that Buttress redirects to https is spotted and sent again over https when the URL
+  has capital letters in its host or an explicit default port, such as `http://Buttress.example` or `http://host:80`.
+  It used to miss those, and the call resolved to the answer to the bodyless `GET` the redirect was followed with.
 
 ### 3.0.0-51
 
