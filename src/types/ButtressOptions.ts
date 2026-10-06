@@ -16,16 +16,22 @@
 
 export default interface ButtressOptions {
   buttressUrl: string;
-  appToken: string;
+  // Sent with every call that doesn't pass its own token. Without one, every call must pass a token, and the schema
+  // can't be fetched, so pass it with useLocalSchema.
+  appToken?: string;
   apiPath: string;
   schema?: any[];
   // The API version in the URL, buttress only serves 1. Defaults to 1
   version?: number;
   update?: boolean;
   useLocalSchema?: boolean;
+  /**
+   * @deprecated Ignored: certificates are always verified, and init() warns when this is true. Remove it.
+   */
   allowUnauthorized?: boolean;
   // A UUID v4 sent as x-client-session-id, buttress includes it on the socket activity your requests cause
   clientSessionId?: string;
-  // How many times a GET that never got a response is retried, with backoff. Defaults to 10, 0 fails straight away
+  // How many times a GET or QUERY that never got a response is retried after the first attempt, with backoff.
+  // Defaults to 10, 0 fails straight away
   maxRetries?: number;
 }

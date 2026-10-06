@@ -205,19 +205,23 @@ class Schema {
    * @return {object} schemaPart
    */
   static getSubSchema(schema: SchemaModel, path: string): SchemaModel | undefined {
-    return path.split('.').reduce((out: SchemaModel | undefined, path: string) => {
+    return path.split('.').reduce((out: SchemaModel | undefined, segment: string) => {
       if (!out) return; // Skip all paths if we hit a false
 
-      const property = Path.get(out.properties, path);
+      const property = Path.get(out.properties, segment);
       if (!property) {
         return;
       }
-      if (property.type && property.type === 'array' && !property.__schema) {
-        return;
+      // A property with a __type holds a value. Only an array with a __schema has properties to build an object from,
+      // anything else would be taken apart as if its settings were properties, which recurses without end.
+      if (property.__type && !property.__schema) {
+        throw new Error(
+          `Unable to create an object for '${path}', '${segment}' is a property of type ${property.__type} with no __schema`,
+        );
       }
 
       return {
-        name: path,
+        name: segment,
         type: 'collection',
         properties: property.__schema || property,
       };
@@ -367,7 +371,9 @@ class Schema {
         if (config.__default === null) {
           res = null;
         } else if (config.__default) {
-          res = Sugar.Date.create(config.__default);
+          // Read as Buttress reads it, so 01/02/2026 is 1 February. The locale is passed rather than set, which would
+          // change it for anything else using Sugar.
+          res = Sugar.Date.create(config.__default, {locale: 'en-GB'});
         } else {
           res = new Date();
         }
@@ -379,20 +385,29 @@ class Schema {
 const _checkOptions = (options?: RequestOptionsIn, defaultToken?: string): RequestOptions => {
   options = Object.assign({}, options);
 
-  if (!defaultToken) throw new Error('No default token provided');
+  // A token key that's there but empty, such as a user token that failed to load, is a mistake. Falling back to the
+  // instance token would act with the app's privileges on the user's behalf.
+  const hasToken = Object.hasOwn(options, 'token');
+  if (hasToken && !options.token) {
+    throw new Error(
+      `The token passed in the options is ${options.token === '' ? 'empty' : String(options.token)}, pass a token or leave the token option out to use the instance token`,
+    );
+  }
+
+  // The instance token is only needed for a call that doesn't bring its own
+  const token = hasToken ? options.token : defaultToken;
+  if (!token) throw new Error('No default token provided');
 
   const requestOptions: RequestOptions = {
     method: '',
     params: {},
-    token: defaultToken,
+    token,
     data: {},
     headers: {},
     body: {},
     stream: false,
     combineResults: true,
   };
-
-  if (options.token) requestOptions.token = options.token;
 
   if (options.headers) requestOptions.headers = {...requestOptions.headers, ...options.headers};
   if (options.params) requestOptions.params = {...requestOptions.params, ...options.params};
@@ -423,6 +438,49 @@ const _pathSegment = (value: string | number): string => {
   return encodeURIComponent(segment);
 };
 
+/**
+ * Builds a request's query string from its params. A null or undefined param is left out rather than sent as the text
+ * `null` or `undefined`. An array is sent as one comma-separated value, `ids=a,b`, which is how Buttress reads a list,
+ * so an item holding a comma is refused, and an empty array is left out. Anything else that isn't a string, number or
+ * boolean, such as an object, has no text form Buttress reads, so it's refused.
+ * @param {object} params
+ * @return {string} query - without the leading ?
+ */
+const _queryString = (params: {[key: string]: unknown}): string => {
+  const encodeValue = (key: string, value: unknown, inList: boolean) => {
+    if (!['string', 'number', 'boolean', 'bigint'].includes(typeof value)) {
+      throw new Error(
+        `Unable to send the query param '${key}', pass a string, number or boolean, or an array of them, not ${Object.prototype.toString.call(value)}`,
+      );
+    }
+
+    const text = String(value);
+    if (inList && text.includes(',')) {
+      throw new Error(`Unable to send '${text}' in the list query param '${key}', Buttress splits a list on commas`);
+    }
+
+    return encodeURIComponent(text);
+  };
+
+  const pairs: string[] = [];
+  for (const key of Object.keys(params)) {
+    const value = params[key];
+    if (value === null || value === undefined) continue;
+
+    if (Array.isArray(value)) {
+      const items = value.filter((item) => item !== null && item !== undefined);
+      if (items.length < 1) continue;
+
+      pairs.push(`${encodeURIComponent(key)}=${items.map((item) => encodeValue(key, item, true)).join(',')}`);
+      continue;
+    }
+
+    pairs.push(`${encodeURIComponent(key)}=${encodeValue(key, value, false)}`);
+  }
+
+  return pairs.join('&');
+};
+
 const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
@@ -437,6 +495,7 @@ export default {
   Errors,
   checkOptions: _checkOptions,
   pathSegment: _pathSegment,
+  queryString: _queryString,
   sleep,
   backOff,
 };

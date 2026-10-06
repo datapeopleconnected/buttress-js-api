@@ -62,9 +62,9 @@ export default class AppDataSharing extends BaseSchema {
    * @return {promise} - response
    */
   activate(registrationToken: string, newToken: string, options: RequestOptionsIn = {}) {
-    const opts = Helpers.checkOptions(options, this.token);
-    // Buttress only reads tokens from the Authorization header, the registration token authenticates this call
-    opts.token = registrationToken;
+    // Buttress only reads tokens from the Authorization header, the registration token authenticates this call, so
+    // a client without an app token can make it
+    const opts = Helpers.checkOptions({...options, token: registrationToken}, this.token);
     opts.data = {newToken};
     return this._request('post', `activate`, opts);
   }

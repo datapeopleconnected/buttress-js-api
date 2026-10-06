@@ -90,9 +90,22 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
   }
 
   /**
+   * Throws when the module was taken before Buttress.clean(), as its options are no longer the client's
+   */
+  protected _assertCurrent() {
+    if (this._ButtressOptions.cleaned) {
+      throw new Helpers.Errors.NotYetInitiated(
+        `Attempting to use the ${this.collection} module after Buttress.clean(), get it again after init()`,
+      );
+    }
+  }
+
+  /**
    * @return {object} schema
    */
   loadSchema() {
+    this._assertCurrent();
+
     if (this.__schema) {
       return this.__schema;
     }
@@ -134,6 +147,8 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @return {promise}
    */
   async _request(type: string, path: string, options: RequestOptions, attempt = 0, redirect = false): Promise<any> {
+    this._assertCurrent();
+
     if (!this.__route) {
       throw new Error(`Unable to make request to Buttress due to unknown schema ${this.collection}`);
     }
@@ -153,11 +168,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
     }
 
     if (options.params) {
-      const params = Object.keys(options.params)
-        .map((key) => {
-          return `${encodeURIComponent(key)}=${encodeURIComponent(options.params[key])}`;
-        })
-        .join('&');
+      const params = Helpers.queryString(options.params);
 
       url = params !== '' ? `${url}?${params}` : url;
     }
@@ -207,7 +218,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
 
     attempt++;
     if (redirect) {
-      url = url.replace(this.__protocolRegex, 'https://');
+      url = this.__toHttps(url);
     }
 
     if (this._ButtressOptions.isolated) {
@@ -265,7 +276,16 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
             if (!item.id || !item.sourceId) continue;
             const nextItem = results[j];
             if (item.id === nextItem.id && item.sourceId === nextItem.sourceId) {
-              Object.assign(item, nextItem);
+              // Each key is defined as a plain property. Object.assign would run the __proto__ setter for the
+              // "__proto__" key JSON.parse leaves on a partner's item, letting partner data set the prototype.
+              for (const key of Object.keys(nextItem)) {
+                Object.defineProperty(item, key, {
+                  value: nextItem[key],
+                  writable: true,
+                  enumerable: true,
+                  configurable: true,
+                });
+              }
               results.splice(j, 1);
               j--;
             }
@@ -289,8 +309,9 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
         error.code !== 'ECONNABORTED' &&
         BaseSchema.Constants.RETRY_METHODS.includes(type)
       ) {
+        // attempt counts the first request too, so maxRetries: N sends it N more times
         const maxRetries = this._ButtressOptions.maxRetries ?? BaseSchema.Constants.MAX_RETRIES;
-        if (attempt >= maxRetries) throw error;
+        if (attempt > maxRetries) throw error;
 
         return Helpers.backOff(attempt).then(() => this._request(type, path, options, attempt));
       }
@@ -306,16 +327,43 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @return {promise}
    */
   _postRedirect(response: APIResponse, url: string) {
-    const originalURL = url.match(this.__protocolRegex);
-    const redirectedURL = response.url.match(this.__protocolRegex);
+    if (typeof response.url !== 'string') return false;
 
-    const originalProtocol = originalURL !== null ? originalURL.pop() : null;
-    const redirectedProtocol = redirectedURL !== null ? redirectedURL.pop() : null;
+    const original = this.__splitURL(url);
+    const redirected = this.__splitURL(response.url);
 
-    const replacedOriginalURL = url.replace(this.__protocolRegex, '');
-    const replacedRedirectedURL = response.url.replace(this.__protocolRegex, '');
+    return original.rest === redirected.rest && original.protocol !== redirected.protocol;
+  }
 
-    return replacedOriginalURL === replacedRedirectedURL && originalProtocol !== redirectedProtocol;
+  /**
+   * @param {string} url
+   * @return {string} - the url over https, without an http default port such as http://host:80 has
+   */
+  private __toHttps(url: string) {
+    try {
+      const parsed = new URL(url);
+      parsed.protocol = 'https:';
+      return parsed.toString();
+    } catch {
+      return url.replace(this.__protocolRegex, 'https://');
+    }
+  }
+
+  /**
+   * Splits a URL into its protocol and the rest, normalised as fetch normalises the URL it reports for a response:
+   * the host lower-cased and a default port dropped, so http://Host:80/x matches https://host/x
+   * @param {string} url
+   * @return {object} - {protocol, rest}
+   */
+  private __splitURL(url: string): {protocol: string | null; rest: string} {
+    try {
+      const parsed = new URL(url);
+      return {protocol: parsed.protocol, rest: `${parsed.host}${parsed.pathname}${parsed.search}`};
+    } catch {
+      // Not a URL that parses, or no URL global (a lambda's isolate may not have one), so compare it as it is
+      const match = url.match(this.__protocolRegex);
+      return {protocol: match !== null ? (match.pop() ?? null) : null, rest: url.replace(this.__protocolRegex, '')};
+    }
   }
 
   /**
