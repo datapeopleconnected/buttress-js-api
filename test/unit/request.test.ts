@@ -432,6 +432,28 @@ describe('Requests', () => {
       // An inherited property isn't a stored value
       assert.throws(() => store.getValue('toString'), /toString does not exist/);
     });
+
+    it('should write a key as a single property of storeData', async () => {
+      const store = await instance.SecureStore.findByName('store');
+      server.requests.length = 0;
+
+      await store.setValue('apiKey', 'x');
+
+      assert.strictEqual(server.requests[0].url, '/api/v1/secure-store/1');
+      assert.deepStrictEqual(server.requests[0].body, [{path: 'storeData.apiKey', value: 'x'}]);
+    });
+
+    it('should refuse a key holding a . or an empty key, both to write and to read', async () => {
+      server.reply = () => ({status: 200, body: {id: '1', name: 'store', storeData: {'a.b': 1}}});
+      const store = await instance.SecureStore.findByName('store');
+      server.requests.length = 0;
+
+      // A write to a.b would set storeData.a.b, which a read of a.b can't find
+      await assert.rejects(store.setValue('a.b', 'x'), /Unable to use 'a.b' as a secure store key/);
+      await assert.rejects(store.setValue('', 'x'), /secure store key/);
+      assert.throws(() => store.getValue('a.b'), /Unable to use 'a.b' as a secure store key/);
+      assert.strictEqual(server.requests.length, 0);
+    });
   });
 
   describe('Lambda scheduling', () => {

@@ -40,6 +40,10 @@
 - `createObject(path)` throws "Unable to create an object for '<path>'" when the path names a property that holds a
   value, such as a plain array (one without a `__schema`) or a string, instead of overflowing the stack with
   `RangeError: Maximum call stack size exceeded`. Nested objects and arrays with a `__schema` build as before.
+- A secure store's `getValue` and `setValue` refuse an empty key or one holding a `.`: `getValue` throws, `setValue`
+  rejects. `setValue('a.b', v)` used to write the nested path `storeData.a.b`, which `getValue('a.b')` couldn't read
+  back, and let a key taken from input write anywhere below `storeData`. A dotted key already in a store's data can no
+  longer be read through `getValue`.
 
 ### 3.0.0-51
 
