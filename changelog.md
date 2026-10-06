@@ -37,6 +37,9 @@
   already initialised with different options" when its options (or `isolated` flag) differ from the first call's. It
   used to resolve and change nothing, so code re-initialising to switch apps went on reading and writing the first app.
   Call `clean()` before `init()` to switch. The same options, compared deeply, resolve as before.
+- `createObject(path)` throws "Unable to create an object for '<path>'" when the path names a property that holds a
+  value, such as a plain array (one without a `__schema`) or a string, instead of overflowing the stack with
+  `RangeError: Maximum call stack size exceeded`. Nested objects and arrays with a `__schema` build as before.
 
 ### 3.0.0-51
 

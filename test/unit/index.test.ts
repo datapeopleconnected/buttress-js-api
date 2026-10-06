@@ -253,5 +253,30 @@ describe('Unit tests for index.js', () => {
       assert(Object.keys(companyRegistrar['numbers']).some((k) => k === 'number1'));
       assert(Object.keys(companyRegistrar['numbers']).some((k) => k === 'number2'));
     });
+
+    it('should refuse to create an object for a plain array property', async () => {
+      assert.throws(
+        () => createObject('organisation', 'array'),
+        /'array' is a property of type array with no __schema/,
+      );
+    });
+
+    it('should refuse to create an object for a property that holds a value', async () => {
+      assert.throws(() => createObject('organisation', 'name'), /'name' is a property of type string with no __schema/);
+      assert.throws(
+        () => createObject('organisation', 'registeredAddress.city'),
+        /'registeredAddress.city', 'city' is a property of type number/,
+      );
+    });
+
+    it('should still create an object for a nested object or an array with a __schema', async () => {
+      assert.deepStrictEqual(Object.keys(createObject('organisation', 'registeredAddress')).sort(), [
+        'address1',
+        'address2',
+        'city',
+        'county',
+      ]);
+      assert.deepStrictEqual(createObject('organisation', 'companiesRegistrar.numbers'), {number1: null, number2: 0});
+    });
   });
 });

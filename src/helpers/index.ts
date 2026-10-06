@@ -205,19 +205,23 @@ class Schema {
    * @return {object} schemaPart
    */
   static getSubSchema(schema: SchemaModel, path: string): SchemaModel | undefined {
-    return path.split('.').reduce((out: SchemaModel | undefined, path: string) => {
+    return path.split('.').reduce((out: SchemaModel | undefined, segment: string) => {
       if (!out) return; // Skip all paths if we hit a false
 
-      const property = Path.get(out.properties, path);
+      const property = Path.get(out.properties, segment);
       if (!property) {
         return;
       }
-      if (property.type && property.type === 'array' && !property.__schema) {
-        return;
+      // A property with a __type holds a value. Only an array with a __schema has properties to build an object from,
+      // anything else would be taken apart as if its settings were properties, which recurses without end.
+      if (property.__type && !property.__schema) {
+        throw new Error(
+          `Unable to create an object for '${path}', '${segment}' is a property of type ${property.__type} with no __schema`,
+        );
       }
 
       return {
-        name: path,
+        name: segment,
         type: 'collection',
         properties: property.__schema || property,
       };
