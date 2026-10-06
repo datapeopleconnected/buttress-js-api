@@ -117,7 +117,7 @@ export default class Auth extends BaseSchema {
    * @param {Object} options - request options
    * @return {Promise} - resolves to the serialized Token object
    */
-  createToken(userId: string, token: AuthData, options?: RequestOptionsIn) {
+  async createToken(userId: string, token: AuthData, options?: RequestOptionsIn) {
     return this.User.createToken(userId, token, options);
   }
 }

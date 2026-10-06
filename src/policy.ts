@@ -37,7 +37,7 @@ export default class Policy extends BaseSchema {
    * @param {Object} policy - needs a version, Buttress refuses one without
    * @return {Promise}
    */
-  createPolicy(policy: PolicyModel) {
+  async createPolicy(policy: PolicyModel) {
     return this.save(policy);
   }
 
@@ -45,7 +45,7 @@ export default class Policy extends BaseSchema {
    * Retrieve all policies linked to the auth app
    * @return {Promise}
    */
-  getAllPolicies() {
+  async getAllPolicies() {
     return this.getAll();
   }
 
@@ -55,7 +55,7 @@ export default class Policy extends BaseSchema {
    * @param {Object} options
    * @return {Promise}
    */
-  deletePolicyByName(data: any, options?: RequestOptionsIn) {
+  async deletePolicyByName(data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
     return this._request('post', 'delete-transient-policy', opts);
@@ -67,7 +67,7 @@ export default class Policy extends BaseSchema {
    * @param {object} options
    * @return {Promise}
    */
-  syncAppPolicy(policies: PolicyModel[], options?: RequestOptionsIn) {
+  async syncAppPolicy(policies: PolicyModel[], options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (policies) opts.data = policies;
     return this._request('post', 'sync', opts);

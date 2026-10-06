@@ -66,6 +66,12 @@
 - When results from several sources are merged (`combineResults`, on by default), a `"__proto__"` key in a data
   sharing partner's item is kept as an ordinary property instead of replacing the merged item's prototype, so partner
   data can't make an item report inherited properties such as `isAdmin` that it doesn't have.
+- Every call that makes a request rejects its promise when it refuses to send, rather than throwing where it's called,
+  so `x.get(id).catch(...)` handles the error. That covers a missing app token, an empty `token` option, an id or name
+  refused as a path segment and a `removeAll` filter, from `get`, `save`, `search` and the rest, and from every
+  `User`, `Lambda`, `Policy`, `Token`, `App` and `AppDataSharing` method. Code that `await`s its calls sees no
+  difference. Code that caught these errors with a `try` around a call it didn't `await` now gets a rejected promise
+  instead.
 
 ### 3.0.0-51
 

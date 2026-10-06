@@ -31,6 +31,8 @@ import APIResponse from '../types/Response';
 declare const lambda: any;
 
 /**
+ * Every method that makes a request is async, here and in the core modules, so an error thrown before the request is
+ * sent, such as a refused token or id, rejects the call's promise rather than throwing where the call is made.
  * @class BaseSchema
  * @template T - the collection's entities
  * @template BulkSaveResult - what bulkSave resolves to: the added entities, but `true` for a core collection
@@ -371,7 +373,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  get(id: string, options: RequestOptionsIn = {}): Promise<T> {
+  async get(id: string, options: RequestOptionsIn = {}): Promise<T> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     return this._request('get', Helpers.pathSegment(id), opts);
   }
@@ -381,7 +383,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  save(details: Partial<T>, options: RequestOptionsIn = {}): Promise<T> {
+  async save(details: Partial<T>, options: RequestOptionsIn = {}): Promise<T> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -398,7 +400,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options - pass sourceId to update an entity held in a remote datastore
    * @return {promise}
    */
-  update(
+  async update(
     id: string,
     details: UpdateOperation | UpdateOperation[],
     options: RequestOptionsIn = {},
@@ -420,7 +422,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  remove(id: string, options: RequestOptionsIn = {}): Promise<boolean> {
+  async remove(id: string, options: RequestOptionsIn = {}): Promise<boolean> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
     return this._request('delete', Helpers.pathSegment(id), opts);
   }
@@ -431,7 +433,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options - pass stream: true to get the response body as a stream
    * @return {promise}
    */
-  getAll(options: RequestOptionsIn = {}): Promise<T[] | Readable> {
+  async getAll(options: RequestOptionsIn = {}): Promise<T[] | Readable> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     return this._request('get', '', opts);
@@ -459,7 +461,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options - pass stream: true to get the response body as a stream
    * @return {promise}
    */
-  search(
+  async search(
     query: Query<T>,
     limit = 0,
     skip = 0,
@@ -487,7 +489,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  removeAll(details: null = null, options: RequestOptionsIn = {}): Promise<boolean> {
+  async removeAll(details: null = null, options: RequestOptionsIn = {}): Promise<boolean> {
     if (details !== null && details !== undefined) {
       throw new Error(
         `removeAll removes every ${this.collection} and doesn't accept a filter, use bulkRemove(ids) instead`,
@@ -504,7 +506,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  bulkGet(details: string[], options: RequestOptionsIn = {}): Promise<T[]> {
+  async bulkGet(details: string[], options: RequestOptionsIn = {}): Promise<T[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) {
@@ -521,7 +523,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise} - the added entities, or `true` for a core collection such as SecureStore
    */
-  bulkSave(details: Partial<T>[], options: RequestOptionsIn = {}): Promise<BulkSaveResult> {
+  async bulkSave(details: Partial<T>[], options: RequestOptionsIn = {}): Promise<BulkSaveResult> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -534,7 +536,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise} - an item per update, refused ones have null results and a validation reason
    */
-  bulkUpdate(details: BulkUpdateItem[], options: RequestOptionsIn = {}): Promise<BulkUpdateResult[]> {
+  async bulkUpdate(details: BulkUpdateItem[], options: RequestOptionsIn = {}): Promise<BulkUpdateResult[]> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     // Sent as an array of updates, as update does
@@ -549,7 +551,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options
    * @return {promise}
    */
-  bulkRemove(details: string[], options: RequestOptionsIn = {}): Promise<boolean> {
+  async bulkRemove(details: string[], options: RequestOptionsIn = {}): Promise<boolean> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     if (details) opts.data = details;
@@ -563,7 +565,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {object} options - pass actualCount to sum a count per matching policy instead of one count of the combined query
    * @return {promise}
    */
-  count(query?: Query<T>, sort?: Sort | null | 0, options: RequestOptionsIn = {}): Promise<number> {
+  async count(query?: Query<T>, sort?: Sort | null | 0, options: RequestOptionsIn = {}): Promise<number> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
 
     // Always send a query, buttress treats a body without one as the query itself

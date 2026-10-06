@@ -47,7 +47,7 @@ export default class Token extends BaseSchema {
    * @param {object} options
    * @return {Promise}
    */
-  getAllTokens(options?: RequestOptionsIn) {
+  async getAllTokens(options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('get', '', opts);
   }
@@ -56,7 +56,7 @@ export default class Token extends BaseSchema {
    * @param {object} options
    * @return {promise}
    */
-  removeAllUserTokens(options?: RequestOptionsIn) {
+  async removeAllUserTokens(options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     return this._request('delete', `user`, opts);
   }
