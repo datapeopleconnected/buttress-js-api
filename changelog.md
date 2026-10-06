@@ -19,6 +19,10 @@
 - `Lambda.scheduleExecution` sends the metadata it's given when there's no `executeAfter`, which Buttress takes as
   "run now". It used to send an empty body, dropping the metadata. `executeAfter` and `metadata` are optional in the
   types, and `data` passed in the options (such as a `deploymentId`) is kept alongside them rather than replaced.
+- `Auth.findOrCreateUser` sets a user's policy properties on their token by the token's id, never its value. Finding a
+  user by its auth app id returns only its tokens' values, so it used to send the token's secret value in the request
+  path, where it ends up in proxy and access logs. It now looks the id up with `User.get` (one more request, only when
+  the properties need setting), and throws if the token still has no id.
 
 ### 3.0.0-51
 

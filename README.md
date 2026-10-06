@@ -109,10 +109,11 @@ Named modules add their own methods on top of this, for example:
 ```ts
 // Find or create a user from a third-party login; the user comes back with their tokens
 const user = await Buttress.Auth.findOrCreateUser({app: 'google', appId: googleUserId}, {domains, policyProperties});
-const [token] = user.tokens;
 
-// Give a user a policy property, scoped to one of their tokens
-await Buttress.User.updatePolicyProperty(user.id, token.value, {role: 'admin'});
+// Give a user a policy property, scoped to one of their tokens. Pass the token's id, never its value: it goes in the
+// request path, where it would end up in access logs. User.get returns each token's id.
+const {tokens} = await Buttress.User.get(user.id);
+await Buttress.User.updatePolicyProperty(user.id, tokens[0].id, {role: 'admin'});
 
 // Manage schema-level access policies. Buttress refuses a policy without a version.
 await Buttress.Policy.createPolicy({

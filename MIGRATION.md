@@ -21,7 +21,7 @@ The rest of this guide is behaviour changes that need no code changes, and new o
 
 Buttress stores policy properties on a user's **token**, not on the user, and its routes include the token: `PUT user/:id/policy-property/:tokenId`. The client left the token out, so these calls returned 404.
 
-`tokenId` accepts either the token's id or its value.
+`tokenId` is the token's id. Buttress also accepts the token's value there, but don't pass it (see below).
 
 ```js
 // Before

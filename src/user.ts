@@ -78,7 +78,7 @@ export default class User extends BaseSchema {
 
   /**
    * @param {Object} userId - user id
-   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
+   * @param {String} tokenId - id of the user's token, policy properties are held per token. Not its value, which would end up in access logs
    * @param {array} data - request data
    * @param {Object} options - request options
    * @return {Promise}
@@ -91,7 +91,7 @@ export default class User extends BaseSchema {
 
   /**
    * @param {Object} userId - user id
-   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
+   * @param {String} tokenId - id of the user's token, policy properties are held per token. Not its value, which would end up in access logs
    * @param {array} data - request data
    * @param {Object} options - request options
    * @return {Promise}
@@ -105,7 +105,7 @@ export default class User extends BaseSchema {
 
   /**
    * @param {Object} userId - user id
-   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
+   * @param {String} tokenId - id of the user's token, policy properties are held per token. Not its value, which would end up in access logs
    * @param {array} data - request data
    * @param {Object} options - request options
    * @return {Promise}
@@ -119,7 +119,7 @@ export default class User extends BaseSchema {
 
   /**
    * @param {Object} userId - user id
-   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
+   * @param {String} tokenId - id of the user's token, policy properties are held per token. Not its value, which would end up in access logs
    * @param {Object} options - request options
    * @return {Promise}
    */

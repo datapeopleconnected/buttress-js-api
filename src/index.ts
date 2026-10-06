@@ -284,7 +284,7 @@ export class Buttress {
   /**
    * Create user transient policy
    * @param {String} userId
-   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
+   * @param {String} tokenId - id of the user's token, policy properties are held per token. Not its value, which would end up in access logs
    * @param {Object} policy
    * @return {Promise}
    */
@@ -296,7 +296,7 @@ export class Buttress {
   /**
    * Delete user transient policy
    * @param {String} userId
-   * @param {String} tokenId - id or value of the user's token, policy properties are held per token
+   * @param {String} tokenId - id of the user's token, policy properties are held per token. Not its value, which would end up in access logs
    * @param {String} policyName
    * @return {Promise}
    */

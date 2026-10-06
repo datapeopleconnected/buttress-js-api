@@ -334,11 +334,15 @@ describe('Requests', () => {
     assert.strictEqual(server.requests[0].url, '/api/v1/app/policy-property-list');
   });
 
-  it('should set policy properties on the token of an existing user', async () => {
-    server.reply = (req) =>
-      req.method === 'GET'
-        ? {status: 200, body: {id: 'USER_ID', auth: [], tokens: [{value: 'TOKEN_VALUE', policyProperties: null}]}}
-        : {status: 200, body: true};
+  it('should set policy properties on the token of an existing user by its id, never its value', async () => {
+    server.reply = (req) => {
+      // Finding a user by its auth app id returns only the tokens' values, getting it by id returns their ids too
+      if (req.url === '/api/v1/user/google/G1')
+        return {status: 200, body: {id: 'USER_ID', auth: [], tokens: [{value: 'TOKEN_VALUE', policyProperties: null}]}};
+      if (req.url === '/api/v1/user/USER_ID')
+        return {status: 200, body: {id: 'USER_ID', auth: [], tokens: [{id: 'TOKEN_ID', value: 'TOKEN_VALUE'}]}};
+      return {status: 200, body: true};
+    };
 
     const user = await instance.Auth.findOrCreateUser(
       {app: 'google', appId: 'G1', policyProperties: {role: 'user'}},
@@ -347,9 +351,23 @@ describe('Requests', () => {
 
     assert.deepStrictEqual(
       server.requests.map((r) => `${r.method} ${r.url}`),
-      ['GET /api/v1/user/google/G1', 'PUT /api/v1/user/USER_ID/policy-property/TOKEN_VALUE'],
+      ['GET /api/v1/user/google/G1', 'GET /api/v1/user/USER_ID', 'PUT /api/v1/user/USER_ID/policy-property/TOKEN_ID'],
     );
     assert.deepStrictEqual(user.tokens[0].policyProperties, {role: 'user'});
+  });
+
+  it('should refuse to set policy properties on a token it has no id for', async () => {
+    server.reply = (req) =>
+      req.url === '/api/v1/user/google/G1'
+        ? {status: 200, body: {id: 'USER_ID', auth: [], tokens: [{value: 'TOKEN_VALUE', policyProperties: null}]}}
+        : {status: 200, body: {id: 'USER_ID', auth: [], tokens: [{value: 'TOKEN_VALUE'}]}};
+
+    await assert.rejects(
+      instance.Auth.findOrCreateUser({app: 'google', appId: 'G1', policyProperties: {role: 'user'}}, {domains: []}),
+      /the token has no id/,
+    );
+    assert(!server.requests.some((r) => r.url?.includes('TOKEN_VALUE')), 'the token value was sent in a URL');
+    assert(!server.requests.some((r) => r.method === 'PUT'));
   });
 
   it('should create a user token carrying the policy properties', async () => {

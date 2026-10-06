@@ -84,11 +84,31 @@ export default class Auth extends BaseSchema {
 
     const [token] = user.tokens;
     if (!token.policyProperties && userData.policyProperties) {
-      await this.User.setPolicyProperty(user.id, token.id || token.value, userData.policyProperties);
+      await this.User.setPolicyProperty(user.id, await this.__tokenId(user.id, token), userData.policyProperties);
       token.policyProperties = userData.policyProperties;
     }
 
     return user;
+  }
+
+  /**
+   * The id of one of the user's tokens. A user found by its auth app id comes back with only its tokens' values, so
+   * the id is looked up from the user. The value is never used in its place: the id is part of the request path,
+   * where a token's value would end up in proxy and access logs.
+   * @param {String} userId - user id
+   * @param {Object} token - one of the user's tokens
+   * @return {Promise} - resolves to the token's id
+   */
+  private async __tokenId(userId: string, token: {id?: string; value?: string}): Promise<string> {
+    if (token.id) return token.id;
+
+    const user = await this.User.get(userId);
+    const found = token.value ? user.tokens?.find((t: {value?: string}) => t.value === token.value) : undefined;
+    if (!found?.id) {
+      throw new Error(`Unable to set policy properties on a token of user ${userId}, the token has no id`);
+    }
+
+    return found.id;
   }
 
   /**
