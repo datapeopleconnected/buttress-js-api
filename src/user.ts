@@ -40,7 +40,7 @@ export default class User extends BaseSchema {
    */
   findUser(appName: string, appUserId: string, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
-    return this._request('get', `${appName}/${appUserId}`, opts);
+    return this._request('get', `${Helpers.pathSegment(appName)}/${Helpers.pathSegment(appUserId)}`, opts);
   }
 
   /**
@@ -50,7 +50,7 @@ export default class User extends BaseSchema {
    */
   getUser(parameter: string, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
-    return this._request('get', `${parameter}`, opts);
+    return this._request('get', Helpers.pathSegment(parameter), opts);
   }
 
   /**
@@ -62,7 +62,7 @@ export default class User extends BaseSchema {
   createToken(userId: string, token: AuthData, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (token) opts.data = token;
-    return this._request('post', `${userId}/token`, opts);
+    return this._request('post', `${Helpers.pathSegment(userId)}/token`, opts);
   }
 
   /**
@@ -86,7 +86,7 @@ export default class User extends BaseSchema {
   setPolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
-    return this._request('put', `${userId}/policy-property/${encodeURIComponent(tokenId)}`, opts);
+    return this._request('put', `${Helpers.pathSegment(userId)}/policy-property/${Helpers.pathSegment(tokenId)}`, opts);
   }
 
   /**
@@ -99,7 +99,8 @@ export default class User extends BaseSchema {
   updatePolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
-    return this._request('put', `${userId}/update-policy-property/${encodeURIComponent(tokenId)}`, opts);
+    const path = `${Helpers.pathSegment(userId)}/update-policy-property/${Helpers.pathSegment(tokenId)}`;
+    return this._request('put', path, opts);
   }
 
   /**
@@ -112,7 +113,8 @@ export default class User extends BaseSchema {
   removePolicyProperty(userId: string, tokenId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
-    return this._request('put', `${userId}/remove-policy-property/${encodeURIComponent(tokenId)}`, opts);
+    const path = `${Helpers.pathSegment(userId)}/remove-policy-property/${Helpers.pathSegment(tokenId)}`;
+    return this._request('put', path, opts);
   }
 
   /**
@@ -123,6 +125,7 @@ export default class User extends BaseSchema {
    */
   clearPolicyProperty(userId: string, tokenId: string, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
-    return this._request('put', `${userId}/clear-policy-property/${encodeURIComponent(tokenId)}`, opts);
+    const path = `${Helpers.pathSegment(userId)}/clear-policy-property/${Helpers.pathSegment(tokenId)}`;
+    return this._request('put', path, opts);
   }
 }

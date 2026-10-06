@@ -147,6 +147,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
       url = `https://${url}`;
     }
 
+    // Callers encode each id or name in the path with Helpers.pathSegment
     if (path) {
       url = `${url}/${path}`;
     }
@@ -324,7 +325,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    */
   get(id: string, options: RequestOptionsIn = {}): Promise<T> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
-    return this._request('get', id, opts);
+    return this._request('get', Helpers.pathSegment(id), opts);
   }
 
   /**
@@ -359,7 +360,9 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
     // Buttress before 29 September 2026 only took an array of updates on its core collections (user, policy...)
     if (details) opts.data = Array.isArray(details) ? details : [details];
 
-    const path = options.sourceId ? `${options.sourceId}/${id}` : id;
+    const path = options.sourceId
+      ? `${Helpers.pathSegment(options.sourceId)}/${Helpers.pathSegment(id)}`
+      : Helpers.pathSegment(id);
 
     return this._request('put', path, opts);
   }
@@ -371,7 +374,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    */
   remove(id: string, options: RequestOptionsIn = {}): Promise<boolean> {
     const opts = Helpers.checkOptions(options, this._ButtressOptions.authToken);
-    return this._request('delete', id, opts);
+    return this._request('delete', Helpers.pathSegment(id), opts);
   }
 
   getAll(options: RequestOptionsIn & {stream: true}): Promise<Readable>;

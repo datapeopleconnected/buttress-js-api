@@ -53,7 +53,7 @@ export default class Lambda extends BaseSchema {
   editLambdaDeployment(lambdaId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
-    return this._request('put', `${lambdaId}/deployment`, opts);
+    return this._request('put', `${Helpers.pathSegment(lambdaId)}/deployment`, opts);
   }
 
   /**
@@ -65,7 +65,7 @@ export default class Lambda extends BaseSchema {
   setPolicyProperty(lambdaId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
-    return this._request('put', `${lambdaId}/policy-property`, opts);
+    return this._request('put', `${Helpers.pathSegment(lambdaId)}/policy-property`, opts);
   }
 
   /**
@@ -77,20 +77,21 @@ export default class Lambda extends BaseSchema {
   updatePolicyProperty(lambdaId: string, data: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
-    return this._request('put', `${lambdaId}/update-policy-property`, opts);
+    return this._request('put', `${Helpers.pathSegment(lambdaId)}/update-policy-property`, opts);
   }
 
   /**
    * @param {string} lambdaId
-   * @param {string} executeAfter
-   * @param {array} metadata
+   * @param {string} [executeAfter] - a date expression, Buttress runs the lambda straight away when it's left out
+   * @param {array} [metadata]
    * @param {object} options
    * @return {Promise}
    */
-  scheduleExecution(lambdaId: string, executeAfter: string, metadata: any, options?: RequestOptionsIn) {
+  scheduleExecution(lambdaId: string, executeAfter?: string | null, metadata?: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
-    if (executeAfter) opts.data = {executeAfter, metadata};
-    return this._request('post', `${lambdaId}/schedule`, opts);
+    if (executeAfter) opts.data.executeAfter = executeAfter;
+    if (metadata !== undefined) opts.data.metadata = metadata;
+    return this._request('post', `${Helpers.pathSegment(lambdaId)}/schedule`, opts);
   }
 
   /**
@@ -100,6 +101,6 @@ export default class Lambda extends BaseSchema {
    */
   clearPolicyProperty(lambdaId: string, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
-    return this._request('put', `${lambdaId}/clear-policy-property`, opts);
+    return this._request('put', `${Helpers.pathSegment(lambdaId)}/clear-policy-property`, opts);
   }
 }

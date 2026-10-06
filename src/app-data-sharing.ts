@@ -52,7 +52,7 @@ export default class AppDataSharing extends BaseSchema {
   updateDataSharingPolicy(dataSharingId: string, data: Record<string, unknown>, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
-    return this._request('put', `${dataSharingId}/policy`, opts);
+    return this._request('put', `${Helpers.pathSegment(dataSharingId)}/policy`, opts);
   }
 
   /**
@@ -76,7 +76,7 @@ export default class AppDataSharing extends BaseSchema {
    */
   reactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
-    return this._request('put', `reactivate/${dataSharingId}`, opts);
+    return this._request('put', `reactivate/${Helpers.pathSegment(dataSharingId)}`, opts);
   }
 
   /**
@@ -86,6 +86,6 @@ export default class AppDataSharing extends BaseSchema {
    */
   deactivate(dataSharingId: string, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
-    return this._request('put', `deactivate/${dataSharingId}`, opts);
+    return this._request('put', `deactivate/${Helpers.pathSegment(dataSharingId)}`, opts);
   }
 }

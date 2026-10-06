@@ -368,6 +368,205 @@ describe('Requests', () => {
     assert.deepStrictEqual((post as RecordedRequest).body.token, {domains: [], policyProperties: {role: 'user'}});
     assert.strictEqual(server.requests.length, 2);
   });
+
+  describe('Secure store', () => {
+    const storeData = {zero: 0, empty: '', no: false, nothing: null, name: 'x'};
+
+    beforeEach(() => {
+      server.reply = () => ({status: 200, body: {id: '1', name: 'store', storeData}});
+    });
+
+    it('should read back a stored 0, empty string, false or null', async () => {
+      const store = await instance.SecureStore.findByName('store');
+
+      assert.strictEqual(store.getValue('zero'), 0);
+      assert.strictEqual(store.getValue('empty'), '');
+      assert.strictEqual(store.getValue('no'), false);
+      assert.strictEqual(store.getValue('nothing'), null);
+      assert.strictEqual(store.getValue('name'), 'x');
+    });
+
+    it('should throw for a key the store does not hold', async () => {
+      const store = await instance.SecureStore.findByName('store');
+
+      assert.throws(() => store.getValue('missing'), /^Error: missing does not exist on the secure store store$/);
+      // An inherited property isn't a stored value
+      assert.throws(() => store.getValue('toString'), /toString does not exist/);
+    });
+  });
+
+  describe('Lambda scheduling', () => {
+    const metadata = [{key: 'a', value: 1}];
+
+    it('should send the metadata when no start time is given', async () => {
+      await instance.Lambda.scheduleExecution('L1', undefined, metadata);
+      await instance.Lambda.scheduleExecution('L1', null, metadata);
+
+      assert.strictEqual(server.requests[0].url, '/api/v1/lambda/L1/schedule');
+      assert.deepStrictEqual(server.requests[0].body, {metadata});
+      assert.deepStrictEqual(server.requests[1].body, {metadata});
+    });
+
+    it('should send the start time and metadata when both are given', async () => {
+      await instance.Lambda.scheduleExecution('L1', 'in 5 minutes', metadata);
+
+      assert.deepStrictEqual(server.requests[0].body, {executeAfter: 'in 5 minutes', metadata});
+    });
+
+    it('should leave out a start time or metadata that is not given', async () => {
+      await instance.Lambda.scheduleExecution('L1', 'in 5 minutes');
+      await instance.Lambda.scheduleExecution('L1');
+
+      assert.deepStrictEqual(server.requests[0].body, {executeAfter: 'in 5 minutes'});
+      assert.deepStrictEqual(server.requests[1].body, {});
+    });
+
+    it('should keep other data passed in the options', async () => {
+      await instance.Lambda.scheduleExecution('L1', 'in 5 minutes', metadata, {data: {deploymentId: 'D1'}});
+
+      assert.deepStrictEqual(server.requests[0].body, {deploymentId: 'D1', executeAfter: 'in 5 minutes', metadata});
+    });
+  });
+
+  describe('Path segments', () => {
+    // A call that throws before returning its promise counts as refused too
+    const refuses = async (call: () => Promise<unknown>) => {
+      await assert.rejects(async () => call(), /path segment/);
+    };
+
+    const sent = () => server.requests.map((r) => `${r.method} ${r.url}`);
+
+    it('should encode an id holding /, ? or # as one segment', async () => {
+      const thing = instance.getCollection('thing');
+      await thing.get('a/b');
+      await thing.get('a?b=c');
+      await thing.get('a#b');
+      await thing.get('../user');
+      await thing.update('a/b', {path: 'name', value: 'x'});
+      await thing.update('a#b', {path: 'name', value: 'x'}, {sourceId: '../SOURCE'});
+      await thing.remove('a?b');
+
+      assert.deepStrictEqual(sent(), [
+        'GET /test-app/api/v1/thing/a%2Fb',
+        'GET /test-app/api/v1/thing/a%3Fb%3Dc',
+        'GET /test-app/api/v1/thing/a%23b',
+        'GET /test-app/api/v1/thing/..%2Fuser',
+        'PUT /test-app/api/v1/thing/a%2Fb',
+        'PUT /test-app/api/v1/thing/..%2FSOURCE/a%23b',
+        'DELETE /test-app/api/v1/thing/a%3Fb',
+      ]);
+    });
+
+    it('should refuse an id of . or .., or an empty one', async () => {
+      const thing = instance.getCollection('thing');
+      await refuses(() => thing.get('..'));
+      await refuses(() => thing.get('.'));
+      await refuses(() => thing.get(''));
+      await refuses(() => thing.update('..', {path: 'name', value: 'x'}));
+      await refuses(() => thing.update('ID', {path: 'name', value: 'x'}, {sourceId: '..'}));
+      await refuses(() => thing.remove('..'));
+      await refuses(() => thing.remove(undefined as unknown as string));
+
+      assert.strictEqual(server.requests.length, 0);
+    });
+
+    it('should encode the user ids and names in a user path', async () => {
+      await instance.User.findUser('google/x', '../1');
+      await instance.User.getUser('a?b=c');
+      await instance.User.createToken('a#b', {domains: []});
+      await instance.User.setPolicyProperty('../app', 'TOKEN/ID', {role: 'admin'});
+      await instance.User.clearPolicyProperty('a?b', 'TOKEN#ID');
+
+      assert.deepStrictEqual(sent(), [
+        'GET /api/v1/user/google%2Fx/..%2F1',
+        'GET /api/v1/user/a%3Fb%3Dc',
+        'POST /api/v1/user/a%23b/token',
+        'PUT /api/v1/user/..%2Fapp/policy-property/TOKEN%2FID',
+        'PUT /api/v1/user/a%3Fb/clear-policy-property/TOKEN%23ID',
+      ]);
+    });
+
+    it('should refuse a user id or token id of . or ..', async () => {
+      await refuses(() => instance.User.findUser('..', 'G1'));
+      await refuses(() => instance.User.findUser('google', '.'));
+      await refuses(() => instance.User.getUser('..'));
+      await refuses(() => instance.User.createToken('..', {domains: []}));
+      await refuses(() => instance.User.updatePolicyProperty('..', 'TOKEN_ID', {role: 'admin'}));
+      await refuses(() => instance.User.removePolicyProperty('USER_ID', '..', {role: 'admin'}));
+
+      assert.strictEqual(server.requests.length, 0);
+    });
+
+    it('should encode a secure store name', async () => {
+      await instance.SecureStore.findByName('a/b?c#d');
+      await instance.SecureStore.findByName('..%2F..');
+
+      assert.deepStrictEqual(sent(), [
+        'GET /api/v1/secure-store/name/a%2Fb%3Fc%23d',
+        'GET /api/v1/secure-store/name/..%252F..',
+      ]);
+    });
+
+    it('should refuse a secure store name of ..', async () => {
+      await refuses(() => instance.SecureStore.findByName('..'));
+
+      assert.strictEqual(server.requests.length, 0);
+    });
+
+    it('should encode a lambda id', async () => {
+      await instance.Lambda.editLambdaDeployment('a?b', {branch: 'main'});
+      await instance.Lambda.setPolicyProperty('a#b', {role: 'admin'});
+      await instance.Lambda.scheduleExecution('../app', '2026-10-06T00:00:00.000Z', []);
+      await instance.Lambda.clearPolicyProperty('a/b');
+
+      assert.deepStrictEqual(sent(), [
+        'PUT /api/v1/lambda/a%3Fb/deployment',
+        'PUT /api/v1/lambda/a%23b/policy-property',
+        'POST /api/v1/lambda/..%2Fapp/schedule',
+        'PUT /api/v1/lambda/a%2Fb/clear-policy-property',
+      ]);
+    });
+
+    it('should refuse a lambda id of . or ..', async () => {
+      await refuses(() => instance.Lambda.editLambdaDeployment('..', {branch: 'main'}));
+      await refuses(() => instance.Lambda.updatePolicyProperty('.', {role: 'admin'}));
+      await refuses(() => instance.Lambda.scheduleExecution('..', '2026-10-06T00:00:00.000Z', []));
+
+      assert.strictEqual(server.requests.length, 0);
+    });
+
+    it('should encode a data sharing id', async () => {
+      await instance.AppDataSharing.updateDataSharingPolicy('../x', {policy: []});
+      await instance.AppDataSharing.reactivate('a#b');
+      await instance.AppDataSharing.deactivate('a?b');
+
+      assert.deepStrictEqual(sent(), [
+        'PUT /api/v1/app-data-sharing/..%2Fx/policy',
+        'PUT /api/v1/app-data-sharing/reactivate/a%23b',
+        'PUT /api/v1/app-data-sharing/deactivate/a%3Fb',
+      ]);
+    });
+
+    it('should refuse a data sharing id of . or ..', async () => {
+      await refuses(() => instance.AppDataSharing.updateDataSharingPolicy('..', {policy: []}));
+      await refuses(() => instance.AppDataSharing.reactivate('..'));
+      await refuses(() => instance.AppDataSharing.deactivate('.'));
+
+      assert.strictEqual(server.requests.length, 0);
+    });
+
+    it('should encode an app id or api path in a policy property list path', async () => {
+      await instance.App.getPolicyPropertiesList('../user');
+      await instance.App.setPolicyPropertyList({role: ['admin']}, 'a/b' as unknown as null);
+
+      assert.deepStrictEqual(sent(), [
+        'GET /api/v1/app/policy-property-list/..%2Fuser',
+        'PUT /api/v1/app/policy-property-list/false/a%2Fb',
+      ]);
+      await refuses(() => instance.App.getPolicyPropertiesList('..'));
+      assert.strictEqual(server.requests.length, 2);
+    });
+  });
 });
 
 describe('Init', () => {

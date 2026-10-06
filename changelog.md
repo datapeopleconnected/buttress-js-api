@@ -9,6 +9,16 @@
   to send. Buttress answers a `QUERY` without the header with 415 `unsupported_query_type`.
 - New behaviour: `QUERY` requests are retried like `GET` when they never get a response, up to `maxRetries`.
   `QUERY` is safe and idempotent, so this can't apply a change twice. `SEARCH` requests were never retried.
+- Ids and names passed to `get`, `update`, `remove` and the `User`, `SecureStore`, `Lambda`, `AppDataSharing` and `App`
+  methods are percent-encoded into a single path segment, so one holding `/`, `?`, `#` or `../` can no longer reach a
+  different route with the app's token. An id or name of `.`, `..` or `''`, or one that isn't a string or number, is
+  refused with an error before anything is sent.
+- A secure store's `getValue` returns a stored `0`, `''`, `false` or `null` instead of throwing
+  "<key> does not exist on the secure store". It throws only for a key the store doesn't hold, so a name the stored data
+  merely inherits, such as `toString`, now throws too rather than returning a function.
+- `Lambda.scheduleExecution` sends the metadata it's given when there's no `executeAfter`, which Buttress takes as
+  "run now". It used to send an empty body, dropping the metadata. `executeAfter` and `metadata` are optional in the
+  types, and `data` passed in the options (such as a `deploymentId`) is kept alongside them rather than replaced.
 
 ### 3.0.0-51
 

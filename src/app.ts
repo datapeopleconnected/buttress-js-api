@@ -70,7 +70,7 @@ export default class App extends BaseSchema {
     if (list) opts.data = list;
 
     let path = 'policy-property-list/false';
-    if (appId) path = `${path}/${appId}`;
+    if (appId) path = `${path}/${Helpers.pathSegment(appId)}`;
     return this._request('put', path, opts);
   }
 
@@ -85,7 +85,7 @@ export default class App extends BaseSchema {
     if (list) opts.data = list;
 
     let path = 'policy-property-list/true';
-    if (appId) path = `${path}/${appId}`;
+    if (appId) path = `${path}/${Helpers.pathSegment(appId)}`;
     return this._request('put', path, opts);
   }
 
@@ -97,7 +97,7 @@ export default class App extends BaseSchema {
   getPolicyPropertiesList(apiPath?: string, options = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     let path = `policy-property-list`;
-    if (apiPath) path = `policy-property-list/${apiPath}`;
+    if (apiPath) path = `policy-property-list/${Helpers.pathSegment(apiPath)}`;
     return this._request('get', path, opts);
   }
 }
