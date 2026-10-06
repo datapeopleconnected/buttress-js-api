@@ -536,6 +536,79 @@ describe('Requests', () => {
     assert.strictEqual(server.requests.length, 2);
   });
 
+  describe('A user created since it was looked up', () => {
+    const userBody = {
+      id: 'USER_ID',
+      auth: [],
+      tokens: [{id: 'TOKEN_ID', value: 'TOKEN_VALUE', policyProperties: null}],
+    };
+    // Buttress's answer to a user whose auth entry another user already has
+    const alreadyExists = {
+      status: 400,
+      body: {code: 'user_already_exists_with_that_name', message: 'User already exists with that name'},
+    };
+    const sent = () => server.requests.map((r) => `${r.method} ${r.url}`);
+
+    it('should find the user another call created when Buttress refuses to create it again', async () => {
+      let lookups = 0;
+      server.reply = (req) => {
+        if (req.method === 'GET')
+          return ++lookups === 1 ? {status: 404, body: {code: 'user_not_found'}} : {status: 200, body: userBody};
+        return alreadyExists;
+      };
+
+      const user = await instance.Auth.findOrCreateUser({app: 'google', appId: 'G1'}, {domains: []});
+
+      assert.strictEqual(user.id, 'USER_ID');
+      assert.deepStrictEqual(sent(), ['GET /api/v1/user/google/G1', 'POST /api/v1/user', 'GET /api/v1/user/google/G1']);
+    });
+
+    it('should give both of two simultaneous first logins the one user', async () => {
+      let created = false;
+      server.reply = (req) => {
+        if (req.method === 'GET')
+          return created ? {status: 200, body: userBody} : {status: 404, body: {code: 'user_not_found'}};
+        if (created) return alreadyExists;
+        created = true;
+        return {status: 200, body: userBody};
+      };
+
+      const users = await Promise.all([
+        instance.Auth.findOrCreateUser({app: 'google', appId: 'G1'}, {domains: []}),
+        instance.Auth.findOrCreateUser({app: 'google', appId: 'G1'}, {domains: []}),
+      ]);
+
+      assert.deepStrictEqual(
+        users.map((u) => u.id),
+        ['USER_ID', 'USER_ID'],
+      );
+      assert.strictEqual(server.requests.filter((r) => r.method === 'POST').length, 2);
+    });
+
+    it('should throw the refusal when the user still is not found, as another user has its email', async () => {
+      server.reply = (req) => (req.method === 'GET' ? {status: 404, body: {code: 'user_not_found'}} : alreadyExists);
+
+      await assert.rejects(
+        instance.Auth.findOrCreateUser({app: 'google', appId: 'G1', email: 'a@example.com'}, {domains: []}),
+        (err: unknown) => err instanceof Errors.ResponseError && err.errorCode === 'user_already_exists_with_that_name',
+      );
+      assert.deepStrictEqual(sent(), ['GET /api/v1/user/google/G1', 'POST /api/v1/user', 'GET /api/v1/user/google/G1']);
+    });
+
+    it('should throw any other refusal to create the user without looking it up again', async () => {
+      server.reply = (req) =>
+        req.method === 'GET'
+          ? {status: 404, body: {code: 'user_not_found'}}
+          : {status: 400, body: {code: 'invalid_domains', message: 'Invalid domains'}};
+
+      await assert.rejects(
+        instance.Auth.findOrCreateUser({app: 'google', appId: 'G1'}, {domains: []}),
+        (err: unknown) => err instanceof Errors.ResponseError && err.errorCode === 'invalid_domains',
+      );
+      assert.deepStrictEqual(sent(), ['GET /api/v1/user/google/G1', 'POST /api/v1/user']);
+    });
+  });
+
   describe('Secure store', () => {
     const storeData = {zero: 0, empty: '', no: false, nothing: null, name: 'x'};
 

@@ -14,7 +14,7 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {RequestOptionsIn} from './helpers';
+import Helpers, {RequestOptionsIn} from './helpers';
 import BaseSchema from './helpers/schema';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
@@ -33,6 +33,17 @@ export interface AuthData {
   policyProperties?: any;
   [key: string]: any;
 }
+
+/**
+ * Whether a create was refused as a user with the same auth entry, by app id or email, already exists. Buttress answers
+ * that with 400 `user_already_exists_with_that_name`.
+ * @param {Error} err
+ * @return {boolean}
+ */
+const isUserAlreadyExists = (err: unknown) =>
+  err instanceof Helpers.Errors.ResponseError &&
+  err.statusCode === 400 &&
+  err.errorCode === 'user_already_exists_with_that_name';
 
 /**
  * @class Auth
@@ -66,13 +77,18 @@ export default class Auth extends BaseSchema {
     try {
       user = await this.User.findUser(userData.app, userData.appId);
     } catch (err: any) {
-      if (err.code === 404) {
+      if (err.code !== 404) throw err;
+
+      try {
         user = await this.User.save({
           auth: [userData],
           token: tokenData,
         });
-      } else {
-        throw err;
+      } catch (saveErr: unknown) {
+        // Another call, such as a second login at the same time, created the user since it was looked up
+        if (!isUserAlreadyExists(saveErr)) throw saveErr;
+
+        user = await this.__findCreatedUser(userData, saveErr);
       }
     }
 
@@ -89,6 +105,22 @@ export default class Auth extends BaseSchema {
     }
 
     return user;
+  }
+
+  /**
+   * Looks a user up again after Buttress refused to create it as it already exists. Buttress also refuses a user whose
+   * email is already on another of the app's users, so when the lookup by app id finds no one, the refusal is thrown.
+   * @param {Object} userData - user details
+   * @param {Error} refusal - Buttress's answer to the create
+   * @return {Promise} - resolves to the serialized User object
+   */
+  private async __findCreatedUser(userData: UserData, refusal: unknown) {
+    try {
+      return await this.User.findUser(userData.app, userData.appId);
+    } catch (err: any) {
+      if (err.code === 404) throw refusal;
+      throw err;
+    }
   }
 
   /**
