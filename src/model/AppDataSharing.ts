@@ -25,6 +25,9 @@ export default interface AppDataSharing {
     apiPath: string;
     // Leave it null to be given a registrationToken to hand to the other app, or pass that app's to join it.
     token: string | null;
+    // The other app's id, which Buttress records when the two pair, null until then. A create naming it as its sourceId
+    // goes to that app.
+    appId?: string | null;
   };
   // What the other app is allowed to do with this one's data, Buttress refuses a data share without it.
   policyConfig: PolicyConfig[];
