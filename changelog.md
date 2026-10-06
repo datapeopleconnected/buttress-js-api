@@ -33,6 +33,10 @@
 - An `init()` called while an earlier one is still loading the schema waits for it and resolves to the same result. It
   used to resolve straight away, so a `getCollection` straight after it could fail with `SchemaNotFound` or
   `NotYetInitiated`. A later `init()` resolves to the first one's result rather than `undefined`.
+- **Breaking:** `init()` on a client that's already initialised, or still initialising, rejects with "Buttress is
+  already initialised with different options" when its options (or `isolated` flag) differ from the first call's. It
+  used to resolve and change nothing, so code re-initialising to switch apps went on reading and writing the first app.
+  Call `clean()` before `init()` to switch. The same options, compared deeply, resolve as before.
 
 ### 3.0.0-51
 

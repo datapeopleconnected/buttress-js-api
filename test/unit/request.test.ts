@@ -734,6 +734,35 @@ describe('Clean and init', () => {
     assert.strictEqual(server.requests[0].headers['authorization'], 'Bearer NEW_TOKEN');
   });
 
+  it('should refuse an init with different options rather than ignore it', async () => {
+    const instance = Buttress.new();
+    await instance.init(appOptions('OLD_TOKEN', 'old-app'));
+
+    await assert.rejects(
+      instance.init(appOptions('NEW_TOKEN', 'old-app')),
+      /already initialised with different options/,
+    );
+    await assert.rejects(
+      instance.init(appOptions('OLD_TOKEN', 'new-app')),
+      /already initialised with different options/,
+    );
+    await assert.rejects(instance.init(appOptions('OLD_TOKEN', 'old-app'), true), /different options/);
+
+    // The client is left as it was
+    await instance.getCollection('thing').getAll();
+    assert.strictEqual(server.requests[0].url, '/old-app/api/v1/thing');
+    assert.strictEqual(server.requests[0].headers['authorization'], 'Bearer OLD_TOKEN');
+  });
+
+  it('should resolve an init with the same options as before', async () => {
+    const instance = Buttress.new();
+    await instance.init(appOptions('APP_TOKEN', 'test-app', {maxRetries: 2}));
+
+    // A fresh but equal options object, with a property left undefined, is the same
+    await instance.init(appOptions('APP_TOKEN', 'test-app', {maxRetries: 2, clientSessionId: undefined}));
+    assert.strictEqual(instance.initialised, true);
+  });
+
   it('should make a second init wait for the first to load the schema', async () => {
     const getSchema = App.prototype.getSchema;
     let release = () => {};
