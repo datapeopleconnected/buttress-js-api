@@ -50,6 +50,9 @@
   verified, and still are. `init()` logs a warning when it's `true`, outside a lambda, so remove it from your options.
   A server with a self-signed certificate needs a certificate Node trusts, such as one added with
   `NODE_EXTRA_CA_CERTS`.
+- **Breaking:** a call given a `token` option that's empty (`''`, `null` or `undefined`) throws "The token passed in the
+  options is ..." instead of quietly using the instance token. A user token that failed to load used to send the
+  request with the app's token and its privileges. Leave the `token` key out to use the instance token.
 
 ### 3.0.0-51
 

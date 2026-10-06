@@ -214,6 +214,23 @@ describe('Requests', () => {
     assert.strictEqual(server.requests.length, 2);
   });
 
+  it('should send a per-call token instead of the instance token', async () => {
+    await instance.getCollection('thing').getAll({token: 'USER_TOKEN'});
+
+    assert.strictEqual(server.requests[0].headers['authorization'], 'Bearer USER_TOKEN');
+  });
+
+  it('should refuse an empty per-call token rather than fall back to the instance token', async () => {
+    for (const token of ['', null, undefined]) {
+      await assert.rejects(
+        async () => instance.getCollection('thing').getAll({token: token as string}),
+        /The token passed in the options is/,
+      );
+      await assert.rejects(async () => instance.User.getUser('U1', {token: token as string}), /token option/);
+    }
+    assert.strictEqual(server.requests.length, 0);
+  });
+
   it('should search, count and bulk load with QUERY', async () => {
     await instance.getCollection('thing').search({name: {$eq: 'x'}});
     await instance.getCollection('thing').count({name: {$eq: 'x'}});

@@ -385,6 +385,15 @@ class Schema {
 const _checkOptions = (options?: RequestOptionsIn, defaultToken?: string): RequestOptions => {
   options = Object.assign({}, options);
 
+  // A token key that's there but empty, such as a user token that failed to load, is a mistake. Falling back to the
+  // instance token would act with the app's privileges on the user's behalf.
+  const hasToken = Object.hasOwn(options, 'token');
+  if (hasToken && !options.token) {
+    throw new Error(
+      `The token passed in the options is ${options.token === '' ? 'empty' : String(options.token)}, pass a token or leave the token option out to use the instance token`,
+    );
+  }
+
   if (!defaultToken) throw new Error('No default token provided');
 
   const requestOptions: RequestOptions = {
@@ -398,7 +407,7 @@ const _checkOptions = (options?: RequestOptionsIn, defaultToken?: string): Reque
     combineResults: true,
   };
 
-  if (options.token) requestOptions.token = options.token;
+  if (hasToken) requestOptions.token = options.token as string;
 
   if (options.headers) requestOptions.headers = {...requestOptions.headers, ...options.headers};
   if (options.params) requestOptions.params = {...requestOptions.params, ...options.params};
