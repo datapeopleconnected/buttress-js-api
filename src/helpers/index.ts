@@ -78,6 +78,11 @@ const Errors = {
     statusMessage: string;
     // buttress's code for what went wrong, such as invalid_token. `code` is the HTTP status, as it always has been.
     errorCode?: string;
+    // Named as Buttress reads them from an error a lambda throws, so a lambda that leaves one uncaught answers its API
+    // caller with this status, rather than 400. Buttress only takes a string `code`, so errorCode isn't passed on.
+    httpStatus: number;
+    // Whether the same request might succeed later, as Buttress decides it for its own errors
+    retryable: boolean;
     body?: any;
     /**
      * @param {Object} response
@@ -86,7 +91,8 @@ const Errors = {
     constructor(response: {status: number; statusText?: string}, body?: any) {
       super();
       this.name = 'ResponseError';
-      this.code = this.statusCode = response.status;
+      this.code = this.statusCode = this.httpStatus = response.status;
+      this.retryable = [429, 500, 502, 503, 504].includes(response.status);
       this.statusMessage = response.statusText || '';
       this.body = body;
       if (body && typeof body.code === 'string') this.errorCode = body.code;

@@ -128,6 +128,27 @@ describe('Requests', () => {
     });
   });
 
+  // A lambda that leaves one uncaught answers its API caller with them
+  it('should give an error the httpStatus and retryable Buttress reads from a thrown error', async () => {
+    server.reply = () => ({status: 404, body: {code: 'not_found', message: 'Not found'}});
+
+    await assert.rejects(instance.getCollection('thing').getAll(), (err: unknown) => {
+      assert(err instanceof Errors.ResponseError);
+      assert.strictEqual(err.httpStatus, 404);
+      assert.strictEqual(err.retryable, false);
+      return true;
+    });
+
+    server.reply = () => ({status: 503, body: {code: 'unavailable', message: 'Try again'}});
+
+    await assert.rejects(instance.getCollection('thing').getAll(), (err: unknown) => {
+      assert(err instanceof Errors.ResponseError);
+      assert.strictEqual(err.httpStatus, 503);
+      assert.strictEqual(err.retryable, true);
+      return true;
+    });
+  });
+
   it('should leave errorCode out when the error body has no code', async () => {
     server.reply = () => ({status: 502, body: {message: 'Bad gateway'}});
 

@@ -80,6 +80,11 @@
   transient policy's limit passes, Buttress takes the policy property named after it off the tokens it selected, as
   well as removing the policy; a policy that isn't transient leaves tokens as they are. A Buttress without the flag
   stores the policy without it.
+- A `ResponseError` has an `httpStatus`, the HTTP status as `code` and `statusCode` are, and a `retryable`, true for
+  429, 500, 502, 503 and 504 as Buttress decides it for its own errors. A lambda that leaves one uncaught answers its
+  API caller with that status and `retryable` (with a Buttress containing `f8bce2ee`, buttress-js develop, or later),
+  rather than 400. Buttress takes only a string `code`, so `errorCode` isn't passed on; catch the error and throw your
+  own to answer with one.
 
 ### 3.0.0-51
 
