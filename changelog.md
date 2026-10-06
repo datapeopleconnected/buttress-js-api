@@ -26,6 +26,10 @@
 - A module taken before `Buttress.clean()`, from `getCollection` or a property such as `Buttress.User`, now throws
   `NotYetInitiated` when it's used, from its requests and `createObject`. It used to go on sending the old app's token
   to the old app's URLs, even after `init()` with another app. Get modules again after `init()`.
+- `maxRetries: N` retries a request that never got a response N times after the first attempt, as documented. It used
+  to count the first attempt, so `maxRetries: 1` never retried and N gave N - 1 retries. This applies to `QUERY`
+  (`search`, `count`, `bulkGet`) as well as `GET`. With the default of 10, a request to a Buttress that stays
+  unreachable now takes about 7 minutes of backoff to fail rather than about 3½.
 
 ### 3.0.0-51
 

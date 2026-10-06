@@ -304,8 +304,9 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
         error.code !== 'ECONNABORTED' &&
         BaseSchema.Constants.RETRY_METHODS.includes(type)
       ) {
+        // attempt counts the first request too, so maxRetries: N sends it N more times
         const maxRetries = this._ButtressOptions.maxRetries ?? BaseSchema.Constants.MAX_RETRIES;
-        if (attempt >= maxRetries) throw error;
+        if (attempt > maxRetries) throw error;
 
         return Helpers.backOff(attempt).then(() => this._request(type, path, options, attempt));
       }

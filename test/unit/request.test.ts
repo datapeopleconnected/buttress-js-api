@@ -193,6 +193,27 @@ describe('Requests', () => {
     assert.strictEqual(server.requests.length, 1);
   });
 
+  it('should retry maxRetries times after the first attempt', async () => {
+    const oneRetry = Buttress.new();
+    await oneRetry.init(
+      options({
+        buttressUrl: server.url,
+        appToken: 'APP_TOKEN',
+        apiPath: 'test-app',
+        schema,
+        useLocalSchema: true,
+        maxRetries: 1,
+      }),
+    );
+    server.reply = () => ({destroy: true});
+
+    await assert.rejects(
+      oneRetry.getCollection('thing').getAll(),
+      (err: unknown) => err instanceof Errors.RequestError,
+    );
+    assert.strictEqual(server.requests.length, 2);
+  });
+
   it('should search, count and bulk load with QUERY', async () => {
     await instance.getCollection('thing').search({name: {$eq: 'x'}});
     await instance.getCollection('thing').count({name: {$eq: 'x'}});

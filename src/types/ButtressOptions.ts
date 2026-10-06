@@ -26,6 +26,7 @@ export default interface ButtressOptions {
   allowUnauthorized?: boolean;
   // A UUID v4 sent as x-client-session-id, buttress includes it on the socket activity your requests cause
   clientSessionId?: string;
-  // How many times a GET that never got a response is retried, with backoff. Defaults to 10, 0 fails straight away
+  // How many times a GET or QUERY that never got a response is retried after the first attempt, with backoff.
+  // Defaults to 10, 0 fails straight away
   maxRetries?: number;
 }
