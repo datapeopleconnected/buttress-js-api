@@ -23,6 +23,9 @@ export default interface ButtressOptions {
   version?: number;
   update?: boolean;
   useLocalSchema?: boolean;
+  /**
+   * @deprecated Ignored: certificates are always verified, and init() warns when this is true. Remove it.
+   */
   allowUnauthorized?: boolean;
   // A UUID v4 sent as x-client-session-id, buttress includes it on the socket activity your requests cause
   clientSessionId?: string;

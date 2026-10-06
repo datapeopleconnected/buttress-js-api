@@ -132,18 +132,20 @@ If you're upgrading from an older version of this client, see [MIGRATION.md](MIG
 
 `Buttress.init(options)` accepts:
 
-| Option              | Type       | Description                                                                                   |
-| ------------------- | ---------- | --------------------------------------------------------------------------------------------- |
-| `buttressUrl`       | `string`   | Base URL of the Buttress instance.                                                            |
-| `appToken`          | `string`   | Your app's API token.                                                                         |
-| `apiPath`           | `string`   | Your app's API path, as configured in Buttress.                                               |
-| `version`           | `number`   | API version to target.                                                                        |
-| `schema`            | `object[]` | Schema to push to Buttress, or to use locally (see `useLocalSchema`).                         |
-| `update`            | `boolean`  | Push the local `schema` to Buttress on init instead of fetching it.                           |
-| `useLocalSchema`    | `boolean`  | Build modules from the local `schema` instead of fetching it from Buttress.                   |
-| `allowUnauthorized` | `boolean`  | Allow requests to hosts with self-signed/invalid TLS certificates.                            |
-| `clientSessionId`   | `string`   | A UUID v4 sent as `x-client-session-id`, attached to the socket activity your requests cause. |
-| `maxRetries`        | `number`   | Retries, after the first attempt, of a `GET` or `QUERY` that got no response. Default 10.     |
+| Option            | Type       | Description                                                                                   |
+| ----------------- | ---------- | --------------------------------------------------------------------------------------------- |
+| `buttressUrl`     | `string`   | Base URL of the Buttress instance.                                                            |
+| `appToken`        | `string`   | Your app's API token.                                                                         |
+| `apiPath`         | `string`   | Your app's API path, as configured in Buttress.                                               |
+| `version`         | `number`   | API version to target.                                                                        |
+| `schema`          | `object[]` | Schema to push to Buttress, or to use locally (see `useLocalSchema`).                         |
+| `update`          | `boolean`  | Push the local `schema` to Buttress on init instead of fetching it.                           |
+| `useLocalSchema`  | `boolean`  | Build modules from the local `schema` instead of fetching it from Buttress.                   |
+| `clientSessionId` | `string`   | A UUID v4 sent as `x-client-session-id`, attached to the socket activity your requests cause. |
+| `maxRetries`      | `number`   | Retries, after the first attempt, of a `GET` or `QUERY` that got no response. Default 10.     |
+
+TLS certificates are always verified. The `allowUnauthorized` option older versions documented never did anything,
+and `init()` warns when it's set.
 
 ## Development
 

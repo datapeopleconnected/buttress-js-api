@@ -46,6 +46,10 @@
   longer be read through `getValue`.
 - `createObject` reads a schema's date `__default` day first (en-GB), as Buttress does, so `01/02/2026` is 1 February in
   an object built by the client as well as one built by Buttress. The client used to read it month first (2 January).
+- `allowUnauthorized` is deprecated and no longer documented. It never did anything: TLS certificates have always been
+  verified, and still are. `init()` logs a warning when it's `true`, outside a lambda, so remove it from your options.
+  A server with a self-signed certificate needs a certificate Node trusts, such as one added with
+  `NODE_EXTRA_CA_CERTS`.
 
 ### 3.0.0-51
 

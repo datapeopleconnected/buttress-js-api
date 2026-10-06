@@ -81,7 +81,6 @@ export class Buttress {
     version: 1,
     update: false,
     useLocalSchema: false,
-    allowUnauthorized: false,
   };
 
   // private __coreModules = { App, AppDataSharing, Auth, Lambda, Policy, Token, User, SecureStore };
@@ -153,7 +152,12 @@ export class Buttress {
     if (options.schema) this.options.schema = options.schema;
     if (options.version) this.options.version = options.version;
     if (options.update) this.options.update = options.update;
-    if (options.allowUnauthorized) this.options.allowUnauthorized = options.allowUnauthorized;
+    // Certificates are always verified. A lambda's client is set up by Buttress, which still passes the option.
+    if (options.allowUnauthorized && !isolated) {
+      console.warn(
+        '[WARNING] Buttress: allowUnauthorized is ignored, certificates are always verified. Remove the option.',
+      );
+    }
     if (options.useLocalSchema) this.options.useLocalSchema = options.useLocalSchema;
     if (options.clientSessionId) this.options.clientSessionId = options.clientSessionId;
     if (options.maxRetries !== undefined) this.options.maxRetries = options.maxRetries;
@@ -238,7 +242,6 @@ export class Buttress {
       version: 1,
       update: false,
       useLocalSchema: false,
-      allowUnauthorized: false,
     };
 
     this.__initialised = false;

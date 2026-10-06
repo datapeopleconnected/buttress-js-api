@@ -785,6 +785,23 @@ describe('Clean and init', () => {
     assert.strictEqual(instance.initialised, true);
   });
 
+  it('should warn that allowUnauthorized is ignored, as certificates are always verified', async () => {
+    const warn = console.warn;
+    const warnings: string[] = [];
+    console.warn = (message: string) => warnings.push(message);
+
+    try {
+      await Buttress.new().init(appOptions('APP_TOKEN', 'test-app', {allowUnauthorized: false}));
+      assert.deepStrictEqual(warnings, []);
+
+      await Buttress.new().init(appOptions('APP_TOKEN', 'test-app', {allowUnauthorized: true}));
+      assert.strictEqual(warnings.length, 1);
+      assert.match(warnings[0], /allowUnauthorized is ignored, certificates are always verified/);
+    } finally {
+      console.warn = warn;
+    }
+  });
+
   it('should make a second init wait for the first to load the schema', async () => {
     const getSchema = App.prototype.getSchema;
     let release = () => {};
