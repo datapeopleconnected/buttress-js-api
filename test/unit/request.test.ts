@@ -657,6 +657,20 @@ describe('Requests', () => {
     });
   });
 
+  describe('Transient policies', () => {
+    it('should create the policy marked transient, and give the token the property named after it', async () => {
+      const policy: Policy = {name: 'examAccess', version: '1', selection: {examAccess: {'@eq': true}}, config: []};
+
+      await instance.createUserTransientPolicy('U1', 'T1', policy);
+
+      assert.strictEqual(server.requests[0].url, '/api/v1/policy');
+      assert.deepStrictEqual(server.requests[0].body, {...policy, transient: true});
+      assert.strictEqual(server.requests[1].url, '/api/v1/user/U1/update-policy-property/T1');
+      assert.deepStrictEqual(server.requests[1].body, {examAccess: true});
+      assert.strictEqual(policy.transient, undefined, "the caller's policy is left as it was");
+    });
+  });
+
   describe('Lambda scheduling', () => {
     const metadata = [{key: 'a', value: 1}];
 

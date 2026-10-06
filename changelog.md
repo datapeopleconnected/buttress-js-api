@@ -76,6 +76,10 @@
   (`user_already_exists_with_that_name`), looking it up again, so two first logins at once for the same person both
   get the user that one of them created. One of them used to reject. If the second lookup still doesn't find the user,
   as when Buttress matched another user's email, the refusal is thrown as before.
+- `createUserTransientPolicy` creates the policy with `transient: true`, and `Policy` has an optional `transient`. When a
+  transient policy's limit passes, Buttress takes the policy property named after it off the tokens it selected, as
+  well as removing the policy; a policy that isn't transient leaves tokens as they are. A Buttress without the flag
+  stores the policy without it.
 
 ### 3.0.0-51
 
