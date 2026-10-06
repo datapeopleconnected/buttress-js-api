@@ -303,7 +303,7 @@ describe('@app-relationship', function () {
       },
       config: [
         {
-          verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+          verbs: ['GET', 'QUERY', 'PUT', 'POST', 'DELETE'],
           schema: ['%ALL%'],
           query: {
             access: '%FULL_ACCESS%',
@@ -364,7 +364,7 @@ describe('@app-relationship', function () {
 
         policyConfig: [
           {
-            verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+            verbs: ['GET', 'QUERY', 'PUT', 'POST', 'DELETE'],
             schema: ['%ALL%'],
             query: {
               access: '%FULL_ACCESS%',
@@ -393,7 +393,7 @@ describe('@app-relationship', function () {
 
         policyConfig: [
           {
-            verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+            verbs: ['GET', 'QUERY', 'PUT', 'POST', 'DELETE'],
             schema: ['%ALL%'],
             query: {
               access: '%FULL_ACCESS%',
