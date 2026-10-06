@@ -8,7 +8,7 @@
   },
   "config": [
     {
-      "verbs": ["GET", "SEARCH", "PUT", "POST", "DELETE"],
+      "verbs": ["GET", "QUERY", "PUT", "POST", "DELETE"],
       "schema": ["%ALL%"],
       "query": {
         "access": "%FULL_ACCESS%"

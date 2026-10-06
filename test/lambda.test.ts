@@ -62,7 +62,7 @@ const policies = [
     },
     config: [
       {
-        verbs: ['GET', 'SEARCH', 'PUT', 'POST', 'DELETE'],
+        verbs: ['GET', 'QUERY', 'PUT', 'POST', 'DELETE'],
         schema: ['organisation'],
         query: {
           status: {
