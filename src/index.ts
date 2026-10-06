@@ -69,6 +69,9 @@ export class Buttress {
 
   private __initialised = false;
 
+  // The first init()'s promise, which any later init() returns until clean()
+  private __initPromise?: Promise<boolean | undefined>;
+
   /**
    * Creates an instance of Buttress.
    */
@@ -88,16 +91,18 @@ export class Buttress {
    * @return {promise}
    */
   async init(options: ButtressOptions, isolated = false) {
-    if (this.__initialised === true) return;
+    // A call made while the first is still loading the schema waits for it rather than returning before it's done
+    if (this.__initPromise) return this.__initPromise;
 
     // Modules can only be created once initialised, reset if the schema can't be fetched so init can be retried.
     this.__initialised = true;
-    try {
-      return await this.__init(options, isolated);
-    } catch (err) {
-      this.clean();
+    const initPromise = this.__init(options, isolated).catch((err) => {
+      if (this.__initPromise === initPromise) this.clean();
       throw err;
-    }
+    });
+    this.__initPromise = initPromise;
+
+    return initPromise;
   }
 
   /**
@@ -203,6 +208,7 @@ export class Buttress {
     };
 
     this.__initialised = false;
+    this.__initPromise = undefined;
   }
 
   /**

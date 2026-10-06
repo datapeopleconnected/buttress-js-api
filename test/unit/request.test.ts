@@ -733,4 +733,33 @@ describe('Clean and init', () => {
     assert.strictEqual(server.requests[0].url, '/new-app/api/v1/thing');
     assert.strictEqual(server.requests[0].headers['authorization'], 'Bearer NEW_TOKEN');
   });
+
+  it('should make a second init wait for the first to load the schema', async () => {
+    const getSchema = App.prototype.getSchema;
+    let release = () => {};
+    App.prototype.getSchema = () =>
+      new Promise((resolve) => {
+        release = () => resolve(schema);
+      });
+
+    try {
+      const instance = Buttress.new();
+      const fetched = options({buttressUrl: server.url, appToken: 'APP_TOKEN', apiPath: 'test-app'});
+      const first = instance.init(fetched);
+      let secondDone = false;
+      const second = instance.init(fetched).then((res) => {
+        secondDone = true;
+        return res;
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      assert.strictEqual(secondDone, false, 'the second init returned before the schema loaded');
+
+      release();
+      assert.strictEqual(await second, await first);
+      assert(instance.getCollection('thing'));
+    } finally {
+      App.prototype.getSchema = getSchema;
+    }
+  });
 });

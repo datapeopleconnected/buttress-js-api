@@ -30,6 +30,9 @@
   to count the first attempt, so `maxRetries: 1` never retried and N gave N - 1 retries. This applies to `QUERY`
   (`search`, `count`, `bulkGet`) as well as `GET`. With the default of 10, a request to a Buttress that stays
   unreachable now takes about 7 minutes of backoff to fail rather than about 3½.
+- An `init()` called while an earlier one is still loading the schema waits for it and resolves to the same result. It
+  used to resolve straight away, so a `getCollection` straight after it could fail with `SchemaNotFound` or
+  `NotYetInitiated`. A later `init()` resolves to the first one's result rather than `undefined`.
 
 ### 3.0.0-51
 
