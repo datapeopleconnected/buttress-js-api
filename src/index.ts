@@ -330,14 +330,15 @@ export class Buttress {
   }
 
   /**
-   * Create user transient policy
+   * Create user transient policy: the policy, marked transient, and a policy property named after it on the user's
+   * token. When the policy's limit passes, Buttress removes it and takes that property off the tokens it selected.
    * @param {String} userId
    * @param {String} tokenId - id of the user's token, policy properties are held per token. Not its value, which would end up in access logs
    * @param {Object} policy
    * @return {Promise}
    */
   async createUserTransientPolicy(userId: string, tokenId: string, policy: PolicyModel) {
-    await this.Policy.createPolicy(policy);
+    await this.Policy.createPolicy({...policy, transient: true});
     await this.User.updatePolicyProperty(userId, tokenId, {[policy.name]: true});
   }
 

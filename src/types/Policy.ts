@@ -36,4 +36,7 @@ export interface Policy {
   merge?: boolean;
   env?: Record<string, unknown>;
   limit?: string | Date | null;
+  // When a transient policy's limit passes, Buttress also takes the policy property named after it off the tokens it
+  // selected. createUserTransientPolicy sets it.
+  transient?: boolean;
 }
