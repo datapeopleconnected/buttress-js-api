@@ -403,6 +403,26 @@ const _checkOptions = (options?: RequestOptionsIn, defaultToken?: string): Reque
   return requestOptions;
 };
 
+/**
+ * Encodes an id or name as one segment of a request path, so whatever it holds can't change the route:
+ * `/`, `?` and `#` are percent-encoded, and `.`, `..` and empty segments, which the URL would resolve
+ * or drop however they're encoded, are refused.
+ * @param {string|number} value - id or name passed in by the caller
+ * @return {string} segment
+ */
+const _pathSegment = (value: string | number): string => {
+  if (typeof value !== 'string' && typeof value !== 'number') {
+    throw new Error(`Unable to use ${String(value)} as a path segment, pass a string`);
+  }
+
+  const segment = String(value);
+  if (segment === '' || segment === '.' || segment === '..') {
+    throw new Error(`Unable to use '${segment}' as a path segment, it would change the route`);
+  }
+
+  return encodeURIComponent(segment);
+};
+
 const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
@@ -416,6 +436,7 @@ export default {
   Schema,
   Errors,
   checkOptions: _checkOptions,
+  pathSegment: _pathSegment,
   sleep,
   backOff,
 };

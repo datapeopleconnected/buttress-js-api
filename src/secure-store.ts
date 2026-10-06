@@ -78,7 +78,7 @@ export default class SecureStore extends BaseSchema<SecureStoreModel & Entity, t
    */
   async findByName(name: string, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
-    const secureStore = await this._request('get', `name/${name}`, opts);
+    const secureStore = await this._request('get', `name/${Helpers.pathSegment(name)}`, opts);
     return this._secureStoreInterface(secureStore);
   }
 }

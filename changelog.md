@@ -9,6 +9,10 @@
   to send. Buttress answers a `QUERY` without the header with 415 `unsupported_query_type`.
 - New behaviour: `QUERY` requests are retried like `GET` when they never get a response, up to `maxRetries`.
   `QUERY` is safe and idempotent, so this can't apply a change twice. `SEARCH` requests were never retried.
+- Ids and names passed to `get`, `update`, `remove` and the `User`, `SecureStore`, `Lambda`, `AppDataSharing` and `App`
+  methods are percent-encoded into a single path segment, so one holding `/`, `?`, `#` or `../` can no longer reach a
+  different route with the app's token. An id or name of `.`, `..` or `''`, or one that isn't a string or number, is
+  refused with an error before anything is sent.
 
 ### 3.0.0-51
 
