@@ -82,14 +82,15 @@ export default class Lambda extends BaseSchema {
 
   /**
    * @param {string} lambdaId
-   * @param {string} executeAfter
-   * @param {array} metadata
+   * @param {string} [executeAfter] - a date expression, Buttress runs the lambda straight away when it's left out
+   * @param {array} [metadata]
    * @param {object} options
    * @return {Promise}
    */
-  scheduleExecution(lambdaId: string, executeAfter: string, metadata: any, options?: RequestOptionsIn) {
+  scheduleExecution(lambdaId: string, executeAfter?: string | null, metadata?: any, options?: RequestOptionsIn) {
     const opts = Helpers.checkOptions(options, this.token);
-    if (executeAfter) opts.data = {executeAfter, metadata};
+    if (executeAfter) opts.data.executeAfter = executeAfter;
+    if (metadata !== undefined) opts.data.metadata = metadata;
     return this._request('post', `${Helpers.pathSegment(lambdaId)}/schedule`, opts);
   }
 

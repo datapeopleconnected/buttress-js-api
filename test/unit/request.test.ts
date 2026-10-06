@@ -369,6 +369,65 @@ describe('Requests', () => {
     assert.strictEqual(server.requests.length, 2);
   });
 
+  describe('Secure store', () => {
+    const storeData = {zero: 0, empty: '', no: false, nothing: null, name: 'x'};
+
+    beforeEach(() => {
+      server.reply = () => ({status: 200, body: {id: '1', name: 'store', storeData}});
+    });
+
+    it('should read back a stored 0, empty string, false or null', async () => {
+      const store = await instance.SecureStore.findByName('store');
+
+      assert.strictEqual(store.getValue('zero'), 0);
+      assert.strictEqual(store.getValue('empty'), '');
+      assert.strictEqual(store.getValue('no'), false);
+      assert.strictEqual(store.getValue('nothing'), null);
+      assert.strictEqual(store.getValue('name'), 'x');
+    });
+
+    it('should throw for a key the store does not hold', async () => {
+      const store = await instance.SecureStore.findByName('store');
+
+      assert.throws(() => store.getValue('missing'), /^Error: missing does not exist on the secure store store$/);
+      // An inherited property isn't a stored value
+      assert.throws(() => store.getValue('toString'), /toString does not exist/);
+    });
+  });
+
+  describe('Lambda scheduling', () => {
+    const metadata = [{key: 'a', value: 1}];
+
+    it('should send the metadata when no start time is given', async () => {
+      await instance.Lambda.scheduleExecution('L1', undefined, metadata);
+      await instance.Lambda.scheduleExecution('L1', null, metadata);
+
+      assert.strictEqual(server.requests[0].url, '/api/v1/lambda/L1/schedule');
+      assert.deepStrictEqual(server.requests[0].body, {metadata});
+      assert.deepStrictEqual(server.requests[1].body, {metadata});
+    });
+
+    it('should send the start time and metadata when both are given', async () => {
+      await instance.Lambda.scheduleExecution('L1', 'in 5 minutes', metadata);
+
+      assert.deepStrictEqual(server.requests[0].body, {executeAfter: 'in 5 minutes', metadata});
+    });
+
+    it('should leave out a start time or metadata that is not given', async () => {
+      await instance.Lambda.scheduleExecution('L1', 'in 5 minutes');
+      await instance.Lambda.scheduleExecution('L1');
+
+      assert.deepStrictEqual(server.requests[0].body, {executeAfter: 'in 5 minutes'});
+      assert.deepStrictEqual(server.requests[1].body, {});
+    });
+
+    it('should keep other data passed in the options', async () => {
+      await instance.Lambda.scheduleExecution('L1', 'in 5 minutes', metadata, {data: {deploymentId: 'D1'}});
+
+      assert.deepStrictEqual(server.requests[0].body, {deploymentId: 'D1', executeAfter: 'in 5 minutes', metadata});
+    });
+  });
+
   describe('Path segments', () => {
     // A call that throws before returning its promise counts as refused too
     const refuses = async (call: () => Promise<unknown>) => {
