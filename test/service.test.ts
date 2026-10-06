@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -16,17 +14,21 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const {default: Buttress} = require('../dist/index');
-const Config = require('./config');
-const ObjectId = require('bson-objectid');
-const should = require('should');
+import Buttress from '../dist/index';
+import type {Entity, UpdateResult} from '../dist/index';
+import Config from './config';
+import ObjectId from 'bson-objectid';
+import should from 'should';
 
 Config.init();
 
+// The update results type their value as unknown, these tests assert on its shape
+type AnyUpdate = UpdateResult & {value: any};
+
 describe('@service-basics', function () {
   this.timeout(2000);
-  let _companies = [];
-  let _user = null;
+  let _companies: Entity[] = [];
+  let _user: Entity;
 
   before(async function () {
     Config.configureTest();
@@ -45,7 +47,7 @@ describe('@service-basics', function () {
 
   describe('Basics', function () {
     const _serviceId = new ObjectId().toHexString();
-    let _service = null;
+    let _service: Entity | null = null;
     it('should return no services', function (done) {
       Buttress.getCollection('service')
         .getAll()
@@ -235,7 +237,7 @@ describe('@service-basics', function () {
           //   },
           // },
         ])
-        .then(function (updates) {
+        .then(function (updates: AnyUpdate[]) {
           updates.length.should.equal(5);
           updates[0].type.should.equal('scalar');
           updates[0].path.should.equal('appProp6.date');
@@ -274,7 +276,7 @@ describe('@service-basics', function () {
           path: 'appProp6.companyId',
           value: _newCompanyId,
         })
-        .then(function (updates) {
+        .then(function (updates: AnyUpdate[]) {
           updates.length.should.equal(1);
           updates[0].value.should.equal(_newCompanyId);
           done();
@@ -327,8 +329,8 @@ describe('@service-basics', function () {
         });
     });
     it('should add several services', function (done) {
-      const __gen = (num) => {
-        const arr = [];
+      const __gen = (num: number) => {
+        const arr: Entity[] = [];
         for (let x = 0; x < num; x++) {
           arr.push({
             id: new ObjectId().toHexString(),

@@ -70,7 +70,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
   static get Constants() {
     return {
       MAX_RETRIES: 10,
-      RETRY_METHODS: ['get', 'options', 'head'],
+      RETRY_METHODS: ['get', 'options', 'head', 'query'],
     };
   }
 
@@ -117,7 +117,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @param {string} path
    * @return {object} schemaPart
    */
-  createObject(path: string) {
+  createObject(path?: string) {
     if (path) {
       return Helpers.Schema.createFromPath(this.loadSchema(), path);
     }
@@ -187,9 +187,17 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
       options.body = undefined;
     }
 
-    if (options.body && typeof options.body !== 'string') {
-      options.body = JSON.stringify(options.body);
-      // Content-Length is left for fetch to work out from the bytes, the string length is wrong for non-ASCII bodies
+    // Buttress answers a QUERY without a JSON body with 415, so send an empty query rather than nothing
+    if (options.method === 'QUERY' && !options.body) {
+      options.body = {};
+    }
+
+    const isObjectBody = options.body && typeof options.body !== 'string';
+    if (isObjectBody) options.body = JSON.stringify(options.body);
+
+    // Content-Length is left for fetch to work out from the bytes, the string length is wrong for non-ASCII bodies.
+    // A QUERY always gets the header, even when its body was passed in already a JSON string.
+    if (isObjectBody || options.method === 'QUERY') {
       options.headers = {
         ...options.headers,
         'Content-Type': 'application/json',
@@ -419,7 +427,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
       opts.data.project = options.project;
     }
 
-    return this._request('search', '', opts);
+    return this._request('query', '', opts);
   }
 
   /**
@@ -454,7 +462,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
       };
     }
 
-    return this._request('search', 'bulk/load', opts);
+    return this._request('query', 'bulk/load', opts);
   }
 
   /**
@@ -517,6 +525,6 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
       opts.data.actualCount = true;
     }
 
-    return this._request('search', 'count', opts);
+    return this._request('query', 'count', opts);
   }
 }

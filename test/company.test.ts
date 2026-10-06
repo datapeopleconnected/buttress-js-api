@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -16,12 +14,43 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const {default: Buttress} = require('../dist/index');
-const Config = require('./config');
-const should = require('should');
-const ObjectId = require('bson-objectid');
+import Buttress from '../dist/index';
+import type {BaseSchema, Entity, UpdateResult} from '../dist/index';
+import Config from './config';
+import should from 'should';
+import ObjectId from 'bson-objectid';
 
 Config.init();
+
+interface Location extends Entity {
+  name: string;
+  address: string;
+  city: string;
+  postCode: string;
+  phoneNumber: string;
+}
+
+interface Contact extends Entity {
+  name: string;
+  role: string;
+}
+
+interface Company extends Entity {
+  name: string;
+  companyType: string;
+  primaryLocation: string;
+  primaryContact: string;
+  locations: Location[];
+  contacts: Contact[];
+}
+
+// The update results type their value as unknown, these tests assert on its shape
+type AnyUpdate = UpdateResult & {value: any};
+
+const companyCollection = () => Buttress.getCollection<BaseSchema<Company>>('company');
+
+// createObject() is typed as returning false | {...}, and wants a path even though it's optional at runtime
+const createObject = (path = ''): Record<string, any> => companyCollection().createObject(path) as Record<string, any>;
 
 /**
  * In all tests that make use of promises, you need to use .catch(err => done(err) pattern.
@@ -30,7 +59,7 @@ Config.init();
 describe('@company-basics', function () {
   before(function (done) {
     Config.configureTest();
-    Buttress.getCollection('company')
+    companyCollection()
       .removeAll()
       .then(() => done())
       .catch(done);
@@ -39,18 +68,18 @@ describe('@company-basics', function () {
   after(function (done) {
     Config.configureTest();
     done();
-    // Buttress.getCollection('company').removeAll()
+    // companyCollection().removeAll()
     //   .then(() => done()).catch(done);
   });
 
   describe('Company Basics', function () {
-    let _company = null;
+    let _company: Company | null = null;
     const _companyId = new ObjectId().toHexString();
     const _locationId = new ObjectId().toHexString();
     const _contactId = new ObjectId().toHexString();
 
     it('should return no companies', function (done) {
-      Buttress.getCollection('company')
+      companyCollection()
         .getAll()
         .then(function (companies) {
           companies.length.should.equal(0);
@@ -61,7 +90,7 @@ describe('@company-basics', function () {
         });
     });
     it('should add a company', function (done) {
-      Buttress.getCollection('company')
+      companyCollection()
         .save({
           id: _companyId,
           name: 'Blackburn Widget Company',
@@ -101,13 +130,13 @@ describe('@company-basics', function () {
           company.primaryLocation.should.equal(_locationId);
           company.primaryContact.should.equal(_contactId);
 
-          const location = company.locations.find((l) => l.id === company.primaryLocation);
+          const location = company.locations.find((l) => l.id === company.primaryLocation) as Location;
           location.address.should.equal('124 Bonsall Street, Mill Hill');
           location.city.should.equal('Blackburn');
           location.postCode.should.equal('BB2 5DS');
           location.phoneNumber.should.equal('01254 123123');
 
-          const contact = company.contacts.find((c) => c.id === company.primaryContact);
+          const contact = company.contacts.find((c) => c.id === company.primaryContact) as Contact;
           contact.name.should.equal('Robert McBobson');
           contact.role.should.equal('Managing Director');
           done();
@@ -117,7 +146,7 @@ describe('@company-basics', function () {
         });
     });
     it('should return 1 company', function (done) {
-      Buttress.getCollection('company')
+      companyCollection()
         .getAll()
         .then(function (companies) {
           companies.should.have.length(1);
@@ -132,17 +161,17 @@ describe('@company-basics', function () {
     });
     it('should reject string update to none string property', async function () {
       try {
-        await Buttress.getCollection('company').update(_company.id, {
+        await companyCollection().update((_company as Company).id, {
           path: 'siccode',
           value: 'Not a String',
         });
       } catch (err) {
-        err.statusCode.should.equal(400);
+        (err as {statusCode: number}).statusCode.should.equal(400);
       }
     });
     it('should update the company property', function (done) {
-      Buttress.getCollection('company')
-        .update(_company.id, {
+      companyCollection()
+        .update((_company as Company).id, {
           path: 'siccode',
           value: 123456,
         })
@@ -156,7 +185,7 @@ describe('@company-basics', function () {
       if (!_company) {
         return done(new Error('No Company!'));
       }
-      Buttress.getCollection('company')
+      companyCollection()
         .remove(_company.id)
         .then(function (res) {
           res.should.equal(true);
@@ -170,7 +199,7 @@ describe('@company-basics', function () {
       const _companyId = new ObjectId().toHexString();
       const _contactId = new ObjectId().toHexString();
 
-      Buttress.getCollection('company')
+      companyCollection()
         .save({
           id: _companyId,
           name: 'Blackburn Widget Company',
@@ -192,21 +221,21 @@ describe('@company-basics', function () {
     });
 
     it('should add several companies (bulk)', function (done) {
-      const __gen = (num) => {
-        const arr = [];
+      const __gen = (num: number) => {
+        const arr: Record<string, any>[] = [];
         for (let x = 0; x < num; x++) {
-          const company = Buttress.getCollection('company').createObject();
+          const company = createObject();
           company.name = `Blackburn Widget Company ${x + 1}`;
           company.companyType = 'prospect';
 
-          const location = Buttress.getCollection('company').createObject('locations');
+          const location = createObject('locations');
           location.name = 'Headquarters';
           location.address = '124 Bonsall Street, Mill Hill';
           location.city = 'Blackburn';
           location.postCode = 'BB2 5DS';
           location.phoneNumber = '01254 123123';
 
-          const contact = Buttress.getCollection('company').createObject('contacts');
+          const contact = createObject('contacts');
           contact.name = 'Robert McBobson';
           contact.role = 'Managing Director';
 
@@ -216,7 +245,7 @@ describe('@company-basics', function () {
         return arr;
       };
 
-      Buttress.getCollection('company')
+      companyCollection()
         .bulkSave(__gen(1000))
         .then(function (companies) {
           companies.length.should.equal(1000);
@@ -228,21 +257,21 @@ describe('@company-basics', function () {
     });
 
     it('should add several companies (per company)', function (done) {
-      const __gen = (num) => {
-        const arr = [];
+      const __gen = (num: number) => {
+        const arr: Record<string, any>[] = [];
         for (let x = 0; x < num; x++) {
-          const company = Buttress.getCollection('company').createObject();
+          const company = createObject();
           company.name = `Blackburn Widget Company ${x + 1}`;
           company.companyType = 'prospect';
 
-          const location = Buttress.getCollection('company').createObject('locations');
+          const location = createObject('locations');
           location.name = 'Headquarters';
           location.address = '124 Bonsall Street, Mill Hill';
           location.city = 'Blackburn';
           location.postCode = 'BB2 5DS';
           location.phoneNumber = '01254 123123';
 
-          const contact = Buttress.getCollection('company').createObject('contacts');
+          const contact = createObject('contacts');
           contact.name = 'Robert McBobson';
           contact.role = 'Managing Director';
 
@@ -254,9 +283,9 @@ describe('@company-basics', function () {
 
       const companies = __gen(1000);
       companies
-        .reduce((prev, company) => {
+        .reduce<Promise<Company[]>>((prev, company) => {
           return prev.then((arr) => {
-            return Buttress.getCollection('company')
+            return companyCollection()
               .save(company)
               .then((res) => arr.push(res))
               .then(() => arr);
@@ -277,7 +306,7 @@ describe('@company-contacts', function () {
   let _companyId = '';
 
   before(function (done) {
-    Buttress.getCollection('company')
+    companyCollection()
       .save({
         name: 'Blackburn Widget Company',
         companyType: 'prospect',
@@ -307,7 +336,7 @@ describe('@company-contacts', function () {
   });
 
   after(function (done) {
-    Promise.all([Buttress.getCollection('company').remove(_companyId)])
+    Promise.all([companyCollection().remove(_companyId)])
       .then(() => done())
       .catch(done);
   });
@@ -317,7 +346,7 @@ describe('@company-contacts', function () {
       if (!_companyId) {
         return done(new Error('No Company!'));
       }
-      Buttress.getCollection('company')
+      companyCollection()
         .update(_companyId, {
           path: 'contacts',
           value: {
@@ -326,7 +355,7 @@ describe('@company-contacts', function () {
             role: 'Sales Director',
           },
         })
-        .then(function (updates) {
+        .then(function (updates: AnyUpdate[]) {
           updates.length.should.equal(1);
           updates[0].type.should.equal('vector-add');
           updates[0].path.should.equal('contacts');
@@ -342,7 +371,7 @@ describe('@company-contacts', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .get(_companyId)
         .then(function (company) {
           company.contacts.should.have.length(2);
@@ -357,12 +386,12 @@ describe('@company-contacts', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .update(_companyId, {
           path: 'contacts.1.email',
           value: 'han.solo@starwars.com',
         })
-        .then(function (cr) {
+        .then(function (cr: AnyUpdate[]) {
           cr[0].type.should.equal('scalar');
           cr[0].path.should.equal('contacts.1.email');
           cr[0].value.should.equal('han.solo@starwars.com');
@@ -377,7 +406,7 @@ describe('@company-contacts', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .get(_companyId)
         .then(function (company) {
           company.contacts.should.have.length(2);
@@ -392,12 +421,12 @@ describe('@company-contacts', function () {
       if (!_companyId) {
         return done(new Error('No Company!'));
       }
-      Buttress.getCollection('company')
+      companyCollection()
         .update(_companyId, {
           path: 'contacts.1.__remove__',
           value: '',
         })
-        .then(function (updates) {
+        .then(function (updates: AnyUpdate[]) {
           updates.length.should.equal(1);
           updates[0].type.should.equal('vector-rm');
           updates[0].path.should.equal('contacts');
@@ -413,7 +442,7 @@ describe('@company-contacts', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .get(_companyId)
         .then(function (company) {
           company.contacts.should.have.length(1);
@@ -431,7 +460,7 @@ describe('@company-locations', function () {
   const _locationIds = [new ObjectId().toHexString(), new ObjectId().toHexString()];
 
   before(function (done) {
-    Buttress.getCollection('company')
+    companyCollection()
       .save({
         name: 'Blackburn Widget Company',
         companyType: 'prospect',
@@ -462,7 +491,7 @@ describe('@company-locations', function () {
   });
 
   after(function (done) {
-    Promise.all([Buttress.getCollection('company').remove(_companyId)])
+    Promise.all([companyCollection().remove(_companyId)])
       .then(() => done())
       .catch(done);
   });
@@ -472,7 +501,7 @@ describe('@company-locations', function () {
       if (!_companyId) {
         return done(new Error('No Company!'));
       }
-      Buttress.getCollection('company')
+      companyCollection()
         .update(_companyId, {
           path: 'locations',
           value: {
@@ -484,7 +513,7 @@ describe('@company-locations', function () {
             phoneNumber: '01254 654321',
           },
         })
-        .then(function (updates) {
+        .then(function (updates: AnyUpdate[]) {
           updates.length.should.equal(1);
           updates[0].type.should.equal('vector-add');
           updates[0].path.should.equal('locations');
@@ -507,7 +536,7 @@ describe('@company-locations', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .get(_companyId)
         .then(function (company) {
           // console.log(company);
@@ -525,12 +554,12 @@ describe('@company-locations', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .update(_companyId, {
           path: 'locations.1.phoneNumber',
           value: '01772 123456',
         })
-        .then(function (cr) {
+        .then(function (cr: AnyUpdate[]) {
           cr[0].type.should.equal('scalar');
           cr[0].path.should.equal('locations.1.phoneNumber');
           cr[0].value.should.equal('01772 123456');
@@ -545,7 +574,7 @@ describe('@company-locations', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .get(_companyId)
         .then(function (company) {
           company.locations.should.have.length(2);
@@ -561,7 +590,7 @@ describe('@company-locations', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .update(_companyId, {
           path: 'locations.1',
           value: {
@@ -573,7 +602,7 @@ describe('@company-locations', function () {
             phoneNumber: '01254 654321',
           },
         })
-        .then(function (cr) {
+        .then(function (cr: AnyUpdate[]) {
           cr[0].type.should.equal('scalar');
           cr[0].path.should.equal('locations.1');
           cr[0].value.name.should.equal('Distribution Depot');
@@ -589,7 +618,7 @@ describe('@company-locations', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .get(_companyId)
         .then(function (company) {
           company.locations.should.have.length(2);
@@ -604,12 +633,12 @@ describe('@company-locations', function () {
       if (!_companyId) {
         return done(new Error('No Company!'));
       }
-      Buttress.getCollection('company')
+      companyCollection()
         .update(_companyId, {
           path: 'locations.1.__remove__',
           value: '',
         })
-        .then(function (updates) {
+        .then(function (updates: AnyUpdate[]) {
           updates.length.should.equal(1);
           updates[0].type.should.equal('vector-rm');
           updates[0].path.should.equal('locations');
@@ -625,7 +654,7 @@ describe('@company-locations', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .get(_companyId)
         .then(function (company) {
           company.locations.should.have.length(1);
@@ -642,7 +671,7 @@ describe('@company-notes', function () {
   let _companyId = '';
 
   before(function (done) {
-    Buttress.getCollection('company')
+    companyCollection()
       .save({
         name: 'Blackburn Widget Company',
         companyType: 'prospect',
@@ -672,7 +701,7 @@ describe('@company-notes', function () {
   });
 
   after(function (done) {
-    Promise.all([Buttress.getCollection('company').remove(_companyId)])
+    Promise.all([companyCollection().remove(_companyId)])
       .then(() => done())
       .catch(done);
   });
@@ -682,7 +711,7 @@ describe('@company-notes', function () {
       if (!_companyId) {
         return done(new Error('No Company!'));
       }
-      Buttress.getCollection('company')
+      companyCollection()
         .update(_companyId, {
           path: 'notes',
           value: {
@@ -690,7 +719,7 @@ describe('@company-notes', function () {
             text: 'This is an important note',
           },
         })
-        .then(function (updates) {
+        .then(function (updates: AnyUpdate[]) {
           updates.length.should.equal(1);
           updates[0].type.should.equal('vector-add');
           updates[0].path.should.equal('notes');
@@ -705,7 +734,7 @@ describe('@company-notes', function () {
       if (!_companyId) {
         return done(new Error('No Company!'));
       }
-      Buttress.getCollection('company')
+      companyCollection()
         .update(_companyId, {
           path: 'notes',
           value: {
@@ -713,7 +742,7 @@ describe('@company-notes', function () {
             text: 'This is another important note',
           },
         })
-        .then(function (updates) {
+        .then(function (updates: AnyUpdate[]) {
           updates.length.should.equal(1);
           updates[0].type.should.equal('vector-add');
           updates[0].path.should.equal('notes');
@@ -729,7 +758,7 @@ describe('@company-notes', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .get(_companyId)
         .then(function (company) {
           company.notes.should.have.length(2);
@@ -743,12 +772,12 @@ describe('@company-notes', function () {
       if (!_companyId) {
         return done(new Error('No Company!'));
       }
-      Buttress.getCollection('company')
+      companyCollection()
         .update(_companyId, {
           path: 'notes.0.__remove__',
           value: '',
         })
-        .then(function (updates) {
+        .then(function (updates: AnyUpdate[]) {
           updates.length.should.equal(1);
           updates[0].type.should.equal('vector-rm');
           updates[0].path.should.equal('notes');
@@ -764,7 +793,7 @@ describe('@company-notes', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .get(_companyId)
         .then(function (company) {
           company.notes.should.have.length(1);
@@ -779,12 +808,12 @@ describe('@company-notes', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .update(_companyId, {
           path: 'notes.0.text',
           value: 'This is some updated text',
         })
-        .then(function (cr) {
+        .then(function (cr: AnyUpdate[]) {
           cr[0].type.should.equal('scalar');
           cr[0].path.should.equal('notes.0.text');
           cr[0].value.should.equal('This is some updated text');
@@ -799,7 +828,7 @@ describe('@company-notes', function () {
         return done(new Error('No Company!'));
       }
 
-      Buttress.getCollection('company')
+      companyCollection()
         .get(_companyId)
         .then(function (company) {
           company.notes.should.have.length(1);

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Buttress API - The federated real-time open data platform
  * Copyright (C) 2016-2024 Data People Connected LTD.
@@ -16,15 +14,20 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Sugar = require('sugar');
-const fetch = require('cross-fetch');
+import Sugar from 'sugar';
+import fetch from 'cross-fetch';
 
-const {default: Buttress} = require('../dist/index');
-const Config = require('./config');
+import Buttress from '../dist/index';
+import type {Entity} from '../dist/index';
+import type App from '../dist/app';
+import type Policy from '../dist/policy';
+import type LambdaModel from '../dist/model/Lambda';
+import type SchemaModel from '../dist/model/Schema';
+import Config from './config';
 
 Config.init();
 
-const sleep = (time) => new Promise((r) => setTimeout(r, time));
+const sleep = (time: number) => new Promise((r) => setTimeout(r, time));
 
 const authentication = {
   domains: [Config.endpoint],
@@ -100,20 +103,21 @@ const organisations = [
 
 describe('@lambda', function () {
   this.timeout(90000);
-  let testApp = null;
+  let testApp: Entity;
 
   before(async function () {
     Config.configureSuper();
 
-    const existingApps = await Buttress.getCollection('app').getAll();
-    testApp = existingApps.find((a) => a.name === 'Lambda Test App');
-    if (!testApp) {
-      testApp = await Buttress.getCollection('app').save({
+    const existingApps = await Buttress.getCollection<App>('app').getAll();
+    const existingApp = existingApps.find((a) => a.name === 'Lambda Test App');
+    if (!existingApp) {
+      testApp = await Buttress.getCollection<App>('app').save({
         name: 'Lambda Test App',
         type: 'app',
         apiPath: 'lambda-test-app',
       });
     } else {
+      testApp = existingApp;
       // Fetch token and attach
       const tokens = await Buttress.Token.getAll();
       const appToken = tokens.find((t) => t.type === 'app' && t._appId === testApp.id);
@@ -121,7 +125,7 @@ describe('@lambda', function () {
       testApp.token = appToken.value;
     }
 
-    const schemas = [
+    const schemas: SchemaModel[] = [
       {
         name: 'organisation',
         type: 'collection',
@@ -176,11 +180,11 @@ describe('@lambda', function () {
     Buttress.setAPIPath('lambda-test-app');
 
     await Buttress.setSchema(schemas);
-    await Buttress.getCollection('app').setPolicyPropertyList({
+    await Buttress.getCollection<App>('app').setPolicyPropertyList({
       adminAccess: [true],
       grade: [1],
     });
-    await Buttress.getCollection('app').updatePolicyPropertyList({
+    await Buttress.getCollection<App>('app').updatePolicyPropertyList({
       adminAccess: [true],
       grade: [1],
     });
@@ -204,14 +208,14 @@ describe('@lambda', function () {
       const appPolicies = [];
       await policies.reduce(async (prev, next) => {
         await prev;
-        appPolicies.push(await Buttress.getCollection('policy').createPolicy(next));
+        appPolicies.push(await Buttress.getCollection<Policy>('policy').createPolicy(next));
       }, Promise.resolve());
 
       appPolicies.length.should.equal(2);
     });
 
     it('Should create an edit organisation lambda on the app', async function () {
-      const lambda = {
+      const lambda: LambdaModel = {
         name: 'organisation-edit-lambda',
         git: {
           url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
@@ -252,7 +256,7 @@ describe('@lambda', function () {
           branch: 'develop',
         });
       } catch (err) {
-        err.statusCode.should.equal(400);
+        (err as {statusCode: number}).statusCode.should.equal(400);
         return;
       }
 
@@ -260,7 +264,7 @@ describe('@lambda', function () {
     });
 
     it('Should create a async get api endpoint lambda to print hello world and call it using its url', async function () {
-      const lambda = {
+      const lambda: LambdaModel = {
         name: 'api-hello-world-lambda',
         git: {
           url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
@@ -305,7 +309,7 @@ describe('@lambda', function () {
     });
 
     it('Should create an a sync get api endpoint lambda to change liquidation organisations name to Test Lambda API', async function () {
-      const lambda = {
+      const lambda: LambdaModel = {
         name: 'api-edit-organisation-lambda',
         git: {
           url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
@@ -381,7 +385,7 @@ describe('@lambda', function () {
     });
 
     it('Should create a post api endpoint lambda for adding organisations', async function () {
-      const lambda = {
+      const lambda: LambdaModel = {
         name: 'api-add-organisation-lambda',
         git: {
           url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
@@ -423,7 +427,7 @@ describe('@lambda', function () {
         headers: {
           Authorization: `Bearer ${testApp.token}`,
           'Content-Type': 'application/json',
-          'Content-Length': JSON.stringify(organisation).length,
+          'Content-Length': String(JSON.stringify(organisation).length),
         },
       });
 
@@ -452,7 +456,7 @@ describe('@lambda', function () {
     });
 
     it('Should create a post api endpoint lambda that saves an entity with a uuid default', async function () {
-      const lambda = {
+      const lambda: LambdaModel = {
         name: 'api-create-ticket-lambda',
         git: {
           url: 'https://github.com/datapeopleconnected/buttress-js-lambda-testing.git',
@@ -489,7 +493,7 @@ describe('@lambda', function () {
         headers: {
           Authorization: `Bearer ${testApp.token}`,
           'Content-Type': 'application/json',
-          'Content-Length': JSON.stringify(ticket).length,
+          'Content-Length': String(JSON.stringify(ticket).length),
         },
       });
 

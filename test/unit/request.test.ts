@@ -14,26 +14,53 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const assert = require('assert');
-const http = require('http');
+import assert from 'assert';
+import http from 'http';
+import type {AddressInfo} from 'net';
 
-const {default: Buttress, Errors} = require('../../dist/index');
-const App = require('../../dist/app').default;
+import Buttress, {Errors} from '../../dist/index';
+import type {ButtressOptions, Policy} from '../../dist/index';
+import App from '../../dist/app';
 
 const schema = [{name: 'thing', type: 'collection', properties: {name: {__type: 'string'}}}];
+
+// The options type requires a version, which these tests have never passed
+const options = (partial: Record<string, unknown>) => partial as unknown as ButtressOptions;
+
+interface RecordedRequest {
+  method?: string;
+  url?: string;
+  headers: http.IncomingHttpHeaders;
+  raw: string;
+  body: any;
+}
+
+interface Reply {
+  status?: number;
+  body?: unknown;
+  destroy?: boolean;
+}
+
+interface TestServer {
+  requests: RecordedRequest[];
+  reply: (request: RecordedRequest, count: number) => Reply;
+  url: string;
+  close: () => Promise<void>;
+}
 
 /**
  * A stand-in for buttress which records each request and replies with whatever `reply` returns.
  */
-const startServer = async () => {
-  const state = {requests: [], reply: () => ({status: 200, body: {}})};
+const startServer = async (): Promise<TestServer> => {
+  const requests: RecordedRequest[] = [];
+  const state = {requests, reply: (() => ({status: 200, body: {}})) as TestServer['reply']};
 
   const server = http.createServer((req, res) => {
-    const chunks = [];
-    req.on('data', (chunk) => chunks.push(chunk));
+    const chunks: Buffer[] = [];
+    req.on('data', (chunk: Buffer) => chunks.push(chunk));
     req.on('end', () => {
       const raw = Buffer.concat(chunks).toString('utf8');
-      const request = {
+      const request: RecordedRequest = {
         method: req.method,
         url: req.url,
         headers: req.headers,
@@ -45,32 +72,36 @@ const startServer = async () => {
       const reply = state.reply(request, state.requests.length);
       if (reply.destroy) return req.socket.destroy();
 
-      res.writeHead(reply.status, {'Content-Type': 'application/json'});
+      res.writeHead(reply.status as number, {'Content-Type': 'application/json'});
       res.end(JSON.stringify(reply.body));
     });
   });
 
-  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
-  state.url = `http://127.0.0.1:${server.address().port}`;
-  state.close = () => new Promise((resolve) => server.close(resolve));
-  return state;
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const {port} = server.address() as AddressInfo;
+  return Object.assign(state, {
+    url: `http://127.0.0.1:${port}`,
+    close: () => new Promise<void>((resolve) => server.close(() => resolve())),
+  });
 };
 
 describe('Requests', () => {
-  let server;
-  let instance;
+  let server: TestServer;
+  let instance: ReturnType<typeof Buttress.new>;
 
   before(async () => {
     server = await startServer();
     instance = Buttress.new();
-    await instance.init({
-      buttressUrl: server.url,
-      appToken: 'APP_TOKEN',
-      apiPath: 'test-app',
-      schema,
-      useLocalSchema: true,
-      clientSessionId: '4f7b2b9e-6c1a-4a5e-9d3b-2f6f0c8a1e11',
-    });
+    await instance.init(
+      options({
+        buttressUrl: server.url,
+        appToken: 'APP_TOKEN',
+        apiPath: 'test-app',
+        schema,
+        useLocalSchema: true,
+        clientSessionId: '4f7b2b9e-6c1a-4a5e-9d3b-2f6f0c8a1e11',
+      }),
+    );
   });
 
   beforeEach(() => {
@@ -83,7 +114,7 @@ describe('Requests', () => {
   it('should surface the message from a buttress error body', async () => {
     server.reply = () => ({status: 401, body: {code: 'invalid_token', message: 'The token is not valid'}});
 
-    await assert.rejects(instance.getCollection('thing').getAll(), (err) => {
+    await assert.rejects(instance.getCollection('thing').getAll(), (err: unknown) => {
       assert(err instanceof Errors.ResponseError);
       assert.strictEqual(err.statusCode, 401);
       assert.strictEqual(err.statusMessage, 'Unauthorized');
@@ -136,7 +167,7 @@ describe('Requests', () => {
   });
 
   it('should retry a GET that never got a response', async () => {
-    server.reply = (req, count) => (count === 1 ? {destroy: true} : {status: 200, body: [{id: '1'}]});
+    server.reply = (_req, count) => (count === 1 ? {destroy: true} : {status: 200, body: [{id: '1'}]});
 
     const res = await instance.getCollection('thing').getAll();
 
@@ -146,18 +177,74 @@ describe('Requests', () => {
 
   it('should not retry a GET that never got a response when maxRetries is 0', async () => {
     const noRetry = Buttress.new();
-    await noRetry.init({
-      buttressUrl: server.url,
-      appToken: 'APP_TOKEN',
-      apiPath: 'test-app',
-      schema,
-      useLocalSchema: true,
-      maxRetries: 0,
-    });
+    await noRetry.init(
+      options({
+        buttressUrl: server.url,
+        appToken: 'APP_TOKEN',
+        apiPath: 'test-app',
+        schema,
+        useLocalSchema: true,
+        maxRetries: 0,
+      }),
+    );
     server.reply = () => ({destroy: true});
 
-    await assert.rejects(noRetry.getCollection('thing').getAll(), (err) => err instanceof Errors.RequestError);
+    await assert.rejects(noRetry.getCollection('thing').getAll(), (err: unknown) => err instanceof Errors.RequestError);
     assert.strictEqual(server.requests.length, 1);
+  });
+
+  it('should search, count and bulk load with QUERY', async () => {
+    await instance.getCollection('thing').search({name: {$eq: 'x'}});
+    await instance.getCollection('thing').count({name: {$eq: 'x'}});
+    await instance.getCollection('thing').bulkGet(['1', '2']);
+    await instance.Policy.search({});
+
+    assert.deepStrictEqual(
+      server.requests.map((r) => `${r.method} ${r.url}`),
+      [
+        'QUERY /test-app/api/v1/thing',
+        'QUERY /test-app/api/v1/thing/count',
+        'QUERY /test-app/api/v1/thing/bulk/load',
+        'QUERY /api/v1/policy',
+      ],
+    );
+    assert.deepStrictEqual(server.requests[0].body, {query: {name: {$eq: 'x'}}, limit: 0, skip: 0, sort: 0});
+  });
+
+  it('should send a JSON Content-Type with every QUERY', async () => {
+    await instance.getCollection('thing').search({});
+    await instance.getCollection('thing').count();
+    await instance.getCollection('thing').bulkGet(undefined as unknown as string[]);
+
+    for (const req of server.requests) {
+      assert.strictEqual(req.method, 'QUERY');
+      assert.strictEqual(req.headers['content-type'], 'application/json');
+    }
+    // A bulk load without ids still sends a body, buttress refuses a QUERY without one
+    assert.deepStrictEqual(server.requests[2].body, {});
+  });
+
+  it('should keep passed headers alongside the QUERY Content-Type', async () => {
+    await instance.getCollection('thing').search({}, 0, 0, 0, {headers: {'x-custom': 'yes'}});
+
+    const [req] = server.requests;
+    assert.strictEqual(req.headers['x-custom'], 'yes');
+    assert.strictEqual(req.headers['content-type'], 'application/json');
+    assert.strictEqual(req.headers['authorization'], 'Bearer APP_TOKEN');
+  });
+
+  it('should retry a QUERY that never got a response', async () => {
+    server.reply = (_req, count) => (count === 1 ? {destroy: true} : {status: 200, body: [{id: '1'}]});
+
+    const res = await instance.getCollection('thing').search({});
+
+    assert.deepStrictEqual(res, [{id: '1'}]);
+    assert.deepStrictEqual(
+      server.requests.map((r) => r.method),
+      ['QUERY', 'QUERY'],
+    );
+    assert.strictEqual(server.requests[1].headers['content-type'], 'application/json');
+    assert.deepStrictEqual(server.requests[1].body, server.requests[0].body);
   });
 
   it('should update an entity in a remote datastore by sourceId', async () => {
@@ -201,7 +288,7 @@ describe('Requests', () => {
   });
 
   it('should refuse a removeAll filter as buttress would remove everything', async () => {
-    assert.throws(() => instance.getCollection('thing').removeAll({name: 'x'}), /bulkRemove/);
+    assert.throws(() => instance.getCollection('thing').removeAll({name: 'x'} as unknown as null), /bulkRemove/);
     assert.strictEqual(server.requests.length, 0);
   });
 
@@ -278,7 +365,7 @@ describe('Requests', () => {
     await instance.Auth.findOrCreateUser({app: 'google', appId: 'G1', policyProperties: {role: 'user'}}, {domains: []});
 
     const post = server.requests.find((r) => r.method === 'POST');
-    assert.deepStrictEqual(post.body.token, {domains: [], policyProperties: {role: 'user'}});
+    assert.deepStrictEqual((post as RecordedRequest).body.token, {domains: [], policyProperties: {role: 'user'}});
     assert.strictEqual(server.requests.length, 2);
   });
 });
@@ -291,14 +378,14 @@ describe('Init', () => {
     const instance = Buttress.new();
     try {
       await assert.rejects(
-        instance.init({buttressUrl: 'http://127.0.0.1:1', appToken: 'APP_TOKEN', apiPath: 'test-app'}),
+        instance.init(options({buttressUrl: 'http://127.0.0.1:1', appToken: 'APP_TOKEN', apiPath: 'test-app'})),
         /unreachable/,
       );
       assert.strictEqual(instance.initialised, false);
       assert.throws(() => instance.App, Errors.NotYetInitiated);
 
       App.prototype.getSchema = () => Promise.resolve(schema);
-      await instance.init({buttressUrl: 'http://127.0.0.1:1', appToken: 'APP_TOKEN', apiPath: 'test-app'});
+      await instance.init(options({buttressUrl: 'http://127.0.0.1:1', appToken: 'APP_TOKEN', apiPath: 'test-app'}));
 
       assert.strictEqual(instance.initialised, true);
       assert(instance.getCollection('thing'));
@@ -326,41 +413,48 @@ describe('Core modules', () => {
 
     for (const name of Object.keys(coreModules)) {
       assert.throws(
-        () => instance[name],
-        (err) => err instanceof Errors.NotYetInitiated && err.message.includes(name),
+        () => instance[name as keyof typeof coreModules],
+        (err: unknown) => err instanceof Errors.NotYetInitiated && err.message.includes(name),
       );
     }
-    await assert.rejects(instance.createUserTransientPolicy('USER', 'TOKEN', {name: 'p'}), Errors.NotYetInitiated);
+    await assert.rejects(
+      instance.createUserTransientPolicy('USER', 'TOKEN', {name: 'p'} as Policy),
+      Errors.NotYetInitiated,
+    );
   });
 
   it('should be the same instances as getCollection', async () => {
     const instance = Buttress.new();
-    await instance.init({
-      buttressUrl: 'http://127.0.0.1:1',
-      appToken: 'APP_TOKEN',
-      apiPath: 'test-app',
-      schema,
-      useLocalSchema: true,
-    });
+    await instance.init(
+      options({
+        buttressUrl: 'http://127.0.0.1:1',
+        appToken: 'APP_TOKEN',
+        apiPath: 'test-app',
+        schema,
+        useLocalSchema: true,
+      }),
+    );
 
     for (const [name, collection] of Object.entries(coreModules)) {
-      assert.strictEqual(instance[name], instance.getCollection(collection), name);
+      assert.strictEqual(instance[name as keyof typeof coreModules], instance.getCollection(collection), name);
     }
   });
 
   it('should throw NotYetInitiated again after clean', async () => {
     const instance = Buttress.new();
-    await instance.init({
-      buttressUrl: 'http://127.0.0.1:1',
-      appToken: 'APP_TOKEN',
-      apiPath: 'test-app',
-      schema,
-      useLocalSchema: true,
-    });
+    await instance.init(
+      options({
+        buttressUrl: 'http://127.0.0.1:1',
+        appToken: 'APP_TOKEN',
+        apiPath: 'test-app',
+        schema,
+        useLocalSchema: true,
+      }),
+    );
     instance.clean();
 
     for (const name of Object.keys(coreModules)) {
-      assert.throws(() => instance[name], Errors.NotYetInitiated);
+      assert.throws(() => instance[name as keyof typeof coreModules], Errors.NotYetInitiated);
     }
   });
 });

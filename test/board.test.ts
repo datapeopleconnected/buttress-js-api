@@ -14,11 +14,38 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const Schema = [
-  require('./schema/board.json'),
-  require('./schema/company.json'),
-  require('./schema/post.json'),
-  require('./schema/service.json'),
-];
+import Buttress from '../dist/index';
+import Config from './config';
 
-module.exports = Schema;
+import Schemas from './data/schema';
+
+Config.init();
+
+describe('@boards', function () {
+  this.timeout(2000);
+
+  before(async function () {
+    Config.configureTest();
+    await Buttress.setSchema(Schemas);
+  });
+
+  after(function (done) {
+    Buttress.getCollection('board')
+      .removeAll()
+      .then(() => done())
+      .catch(done);
+  });
+
+  describe('Post Basics', function () {
+    it('should return no boards', function (done) {
+      Config.retryUnrouted(() => Buttress.getCollection('board').getAll())
+        .then(function (boards) {
+          boards.length.should.equal(0);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+  });
+});

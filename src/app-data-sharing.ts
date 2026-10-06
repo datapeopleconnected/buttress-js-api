@@ -45,11 +45,11 @@ export default class AppDataSharing extends BaseSchema {
   // TODO: Replace data with policy type
   /**
    * @param {number} dataSharingId
-   * @param {array} data
+   * @param {object} data
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  updateDataSharingPolicy(dataSharingId: string, data: any[], options: RequestOptionsIn = {}) {
+  updateDataSharingPolicy(dataSharingId: string, data: Record<string, unknown>, options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
     if (data) opts.data = data;
     return this._request('put', `${dataSharingId}/policy`, opts);

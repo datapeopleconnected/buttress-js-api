@@ -20,6 +20,10 @@ export interface Property {
   __required?: boolean;
   __allowUpdate?: boolean;
   __enum?: string[];
+  // The type of the items in an array
+  __itemtype?: string;
+  __private?: boolean;
+  __unique?: boolean;
   __schema?: Properties;
 }
 
@@ -27,10 +31,18 @@ export interface Properties {
   [key: string]: Property | Properties;
 }
 
+export interface Remote {
+  name: string;
+  schema: string;
+}
+
 export default interface Schema {
   name: string;
   type: string;
   extends?: string[];
   core?: boolean;
+  strict?: boolean;
+  // The schemas this one is shared with over data sharing
+  remotes?: Remote | Remote[];
   properties: Properties;
 }

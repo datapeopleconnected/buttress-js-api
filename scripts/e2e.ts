@@ -16,33 +16,33 @@
 
 // Runs a command against a throwaway Buttress:
 //
-//   node scripts/e2e.js npm run test-policy
+//   npx tsx scripts/e2e.ts npm run test-policy
 //
 // Starts the Docker stack in .docker/docker-compose.e2e.yml, runs the command with the endpoint and super token in
 // BUTTRESS_TEST_API_URL and BUTTRESS_TEST_SUPER_APP_KEY, then removes the stack. Set BUTTRESS_IMAGE to use another
 // Buttress image, such as one built from a local checkout.
 
-const {execFile, spawn} = require('node:child_process');
-const {promisify} = require('node:util');
+import {execFile, spawn, type SpawnOptions} from 'node:child_process';
+import {promisify} from 'node:util';
 
 const COMPOSE = ['compose', '--file', '.docker/docker-compose.e2e.yml'];
 // Nothing in the stack is worth stopping gracefully, and Buttress ignores SIGTERM, which costs ten seconds.
 const DOWN = ['down', '--volumes', '--timeout', '0'];
 
 // Resolves with the command's exit code. Its output goes straight to the terminal.
-const run = (command, args, options) =>
-  new Promise((resolve, reject) => {
+const run = (command: string, args: string[], options?: SpawnOptions) =>
+  new Promise<number>((resolve, reject) => {
     spawn(command, args, {stdio: 'inherit', ...options})
       .on('error', reject)
       .on('close', (code) => resolve(code ?? 1));
   });
 
-const compose = async (...args) => {
+const compose = async (...args: string[]) => {
   const code = await run('docker', [...COMPOSE, ...args]);
   if (code !== 0) throw new Error(`docker compose ${args[0]} exited with code ${code}`);
 };
 
-const composeOutput = async (...args) => {
+const composeOutput = async (...args: string[]) => {
   const {stdout} = await promisify(execFile)('docker', [...COMPOSE, ...args]);
   return stdout.trim();
 };
@@ -50,7 +50,7 @@ const composeOutput = async (...args) => {
 const main = async () => {
   const [command, ...args] = process.argv.slice(2);
   if (!command) {
-    console.error('Usage: node scripts/e2e.js <command> [args...]');
+    console.error('Usage: npx tsx scripts/e2e.ts <command> [args...]');
     return 1;
   }
 
@@ -86,7 +86,8 @@ const main = async () => {
         },
       });
     }
-  } catch (err) {
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
     console.error(
       err.code === 'ENOENT' ? `Couldn't find \`${err.path}\`. Is it installed and on your PATH?` : err.message,
     );

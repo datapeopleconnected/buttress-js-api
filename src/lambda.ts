@@ -17,7 +17,7 @@
 import Helpers, {RequestOptionsIn} from './helpers';
 import BaseSchema from './helpers/schema';
 
-import LambdaModel from './model/Lambda';
+import LambdaModel, {LambdaAuth} from './model/Lambda';
 
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
@@ -39,7 +39,7 @@ export default class Lambda extends BaseSchema {
    * @param {Object} auth
    * @return {Promise}
    */
-  createLambda(lambda: LambdaModel, auth: any) {
+  createLambda(lambda: LambdaModel, auth: LambdaAuth) {
     return this.save({lambda, auth});
   }
 
