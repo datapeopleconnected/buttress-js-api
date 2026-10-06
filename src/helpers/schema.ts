@@ -90,9 +90,22 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
   }
 
   /**
+   * Throws when the module was taken before Buttress.clean(), as its options are no longer the client's
+   */
+  protected _assertCurrent() {
+    if (this._ButtressOptions.cleaned) {
+      throw new Helpers.Errors.NotYetInitiated(
+        `Attempting to use the ${this.collection} module after Buttress.clean(), get it again after init()`,
+      );
+    }
+  }
+
+  /**
    * @return {object} schema
    */
   loadSchema() {
+    this._assertCurrent();
+
     if (this.__schema) {
       return this.__schema;
     }
@@ -134,6 +147,8 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
    * @return {promise}
    */
   async _request(type: string, path: string, options: RequestOptions, attempt = 0, redirect = false): Promise<any> {
+    this._assertCurrent();
+
     if (!this.__route) {
       throw new Error(`Unable to make request to Buttress due to unknown schema ${this.collection}`);
     }

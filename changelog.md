@@ -23,6 +23,9 @@
   user by its auth app id returns only its tokens' values, so it used to send the token's secret value in the request
   path, where it ends up in proxy and access logs. It now looks the id up with `User.get` (one more request, only when
   the properties need setting), and throws if the token still has no id.
+- A module taken before `Buttress.clean()`, from `getCollection` or a property such as `Buttress.User`, now throws
+  `NotYetInitiated` when it's used, from its requests and `createObject`. It used to go on sending the old app's token
+  to the old app's URLs, even after `init()` with another app. Get modules again after `init()`.
 
 ### 3.0.0-51
 

@@ -675,3 +675,41 @@ describe('Core modules', () => {
     }
   });
 });
+
+describe('Clean and init', () => {
+  let server: TestServer;
+
+  const appOptions = (appToken: string, apiPath: string, extra: Record<string, unknown> = {}) =>
+    options({buttressUrl: server.url, appToken, apiPath, schema, useLocalSchema: true, ...extra});
+
+  before(async () => {
+    server = await startServer();
+  });
+
+  beforeEach(() => {
+    server.requests.length = 0;
+    server.reply = () => ({status: 200, body: {}});
+  });
+
+  after(() => server.close());
+
+  it('should refuse a module taken before clean rather than use the old app', async () => {
+    const instance = Buttress.new();
+    await instance.init(appOptions('OLD_TOKEN', 'old-app'));
+    const oldThing = instance.getCollection('thing');
+    const oldUser = instance.User;
+
+    instance.clean();
+    await instance.init(appOptions('NEW_TOKEN', 'new-app'));
+
+    await assert.rejects(oldThing.getAll(), Errors.NotYetInitiated);
+    await assert.rejects(oldUser.getUser('U1'), Errors.NotYetInitiated);
+    assert.throws(() => oldThing.createObject(), /after Buttress.clean\(\)/);
+    assert.strictEqual(server.requests.length, 0);
+
+    // A module taken after init uses the new app
+    await instance.getCollection('thing').getAll();
+    assert.strictEqual(server.requests[0].url, '/new-app/api/v1/thing');
+    assert.strictEqual(server.requests[0].headers['authorization'], 'Bearer NEW_TOKEN');
+  });
+});

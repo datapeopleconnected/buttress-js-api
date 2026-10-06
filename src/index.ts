@@ -187,6 +187,10 @@ export class Buttress {
     });
     this.__modules = {};
 
+    // A module taken before clean() still holds these options, so mark them to make it fail loudly rather than go on
+    // using the old app's token and URLs. Every module from here on is built with the new options object.
+    this.options.cleaned = true;
+
     // Reset options
     this.options = {
       isolated: false,
