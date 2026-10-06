@@ -15,6 +15,8 @@
  */
 import assert from 'assert';
 
+import Sugar from 'sugar';
+
 import Buttress from '../../dist/index';
 import type {ButtressOptions} from '../../dist/index';
 
@@ -84,6 +86,16 @@ describe('Unit tests for index.js', () => {
           name: {
             __type: 'string',
             __default: null,
+          },
+        },
+      },
+      {
+        name: 'dated',
+        type: 'collection',
+        properties: {
+          startsOn: {
+            __type: 'date',
+            __default: '01/02/2026',
           },
         },
       },
@@ -252,6 +264,16 @@ describe('Unit tests for index.js', () => {
       assert(Object.keys(companyRegistrar).some((k) => k === 'numbers'));
       assert(Object.keys(companyRegistrar['numbers']).some((k) => k === 'number1'));
       assert(Object.keys(companyRegistrar['numbers']).some((k) => k === 'number2'));
+    });
+
+    it('should read a date default day first, as Buttress does', async () => {
+      const {startsOn} = createObject('dated');
+
+      assert.strictEqual(startsOn.getFullYear(), 2026);
+      assert.strictEqual(startsOn.getMonth(), 1);
+      assert.strictEqual(startsOn.getDate(), 1);
+      // Without changing the locale for anything else using Sugar
+      assert.strictEqual((Sugar.Date.getLocale() as unknown as {code: string}).code, 'en');
     });
 
     it('should refuse to create an object for a plain array property', async () => {

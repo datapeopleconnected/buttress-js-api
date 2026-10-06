@@ -371,7 +371,9 @@ class Schema {
         if (config.__default === null) {
           res = null;
         } else if (config.__default) {
-          res = Sugar.Date.create(config.__default);
+          // Read as Buttress reads it, so 01/02/2026 is 1 February. The locale is passed rather than set, which would
+          // change it for anything else using Sugar.
+          res = Sugar.Date.create(config.__default, {locale: 'en-GB'});
         } else {
           res = new Date();
         }

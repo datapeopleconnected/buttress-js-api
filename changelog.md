@@ -44,6 +44,8 @@
   rejects. `setValue('a.b', v)` used to write the nested path `storeData.a.b`, which `getValue('a.b')` couldn't read
   back, and let a key taken from input write anywhere below `storeData`. A dotted key already in a store's data can no
   longer be read through `getValue`.
+- `createObject` reads a schema's date `__default` day first (en-GB), as Buttress does, so `01/02/2026` is 1 February in
+  an object built by the client as well as one built by Buttress. The client used to read it month first (2 January).
 
 ### 3.0.0-51
 
