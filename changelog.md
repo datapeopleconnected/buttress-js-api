@@ -80,6 +80,11 @@
   transient policy's limit passes, Buttress takes the policy property named after it off the tokens it selected, as
   well as removing the policy; a policy that isn't transient leaves tokens as they are. A Buttress without the flag
   stores the policy without it.
+- **Breaking:** `AppDataSharing.updateDataSharingPolicy(id, policyConfig)` takes a list of policy configs, given as
+  `policyConfig` is when the agreement is created, and the agreement's policy is replaced with them. It used to be typed
+  as taking any object, which Buttress ignored, answering `true` while the partner kept the access it was given when
+  the agreement was made. A Buttress containing `3c5274bb` (buttress-js develop) or later refuses anything but a
+  non-empty list with 400 `invalid_policy`.
 
 ### 3.0.0-51
 

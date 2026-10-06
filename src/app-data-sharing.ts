@@ -20,6 +20,7 @@ import BaseSchema from './helpers/schema';
 import ButtressOptionsInternal from './types/ButtressOptionsInternal';
 
 import AppDataSharingModel from './model/AppDataSharing';
+import {PolicyConfig} from './types/Policy';
 
 /**
  * @class AppDataSharing
@@ -42,16 +43,17 @@ export default class AppDataSharing extends BaseSchema {
     return this.save(dataShare, {});
   }
 
-  // TODO: Replace data with policy type
   /**
-   * @param {number} dataSharingId
-   * @param {object} data
+   * Replaces what the other app is allowed to do with this one's data: the configs of the agreement's policy, given as
+   * policyConfig is when the agreement is created. Buttress refuses anything but a non-empty list with invalid_policy.
+   * @param {string} dataSharingId
+   * @param {PolicyConfig[]} policyConfig
    * @param {object} [options={}] options
    * @return {promise} - response
    */
-  async updateDataSharingPolicy(dataSharingId: string, data: Record<string, unknown>, options: RequestOptionsIn = {}) {
+  async updateDataSharingPolicy(dataSharingId: string, policyConfig: PolicyConfig[], options: RequestOptionsIn = {}) {
     const opts = Helpers.checkOptions(options, this.token);
-    if (data) opts.data = data;
+    opts.data = policyConfig;
     return this._request('put', `${Helpers.pathSegment(dataSharingId)}/policy`, opts);
   }
 
