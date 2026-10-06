@@ -56,6 +56,10 @@
 - A client set up without an `appToken` can make any call that passes its own `token` option, and
   `AppDataSharing.activate` works with just the registration token. Every call used to throw "No default token
   provided" first. A call without its own token still throws it. `appToken` is optional in the options type.
+- Query `params` set to `null` or `undefined` are left out of the URL instead of being sent as the text `null` or
+  `undefined`, which Buttress filtered on. An array is sent as one comma-separated value, `ids=a,b`, the way Buttress
+  reads a list; an empty array is left out, and an item holding a comma is refused. An object, which used to be sent
+  as `[object Object]`, is refused with an error rather than sent.
 
 ### 3.0.0-51
 

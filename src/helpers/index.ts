@@ -438,6 +438,49 @@ const _pathSegment = (value: string | number): string => {
   return encodeURIComponent(segment);
 };
 
+/**
+ * Builds a request's query string from its params. A null or undefined param is left out rather than sent as the text
+ * `null` or `undefined`. An array is sent as one comma-separated value, `ids=a,b`, which is how Buttress reads a list,
+ * so an item holding a comma is refused, and an empty array is left out. Anything else that isn't a string, number or
+ * boolean, such as an object, has no text form Buttress reads, so it's refused.
+ * @param {object} params
+ * @return {string} query - without the leading ?
+ */
+const _queryString = (params: {[key: string]: unknown}): string => {
+  const encodeValue = (key: string, value: unknown, inList: boolean) => {
+    if (!['string', 'number', 'boolean', 'bigint'].includes(typeof value)) {
+      throw new Error(
+        `Unable to send the query param '${key}', pass a string, number or boolean, or an array of them, not ${Object.prototype.toString.call(value)}`,
+      );
+    }
+
+    const text = String(value);
+    if (inList && text.includes(',')) {
+      throw new Error(`Unable to send '${text}' in the list query param '${key}', Buttress splits a list on commas`);
+    }
+
+    return encodeURIComponent(text);
+  };
+
+  const pairs: string[] = [];
+  for (const key of Object.keys(params)) {
+    const value = params[key];
+    if (value === null || value === undefined) continue;
+
+    if (Array.isArray(value)) {
+      const items = value.filter((item) => item !== null && item !== undefined);
+      if (items.length < 1) continue;
+
+      pairs.push(`${encodeURIComponent(key)}=${items.map((item) => encodeValue(key, item, true)).join(',')}`);
+      continue;
+    }
+
+    pairs.push(`${encodeURIComponent(key)}=${encodeValue(key, value, false)}`);
+  }
+
+  return pairs.join('&');
+};
+
 const sleep = (ms: number) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
@@ -452,6 +495,7 @@ export default {
   Errors,
   checkOptions: _checkOptions,
   pathSegment: _pathSegment,
+  queryString: _queryString,
   sleep,
   backOff,
 };

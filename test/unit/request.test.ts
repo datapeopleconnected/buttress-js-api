@@ -149,6 +149,36 @@ describe('Requests', () => {
     assert.strictEqual(server.requests[0].url, '/test-app/api/v1/thing?q=a%26b%3Dc%20d');
   });
 
+  it('should leave out a null or undefined query param', async () => {
+    await instance.getCollection('thing').getAll({params: {a: null, b: undefined, c: 'x'}});
+    await instance.getCollection('thing').getAll({params: {a: null}});
+
+    assert.strictEqual(server.requests[0].url, '/test-app/api/v1/thing?c=x');
+    assert.strictEqual(server.requests[1].url, '/test-app/api/v1/thing');
+  });
+
+  it('should send numbers and booleans as text', async () => {
+    await instance.getCollection('thing').getAll({params: {limit: 0, raw: false}});
+
+    assert.strictEqual(server.requests[0].url, '/test-app/api/v1/thing?limit=0&raw=false');
+  });
+
+  it('should send an array query param as a comma-separated list, as Buttress reads ids=a,b', async () => {
+    await instance.getCollection('thing').getAll({params: {ids: ['a', 'b c', 1]}});
+    await instance.getCollection('thing').getAll({params: {ids: [], c: 'x'}});
+
+    assert.strictEqual(server.requests[0].url, '/test-app/api/v1/thing?ids=a,b%20c,1');
+    assert.strictEqual(server.requests[1].url, '/test-app/api/v1/thing?c=x');
+  });
+
+  it('should refuse an object query param, or a list item holding a comma', async () => {
+    const thing = instance.getCollection('thing');
+    await assert.rejects(thing.getAll({params: {q: {name: 'x'}}}), /Unable to send the query param 'q'/);
+    await assert.rejects(thing.getAll({params: {ids: [{id: 'a'}]}}), /Unable to send the query param 'ids'/);
+    await assert.rejects(thing.getAll({params: {ids: ['a,b']}}), /splits a list on commas/);
+    assert.strictEqual(server.requests.length, 0);
+  });
+
   it('should send the client session id header', async () => {
     await instance.getCollection('thing').getAll();
 

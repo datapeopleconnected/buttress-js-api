@@ -168,11 +168,7 @@ export default class BaseSchema<T extends object = Entity, BulkSaveResult = T[]>
     }
 
     if (options.params) {
-      const params = Object.keys(options.params)
-        .map((key) => {
-          return `${encodeURIComponent(key)}=${encodeURIComponent(options.params[key])}`;
-        })
-        .join('&');
+      const params = Helpers.queryString(options.params);
 
       url = params !== '' ? `${url}?${params}` : url;
     }
