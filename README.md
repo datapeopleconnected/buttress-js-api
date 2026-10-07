@@ -162,8 +162,8 @@ Development needs Node 24 or later (`nvm use` picks it up from `.nvmrc`).
 | `npm run test:unit`     | Runs the unit tests. No Buttress needed.                                    |
 | `npm run test:e2e`      | Builds, then runs the end-to-end tests against a Buttress in Docker.        |
 
-The pre-commit hook runs `lint`, `format:check`, `build` and `licence-check`. CI runs the same checks and the unit
-tests on every push to `main` and `develop`, and on pull requests.
+The pre-commit hook runs `lint`, `format:check`, `build` and `licence-check`. CI runs the same checks, the unit tests
+and the end-to-end tests on every push to `main` and `develop`, and on pull requests.
 
 ### End-to-end tests
 
@@ -177,8 +177,9 @@ It runs any command, so you can run a single suite:
 npm run build && npx tsx scripts/e2e.ts npm run test-policy
 ```
 
-Set `BUTTRESS_IMAGE` to test against a different image than `dpcltd/buttress:develop`, such as one built from a
-Buttress checkout.
+The tests run against `dpcltd/buttress:3.0.0`. Set `BUTTRESS_IMAGE` to test against a different image, such as
+`dpcltd/buttress:develop` or one built from a Buttress checkout. Docker only pulls an image it doesn't have, so pull
+a moving tag like `develop` yourself to get its latest build.
 
 ### Publishing
 

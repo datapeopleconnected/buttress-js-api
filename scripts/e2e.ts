@@ -64,8 +64,6 @@ const main = async () => {
   try {
     // Clear out anything left by an earlier run that was killed before it could clean up.
     await compose(...DOWN, '--remove-orphans');
-    // develop moves on, so fetch the latest. If that fails, say when offline, the cached image is used.
-    if (!process.env.BUTTRESS_IMAGE) await compose('pull', '--ignore-pull-failures', 'buttress');
     await compose('up', '--detach', '--wait');
 
     const endpoint = `http://${await composeOutput('port', 'buttress', '8000')}`;
