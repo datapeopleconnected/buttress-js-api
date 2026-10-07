@@ -42,9 +42,8 @@ jobs:
         env:
           PRERELEASE: ${{ github.event.release.prerelease }}
         run: |
-          # 3.0.0 is still numbered as a pre-release (3.0.0-52 and so on), and those versions go to `latest`.
-          # npm won't publish a pre-release without an explicit tag, so always pass one. Tick "Set as a pre-release"
-          # on the GitHub release to publish to `next` instead.
+          # npm won't publish a pre-release version (3.1.0-0 and so on) without an explicit tag, so always pass one.
+          # Tick "Set as a pre-release" on the GitHub release to publish to `next` instead of `latest`.
           if [ "$PRERELEASE" = true ]; then
             npm publish --tag next
           else

@@ -1,6 +1,9 @@
-### Unreleased
+### 3.0.0
 
-**Needs a Buttress server containing `390fea49` (buttress-js develop) or later.** Older servers answer `QUERY` with 404.
+**Needs Buttress 3.0.0 or later.** Older servers answer `QUERY` with 404. Upgrading from 2.x, or from an earlier 3.0.0
+pre-release? See [MIGRATION.md](MIGRATION.md).
+
+The changes below were made over 3.0.0-57 to 3.0.0-62.
 
 - `search`, `count` and `bulkGet` use the HTTP `QUERY` method
   ([RFC 10008](https://www.rfc-editor.org/rfc/rfc10008)) instead of `SEARCH`. Buttress still answers `SEARCH`, with a

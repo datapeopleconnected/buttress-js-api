@@ -20,8 +20,8 @@ modules, so you can authenticate, and read and write schema-defined data, withou
 npm install @buttress/api
 ```
 
-Requires Node.js 22 or later, and a Buttress server that takes the HTTP `QUERY` method (buttress-js `390fea49` or
-later). Older servers answer `QUERY` with 404.
+Requires Node.js 22 or later, and Buttress 3.0.0 or later. The client sends searches with the HTTP `QUERY` method,
+which older servers answer with 404.
 
 ## Quick start
 
@@ -126,7 +126,8 @@ await Buttress.Policy.createPolicy({
 
 Policies treat `QUERY` and `SEARCH` as the same verb, so an existing policy that grants `SEARCH` also grants `QUERY`.
 
-If you're upgrading from an older version of this client, see [MIGRATION.md](MIGRATION.md) for breaking changes.
+If you're upgrading from 2.x (`buttress-js-api`) or a 3.0.0 pre-release, see [MIGRATION.md](MIGRATION.md) for breaking
+changes.
 
 ## Configuration
 
@@ -186,7 +187,7 @@ a moving tag like `develop` yourself to get its latest build.
 Releases are published to npm by the Publish workflow:
 
 1. Bump `version` in `package.json` on `main` and push.
-2. Create a GitHub release with the tag `v<version>`, for example `v3.0.0-53`.
+2. Create a GitHub release with the tag `v<version>`, for example `v3.0.1`.
 
 The workflow runs CI and checks that the tag matches `package.json`. It then publishes to the `latest` dist-tag, or
 to `next` if the release is marked as a pre-release.
