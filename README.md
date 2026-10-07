@@ -20,8 +20,8 @@ modules, so you can authenticate, and read and write schema-defined data, withou
 npm install @buttress/api
 ```
 
-Requires Node.js 22 or later, and a Buttress server that takes the HTTP `QUERY` method (buttress-js `390fea49` or
-later). Older servers answer `QUERY` with 404.
+Requires Node.js 22 or later, and Buttress 3.0.0 or later. The client sends searches with the HTTP `QUERY` method,
+which older servers answer with 404.
 
 ## Quick start
 
@@ -126,7 +126,8 @@ await Buttress.Policy.createPolicy({
 
 Policies treat `QUERY` and `SEARCH` as the same verb, so an existing policy that grants `SEARCH` also grants `QUERY`.
 
-If you're upgrading from an older version of this client, see [MIGRATION.md](MIGRATION.md) for breaking changes.
+If you're upgrading from 2.x (`buttress-js-api`) or a 3.0.0 pre-release, see [MIGRATION.md](MIGRATION.md) for breaking
+changes.
 
 ## Configuration
 
@@ -162,8 +163,8 @@ Development needs Node 24 or later (`nvm use` picks it up from `.nvmrc`).
 | `npm run test:unit`     | Runs the unit tests. No Buttress needed.                                    |
 | `npm run test:e2e`      | Builds, then runs the end-to-end tests against a Buttress in Docker.        |
 
-The pre-commit hook runs `lint`, `format:check`, `build` and `licence-check`. CI runs the same checks and the unit
-tests on every push to `main` and `develop`, and on pull requests.
+The pre-commit hook runs `lint`, `format:check`, `build` and `licence-check`. CI runs the same checks, the unit tests
+and the end-to-end tests on every push to `main` and `develop`, and on pull requests.
 
 ### End-to-end tests
 
@@ -177,15 +178,16 @@ It runs any command, so you can run a single suite:
 npm run build && npx tsx scripts/e2e.ts npm run test-policy
 ```
 
-Set `BUTTRESS_IMAGE` to test against a different image than `dpcltd/buttress:develop`, such as one built from a
-Buttress checkout.
+The tests run against `dpcltd/buttress:3.0.0`. Set `BUTTRESS_IMAGE` to test against a different image, such as
+`dpcltd/buttress:develop` or one built from a Buttress checkout. Docker only pulls an image it doesn't have, so pull
+a moving tag like `develop` yourself to get its latest build.
 
 ### Publishing
 
 Releases are published to npm by the Publish workflow:
 
 1. Bump `version` in `package.json` on `main` and push.
-2. Create a GitHub release with the tag `v<version>`, for example `v3.0.0-53`.
+2. Create a GitHub release with the tag `v<version>`, for example `v3.0.1`.
 
 The workflow runs CI and checks that the tag matches `package.json`. It then publishes to the `latest` dist-tag, or
 to `next` if the release is marked as a pre-release.

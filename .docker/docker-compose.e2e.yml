@@ -20,7 +20,7 @@ services:
       retries: 30
 
   buttress:
-    image: ${BUTTRESS_IMAGE:-dpcltd/buttress:develop}
+    image: ${BUTTRESS_IMAGE:-dpcltd/buttress:3.0.0}
     # The image is only published for amd64. Without this, Arm machines such as Apple silicon Macs fail to pull it,
     # rather than running it emulated.
     platform: linux/amd64

@@ -34,5 +34,17 @@ jobs:
       - run: npm run test:types
       - run: npm run test:unit
 
-  # The end-to-end tests (`npm run test:e2e`) aren't run here yet: several suites fail against the current
-  # dpcltd/buttress:develop image. Add a job for them once they pass, and make Publish wait for it too.
+  # Runs the end-to-end tests against the Buttress image pinned in .docker/docker-compose.e2e.yml.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run test:e2e
